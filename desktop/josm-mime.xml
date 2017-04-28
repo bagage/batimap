@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+
+	<mime-type type="application/x-osm">
+		<comment>Openstreetmap file</comment>
+		<sub-class-of type="text/xml"/>
+		<glob pattern="*.osm"/>
+		<icon name="osm"/>
+	</mime-type>
+
+	<mime-type type="application/x-josmjos">
+		<comment>Josm project</comment>
+		<sub-class-of type="text/xml"/>
+		<glob pattern="*.jos"/>
+		<icon name="josm"/>
+	</mime-type>
+
+	<mime-type type="application/x-josmjoz">
+		<comment>Josm project archive</comment>
+		<sub-class-of type="application/zip"/>
+		<glob pattern="*.joz"/>
+		<icon name="josm"/>
+	</mime-type>
+
+</mime-info>

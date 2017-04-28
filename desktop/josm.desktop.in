@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=JOSM
+Comment=
+Type=Application
+Exec=java -jar PWD/josm-custom.jar PWD/josm-init.jos %U
+TryExec=java
+Terminal=false
+Icon=josm
+MimeType=application/xml;application/x-osm;application/x-josmjos;application/x-josmjoz
