@@ -1,7 +1,7 @@
 # What's in the box
 
  * [josm-custom.jar](./josm-custom.jar): patched JOSM (fix [#14666](https://josm.openstreetmap.de/ticket/14666), highlights `wall=no`, allow unglueing multiple nodes at once) 
- * [josm-init.jos](./josm-init.jos): automatically opens Strava and BDOrtho IGN on startup when launching JOSM
+ * [josm-init.jos](./josm-init.jos): automatically opens Strava and BDOrtho IGN on JOSM startup
  * [plugins](./plugins): patched plugins for a better conflation workflow
    * [todo.jar](./plugins/todo.jar): add "Mark as selected" button and multilayers support
    * [conflation.jar](./plugins/conflation.jar): zoom on problem if any
