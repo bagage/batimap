@@ -7,11 +7,21 @@ info() {
     echo -e "$green$@$reset"
 }
 
+usage() {
+    printf "usage: $0 DEPARTMENT_NUMBER <INSEE|CITY>\n"
+    exit 1
+}
+
 workdir="$(dirname "$0")/../data/stats"
 test -d "$workdir" || mkdir -p "$workdir"
 cd "$workdir"
 
-DEPARTMENT_NUMBER='38'
+if [ "$#" = 0 ]; then
+    usage
+fi
+
+DEPARTMENT_NUMBER=$1
+shift
 MUNICIPALITY_LIST="$DEPARTMENT_NUMBER-municipality.txt"
 STATISTICS_FILE="$DEPARTMENT_NUMBER-statistics.csv"
 
@@ -20,8 +30,7 @@ if [ "$#" = 0 ]; then
     to_treat=$(find ../ok -maxdepth 1 -type d  -name 'CL*')
 
     if [ -z "$to_treat" ]; then
-        info "$0 <commune>\nou\n$0 <INSEE>\n"
-        exit 1
+        usage
     else
         while read commune; do
             insee="$(echo "${commune/.*\/CL/$DEPARTMENT_NUMBER}" | cut -d- -f1)"
