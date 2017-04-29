@@ -6,9 +6,14 @@ reset='\033[0m'
 info() {
     echo -e "$green$@$reset"
 }
+
 workdir="$(dirname "$0")/../data/stats"
 test -d "$workdir" || mkdir -p "$workdir"
 cd "$workdir"
+
+DEPARTMENT_NUMBER='38'
+MUNICIPALITY_LIST="$DEPARTMENT_NUMBER-municipality.txt"
+STATISTICS_FILE="$DEPARTMENT_NUMBER-statistics.csv"
 
 if [ "$#" = 0 ]; then
     info "Scanning for new things…"
@@ -19,7 +24,7 @@ if [ "$#" = 0 ]; then
         exit 1
     else
         while read commune; do
-            insee="$(echo "${commune/.*\/CL/26}" | cut -d- -f1)"
+            insee="$(echo "${commune/.*\/CL/$DEPARTMENT_NUMBER}" | cut -d- -f1)"
             OSM_CADASTRE_OVERWRITE=${OSM_CADASTRE_OVERWRITE:-y} $0 $insee && mv "$commune" ../ok/done && sleep 5
         done <<< "$to_treat"
         exit 0
@@ -32,12 +37,13 @@ elif [ "$#" -gt 1 ]; then
     exit 0
 fi
 
-if [ ! -f communes.txt ]; then
-    wget -O communes.txt.tmp "http://overpass-api.de/api/interpreter?data=[out:csv('name', 'ref:INSEE';false)];
+if [ ! -f $MUNICIPALITY_LIST ]; then
+    tmp=$(mktemp)
+    wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv('name', 'ref:INSEE';false)];
         relation[boundary='administrative'][admin_level='8']['ref:INSEE'~'26...'];
         out;"
-    cat communes.txt.tmp | tr '\t' ',' > communes.txt
-    rm communes.txt.tmp
+    cat $tmp | tr '\t' ',' > $MUNICIPALITY_LIST
+    rm $tmp
 fi
 
 if [[ "$1" =~ [0-9] ]]; then
@@ -47,10 +53,10 @@ if [[ "$1" =~ [0-9] ]]; then
         info Skipping $insee
         exit 0
     fi
-    name=$(grep ",$1$" communes.txt | cut -d',' -f1)
+    name=$(grep ",$1$" $MUNICIPALITY_LIST | cut -d',' -f1)
 else
     name=$1
-    insee=$(grep "^$1," communes.txt | cut -d',' -f2)
+    insee=$(grep "^$1," $MUNICIPALITY_LIST | cut -d',' -f2)
 fi
 
 if [ -z "$name" ] || [ -z "$insee" ]; then
@@ -77,7 +83,9 @@ else
         must_download=y
     fi
     if [ "$must_download" = y ]; then
-        wget -O "${output}.tmp" "http://overpass-api.de/api/interpreter?data=[out:csv('source';false)][timeout:100];
+        info "Overpass request for buildings…"
+        tmp=$(mktemp)
+        wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv('source';false)][timeout:100];
         area[boundary='administrative'][admin_level='8']['ref:INSEE'='$insee']->.searchArea;
         (
           node['building'](area.searchArea);
@@ -85,19 +93,21 @@ else
           relation['building'](area.searchArea);
         );
         out;"
-        mv "${output}.tmp" "$output"
+        mv $tmp $output
     fi
 
     if [ ! -f ${output}.relations ]; then
         sleep 1
-        wget -O "${output}.relations.tmp" "http://overpass-api.de/api/interpreter?data=[out:csv('id';false)][timeout:100];
+        info "Overpass request for relations…"
+        tmp=$(mktemp)
+        wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv('id';false)][timeout:100];
         area[boundary='administrative'][admin_level='8']['ref:INSEE'='$insee']->.searchArea;
         (
           relation[type='associatedStreet'](area.searchArea);
           node['addr:housenumber']['addr:street'](area.searchArea);
         );
         out;"
-        mv "${output}.relations.tmp" "${output}.relations"
+        mv $tmp "${output}.relations"
     fi
 
     uniques="$(sort $output | uniq -c | sort -rn | sed -E 's/^[[:space:]]*([0-9]*)[[:space:]]*(.*)$/\1\t\2/g')"
@@ -116,9 +126,9 @@ else
     echo "$uniques" > "$output".stats
 fi
 
-[ -f stats.csv ] && sed -i "/^$insee\t$name\t/d" stats.csv
-printf "$insee\t$name\t$(echo "$uniques" | head -n1)\t$(echo "$relations_count")\n" >> stats.csv
-cat stats.csv | sort > stats.csv.tmp && mv stats.csv.tmp stats.csv
-grep -Pq "1NSEE\tNOM\tCOUNT\tDATE\tASSOCIATEDSTREET" stats.csv || sed -i "1 i1NSEE\tNOM\tCOUNT\tDATE\tASSOCIATEDSTREET" stats.csv
+[ -f $STATISTICS_FILE ] && sed -i "/^$insee\t$name\t/d" $STATISTICS_FILE
+printf "$insee\t$name\t$(echo "$uniques" | head -n1)\t$(echo "$relations_count")\n" >> $STATISTICS_FILE
+sort -o $STATISTICS_FILE $STATISTICS_FILE
+grep -Pq "1NSEE\tNOM\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE || sed -i "1 i1NSEE\tNOM\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE
 
-info "Treatment done! Summary:\n$(head -n1 stats.csv)\n$(grep $insee stats.csv)"
+info "Treatment done!\n\nSummary:\n$(head -n1 $STATISTICS_FILE)\n$(grep $insee $STATISTICS_FILE)"
