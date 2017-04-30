@@ -8,13 +8,12 @@ info() {
 }
 
 usage() {
-    printf "usage: $0 DEPARTMENT_NUMBER <INSEE|CITY>\n"
+    info "${red}usage: $0 DEPARTMENT_NUMBER <INSEE|CITY>"
     exit 1
 }
 
 workdir="$(dirname "$0")/../data/stats"
-test -d "$workdir" || mkdir -p "$workdir"
-cd "$workdir"
+test -d "$workdir" || mkdir -p "$workdir" "$workdir"/../ok
 
 if [ "$#" = 0 ]; then
     usage
@@ -22,25 +21,27 @@ fi
 
 DEPARTMENT_NUMBER=$1
 shift
-MUNICIPALITY_LIST="$DEPARTMENT_NUMBER-municipality.txt"
-STATISTICS_FILE="$DEPARTMENT_NUMBER-statistics.csv"
+MUNICIPALITY_LIST="$workdir/$DEPARTMENT_NUMBER-municipality.txt"
+STATISTICS_FILE="$workdir/$DEPARTMENT_NUMBER-statistics.csv"
 
 if [ "$#" = 0 ]; then
     info "Scanning for new things…"
-    to_treat=$(find ../ok -maxdepth 1 -type d  -name 'CL*')
+    test -d "$workdir/../ok" && to_treat=$(find "$workdir/../ok" -maxdepth 1 -type d -name 'CL*')
 
     if [ -z "$to_treat" ]; then
         usage
     else
         while read commune; do
             insee="$(echo "${commune/.*\/CL/$DEPARTMENT_NUMBER}" | cut -d- -f1)"
-            OSM_CADASTRE_OVERWRITE=${OSM_CADASTRE_OVERWRITE:-y} $0 $insee && mv "$commune" ../ok/done && sleep 5
+            OSM_CADASTRE_OVERWRITE=${OSM_CADASTRE_OVERWRITE:-y} \
+                "$0" $DEPARTMENT_NUMBER $insee && \
+                mv "$commune" "$workdir/../ok/done" && sleep 5
         done <<< "$to_treat"
         exit 0
     fi
 elif [ "$#" -gt 1 ]; then
     for i in "$@"; do
-        $0 $i || exit 1
+        "$0" $DEPARTMENT_NUMBER $i || exit 1
         [ "$OSM_CADASTRE_OVERWRITE" = y ] && sleep 5
     done
     exit 0
@@ -59,7 +60,7 @@ if [[ "$1" =~ [0-9] ]]; then
     insee=$1
     skip=26029,26044,26053,26109,26120,26132,26151,26158,26187,26230,26237,26260,26265,26280,26366
     if [[ ",$skip," =~ ",$insee," ]]; then
-        info Skipping $insee
+        info "Skipping $insee"
         exit 0
     fi
     name=$(grep ",$1$" $MUNICIPALITY_LIST | cut -d',' -f1)
@@ -80,7 +81,7 @@ if [[ ",$raster," =~ ",$insee," ]]; then
     uniques="\tRASTER"
     relations_count="?"
 else
-    output="./results-$insee-$(echo "$name" | tr -c -d [a-zA-Z0-9]).csv"
+    output="$workdir/results-$insee-$(echo "$name" | tr -c -d [a-zA-Z0-9]).csv"
 
     if [ -f $output ]; then
         must_download="$OSM_CADASTRE_OVERWRITE"
@@ -107,7 +108,7 @@ else
 
     if [ ! -f ${output}.relations ]; then
         sleep 1
-        info "Overpass request for relations…"
+        info "Overpass request for associated streets…"
         tmp=$(mktemp)
         wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv('id';false)][timeout:100];
         area[boundary='administrative'][admin_level='8']['ref:INSEE'='$insee']->.searchArea;
@@ -140,4 +141,4 @@ printf "$insee\t$name\t$(echo "$uniques" | head -n1)\t$(echo "$relations_count")
 sort -o $STATISTICS_FILE $STATISTICS_FILE
 grep -Pq "1NSEE\tNOM\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE || sed -i "1 i1NSEE\tNOM\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE
 
-info "Treatment done!\n\nSummary:\n$(head -n1 $STATISTICS_FILE)\n$(grep $insee $STATISTICS_FILE)"
+info "Treatment done!\n\nSummary:\n$(head -n1 $STATISTICS_FILE)\n$(grep $insee $STATISTICS_FILE)\n\n"
