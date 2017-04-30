@@ -8,7 +8,7 @@ info() {
 }
 
 usage() {
-    info "${red}usage: $0 DEPARTMENT_NUMBER <INSEE|CITY>"
+    info "${red}usage: $0 department <INSEE|CITY>"
     exit 1
 }
 
@@ -19,10 +19,10 @@ if [ "$#" = 0 ]; then
     usage
 fi
 
-DEPARTMENT_NUMBER=$1
+department=$1
 shift
-MUNICIPALITY_LIST="$workdir/$DEPARTMENT_NUMBER-municipality.txt"
-STATISTICS_FILE="$workdir/$DEPARTMENT_NUMBER-statistics.csv"
+MUNICIPALITY_LIST="$workdir/$department-municipality.txt"
+STATISTICS_FILE="$workdir/$department-statistics.csv"
 
 if [ "$#" = 0 ]; then
     info "Scanning for new things…"
@@ -32,16 +32,16 @@ if [ "$#" = 0 ]; then
         usage
     else
         while read commune; do
-            insee="$(echo "${commune/.*\/CL/$DEPARTMENT_NUMBER}" | cut -d- -f1)"
+            insee="$(echo "${commune/.*\/CL/$department}" | cut -d- -f1)"
             OSM_CADASTRE_OVERWRITE=${OSM_CADASTRE_OVERWRITE:-y} \
-                "$0" $DEPARTMENT_NUMBER $insee && \
+                "$0" $department $insee && \
                 mv "$commune" "$workdir/../ok/done" && sleep 5
         done <<< "$to_treat"
         exit 0
     fi
 elif [ "$#" -gt 1 ]; then
     for i in "$@"; do
-        "$0" $DEPARTMENT_NUMBER $i || exit 1
+        "$0" $department $i || exit 1
         [ "$OSM_CADASTRE_OVERWRITE" = y ] && sleep 5
     done
     exit 0
@@ -50,24 +50,19 @@ fi
 if [ ! -f $MUNICIPALITY_LIST ]; then
     tmp=$(mktemp)
     wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv('name', 'ref:INSEE';false)];
-        relation[boundary='administrative'][admin_level='8']['ref:INSEE'~'26...'];
+        relation[boundary='administrative'][admin_level='8']['ref:INSEE'~'$department...'];
         out;"
     cat $tmp | tr '\t' ',' > $MUNICIPALITY_LIST
     rm $tmp
 fi
 
 if [[ "$1" =~ [0-9] ]]; then
-    insee=$1
-    skip=26029,26044,26053,26109,26120,26132,26151,26158,26187,26230,26237,26260,26265,26280,26366
-    if [[ ",$skip," =~ ",$insee," ]]; then
-        info "Skipping $insee"
-        exit 0
-    fi
-    name=$(grep ",$1$" $MUNICIPALITY_LIST | cut -d',' -f1)
+    match=",$1$"
 else
-    name=$1
-    insee=$(grep "^$1," $MUNICIPALITY_LIST | cut -d',' -f2)
+    match="^$1,"
 fi
+name=$(grep -i "$match" $MUNICIPALITY_LIST | cut -d',' -f1)
+insee=$(grep -i "$match" $MUNICIPALITY_LIST | cut -d',' -f2)
 
 if [ -z "$name" ] || [ -z "$insee" ]; then
     info ${red}oops, invalid commune? $1${reset}
@@ -76,8 +71,13 @@ fi
 
 info "Treating $insee - $name…"
 
-raster=26012,26013,26015,26016,26018,26019,26022,26025,26026,26027,26029,26030,26036,26043,26044,26046,26047,26048,26050,26053,26055,26066,26067,26069,26076,26080,26082,26089,26090,26091,26104,26105,26109,26112,26120,26122,26123,26126,26127,26130,26132,26136,26142,26147,26150,26151,26152,26153,26154,26158,26161,26168,26175,26178,26180,26181,26183,26186,26187,26188,26189,26190,26195,26199,26200,26201,26204,26205,26209,26215,26227,26228,26229,26230,26233,26234,26236,26237,26238,26239,26242,26244,26245,26246,26248,26253,26254,26255,26256,26260,26262,26265,26266,26267,26269,26274,26279,26280,26282,26283,26286,26289,26291,26296,26299,26304,26306,26308,26318,26321,26327,26328,26329,26340,26354,26359,26361,26363,26366,26369,26370,26371,26372,26374,26375,26376,26377,26378,26383,26384
-if [[ ",$raster," =~ ",$insee," ]]; then
+department_3digits="$(printf "%03d" $department)"
+if [ ! -f "$workdir/$department_3digits-list.txt" ]; then
+    wget -O "$workdir/$department_3digits-list.txt" http://cadastre.openstreetmap.fr/data/$department_3digits/$department_3digits-liste.txt
+fi
+
+if ! grep -q "${insee/$department/}" $workdir/$department_3digits-list.txt; then
+    info "$insee/$name is RASTER"
     uniques="\tRASTER"
     relations_count="?"
 else
