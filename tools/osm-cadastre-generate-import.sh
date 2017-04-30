@@ -7,8 +7,7 @@ info() {
     echo -e "$green$@$reset"
 }
 workdir="$(dirname "$0")/../data"
-test -d "$workdir" || mkdir -p "$workdir"
-cd "$workdir"
+test -d "$workdir" || mkdir -p "$workdir/"{stats,ok}
 
 if [ $# = 0 ]; then
     info "$0 <insee>"
@@ -21,8 +20,8 @@ for insee in "$@"; do
         department="0$department"
     fi
 
-    if [ ! -f stats/$department-list.txt ]; then
-        wget -O stats/$department-list.txt http://cadastre.openstreetmap.fr/data/$department/$department-liste.txt
+    if [ ! -f "$workdir/stats/$department-list.txt" ]; then
+        wget -O "$workdir/stats/$department-list.txt" http://cadastre.openstreetmap.fr/data/$department/$department-liste.txt
     fi
 
     if [[ ! "$insee" =~ [0-9] ]]; then
@@ -31,7 +30,7 @@ for insee in "$@"; do
     fi
 
     insee_3lastdigit="$(echo $insee | sed -E 's/[0-9]{2,3}([0-9]{3})/\1/g')"
-    result=$(grep -E "[A-Z0-9]{2}$insee_3lastdigit" stats/$department-list.txt || true)
+    result=$(grep -E "[A-Z0-9]{2}$insee_3lastdigit" "$workdir/stats/$department-list.txt" || true)
     ville=$(echo $result| cut -d ' ' -f2)-$(echo $result | cut -d '"' -f2)
 
     if [ -z "$insee" ] || [ -z "$ville" ]; then
@@ -55,5 +54,5 @@ for insee in "$@"; do
         -H 'Upgrade-Insecure-Requests: 1' \
         --data "dep=$department&ville=$ville&recherche_ville=$insee&bis=true&type=bati&force=false"
 
-    wget "http://cadastre.openstreetmap.fr/data/$department/${ville}.tar.bz2"
+    wget "http://cadastre.openstreetmap.fr/data/$department/${ville}.tar.bz2" -O "$workdir/${ville}.tar.bz2"
 done
