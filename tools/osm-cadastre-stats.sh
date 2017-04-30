@@ -49,20 +49,20 @@ fi
 
 if [ ! -f $MUNICIPALITY_LIST ]; then
     tmp=$(mktemp)
-    wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv('name', 'ref:INSEE';false)];
+    wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv('ref:INSEE', 'name', ::lat, ::lon;false)];
         relation[boundary='administrative'][admin_level='8']['ref:INSEE'~'$department...'];
-        out;"
+        out center;"
     cat $tmp | tr '\t' ',' > $MUNICIPALITY_LIST
     rm $tmp
 fi
 
 if [[ "$1" =~ [0-9] ]]; then
-    match=",$1$"
-else
     match="^$1,"
+else
+    match=",$1"
 fi
-name=$(grep -i "$match" $MUNICIPALITY_LIST | cut -d',' -f1)
-insee=$(grep -i "$match" $MUNICIPALITY_LIST | cut -d',' -f2)
+insee=$(grep -i "$match" $MUNICIPALITY_LIST | cut -d',' -f1)
+name=$(grep -i "$match" $MUNICIPALITY_LIST | cut -d',' -f2)
 
 if [ -z "$name" ] || [ -z "$insee" ]; then
     info ${red}oops, invalid commune? $1${reset}
@@ -137,8 +137,8 @@ else
 fi
 
 [ -f $STATISTICS_FILE ] && sed -i "/^$insee\t$name\t/d" $STATISTICS_FILE
-printf "$insee\t$name\t$(echo "$uniques" | head -n1)\t$(echo "$relations_count")\n" >> $STATISTICS_FILE
+printf "$(grep "$insee" "$MUNICIPALITY_LIST" | tr ',' '\t')\t$(echo "$uniques" | head -n1)\t$(echo "$relations_count")\n" >> $STATISTICS_FILE
 sort -o $STATISTICS_FILE $STATISTICS_FILE
-grep -Pq "1NSEE\tNOM\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE || sed -i "1 i1NSEE\tNOM\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE
+grep -Pq "1NSEE\tNOM\tLAT\tLON\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE || sed -i "1 i1NSEE\tNOM\tLAT\tLON\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE
 
 info "Treatment done!\n\nSummary:\n$(head -n1 $STATISTICS_FILE)\n$(grep $insee $STATISTICS_FILE)\n\n"
