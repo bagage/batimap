@@ -65,8 +65,8 @@ insee=$(grep -i "$match" $MUNICIPALITY_LIST | cut -d',' -f1)
 name=$(grep -i "$match" $MUNICIPALITY_LIST | cut -d',' -f2)
 
 if [ -z "$name" ] || [ -z "$insee" ]; then
-    info ${red}oops, invalid commune? $1${reset}
-    exit 1
+    info ${red}oops, invalid commune? Skipping $1${reset}
+    exit 0
 fi
 
 info "Treating $insee - $name…"
@@ -128,17 +128,16 @@ else
         "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre ; mise à jour :" \
         "extraction vectorielle v1 cadastre-dgi-fr source : Direction Générale des Impôts - Cadas. Mise à jour :" \
         "Direction Générale des Finances Publiques - Cadastre. Mise à jour :" \
-        "Direction Générale des Finances Publiques - Cadastre. Mise à jour :" \
         "cadastre-dgi-fr source : Direction G�n�rale des Imp�ts - Cadastre ; mise � jour :" \
     ; do
-        uniques=$(echo "$uniques" | sed "s/$to_remove//g")
+        uniques=$(echo "$uniques" | sed "s/$to_remove//gI")
     done
     echo "$uniques" > "$output".stats
 fi
 
 [ -f $STATISTICS_FILE ] && sed -i "/^$insee\t$name\t/d" $STATISTICS_FILE
-printf "$(grep "$insee" "$MUNICIPALITY_LIST" | tr ',' '\t')\t$(echo "$uniques" | head -n1)\t$(echo "$relations_count")\n" >> $STATISTICS_FILE
+printf "$(grep "^$insee," "$MUNICIPALITY_LIST" | tr ',' '\t')\t$(echo "$uniques" | head -n1)\t$(echo "$relations_count")\n" >> $STATISTICS_FILE
 sort -o $STATISTICS_FILE $STATISTICS_FILE
 grep -Pq "1NSEE\tNOM\tLAT\tLON\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE || sed -i "1 i1NSEE\tNOM\tLAT\tLON\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE
 
-info "Treatment done!\n\nSummary:\n$(head -n1 $STATISTICS_FILE)\n$(grep $insee $STATISTICS_FILE)\n\n"
+info "Treatment done!\n\nSummary:\n$(head -n1 $STATISTICS_FILE)\n$(grep "^$insee" $STATISTICS_FILE)\n\n"
