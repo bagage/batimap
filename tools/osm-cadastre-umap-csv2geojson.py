@@ -3,6 +3,7 @@
 import sys
 import os.path
 import datetime
+import logging as log
 import csv
 import json
 from colour import Color
@@ -26,10 +27,11 @@ def color_for_date(date):
     if date in colors:
         return colors[date]
     else:
-        print("Unknown date! {}".format(date));
-        return "#0000ff"
+        log.warning("Unknown date '{}'! Using gray.".format(date));
+        return "Gray"
 
 def csv2json(input_file, output_file):
+    log.info("Generating {} from {}…".format(input_file, output_file))
     with open(input_file) as f:
         reader = csv.DictReader(f, delimiter='\t')
         rows = list(reader)
@@ -64,13 +66,14 @@ def csv2json(input_file, output_file):
     with open(output_file, 'w') as f:
         json.dump(collection, f, indent=4)
 
+log.basicConfig(level=log.INFO)
 if len(sys.argv) != 2:
-    print("Please provide ONE argument: department to treat. Example: {} 26".format(sys.argv[0]))
+    log.error("Please provide ONE argument: department to treat. Example: {} 26".format(sys.argv[0]))
 else:
     this_path = os.path.dirname(os.path.realpath(__file__))
     input_file = "{}/../data/stats/{}-statistics.csv".format(this_path, sys.argv[1])
     output_file = input_file.replace(".csv", ".geojson")
     if not os.path.isfile(input_file):
-        print("{} does not exist.".format(input_file))
+        log.error("{} does not exist.".format(input_file))
     else:
         csv2json(input_file, output_file)
