@@ -1,6 +1,6 @@
 # What's in the box
 
- * [josm-custom.jar](./josm-custom.jar): patched JOSM (fix [#14666](https://josm.openstreetmap.de/ticket/14666), highlights `wall=no`, allow unglueing multiple nodes at once) 
+ * [josm-custom.jar](./josm-custom.jar): patched JOSM (fix [#14666](https://josm.openstreetmap.de/ticket/14666), highlights `wall=no`, allow unglueing multiple nodes at once)
  * [josm-init.jos](./josm-init.jos): automatically opens Strava and BDOrtho IGN on JOSM startup
  * [plugins](./plugins): patched plugins for a better conflation workflow
    * [todo.jar](./plugins/todo.jar): add "Mark as selected" button and multilayers support
@@ -14,6 +14,9 @@
  * [tools](./tools)
    * [osm-cadastre-generate-import.sh](./tools/osm-cadastre-generate-import.sh): generate buildings from cadastre for given cities
    * [osm-cadastre-stats.sh](./tools/osm-cadastre-stats.sh): number of buildings imported per year for given cities
+   * [osm-cadastre-umap-csv2geojson.py](./tools/osm-cadastre-umap-csv2geojson.py): convert CSV to GeoJSON format so that [it can be used on UMap for instance](http://umap.openstreetmap.fr/fr/map/bati-drome_143285#8/45.370/4.329)
+
+![UMap demo](https://cloud.githubusercontent.com/assets/1451988/25699562/170bb266-30c4-11e7-9e14-e72bf19bed89.png)
 
 # Instructions
 
