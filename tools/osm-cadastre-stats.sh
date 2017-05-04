@@ -12,7 +12,7 @@ usage() {
     exit 1
 }
 
-workdir="$(dirname "$0")/../data/stats"
+workdir="$(dirname "$(realpath $0)")/../data/stats"
 test -d "$workdir" || mkdir -p "$workdir" "$workdir"/../ok
 
 if [ "$#" = 0 ]; then
@@ -141,3 +141,6 @@ sort -o $STATISTICS_FILE $STATISTICS_FILE
 grep -Pq "1NSEE\tNOM\tLAT\tLON\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE || sed -i "1 i1NSEE\tNOM\tLAT\tLON\tCOUNT\tDATE\tASSOCIATEDSTREET" $STATISTICS_FILE
 
 info "Treatment done!\n\nSummary:\n$(head -n1 $STATISTICS_FILE)\n$(grep "^$insee" $STATISTICS_FILE)\n\n"
+
+# also regenerate the geojson
+"$(dirname "$(realpath $0)")/osm-cadastre-umap-csv2geojson.py" $department
