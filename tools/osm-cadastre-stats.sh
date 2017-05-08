@@ -26,7 +26,7 @@ STATISTICS_FILE="$workdir/$department-statistics.csv"
 
 if [ "$#" = 0 ]; then
     info "Scanning for new things…"
-    test -d "$workdir/../ok" && to_treat=$(find "$workdir/../ok" -maxdepth 1 -type d -name 'CL*')
+    test -d "$workdir/../ok" && to_treat=$(cd "$workdir/../ok" && find . -maxdepth 1 -type d -name 'CL*')
 
     if [ -z "$to_treat" ]; then
         usage
@@ -35,7 +35,7 @@ if [ "$#" = 0 ]; then
             insee="$(echo "${commune/.*\/CL/$department}" | cut -d- -f1)"
             OSM_CADASTRE_OVERWRITE=${OSM_CADASTRE_OVERWRITE:-y} \
                 "$0" $department $insee && \
-                mv "$commune" "$workdir/../ok/done" && sleep 5
+                mv "$workdir/../ok/$commune" "$workdir/../ok/done" && sleep 5
         done <<< "$to_treat"
         exit 0
     fi
