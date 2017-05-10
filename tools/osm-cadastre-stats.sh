@@ -26,9 +26,11 @@ STATISTICS_FILE="$workdir/$department-statistics.csv"
 
 if [ "$#" = 0 ]; then
     info "Scanning for new things…"
+
     test -d "$workdir/../ok" && to_treat=$(cd "$workdir/../ok" && find . -maxdepth 1 -type d -name 'CL*')
 
     if [ -z "$to_treat" ]; then
+        info "None found."
         usage
     else
         while read commune; do
@@ -76,7 +78,7 @@ if [ ! -f "$workdir/$department_3digits-list.txt" ]; then
     wget -O "$workdir/$department_3digits-list.txt" http://cadastre.openstreetmap.fr/data/$department_3digits/$department_3digits-liste.txt
 fi
 
-if ! grep -q "${insee/$department/}" $workdir/$department_3digits-list.txt; then
+if ! grep -q " .*${insee/$department/}" $workdir/$department_3digits-list.txt; then
     info "$insee/$name is RASTER"
     uniques="\tRASTER"
     relations_count="?"
