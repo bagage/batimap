@@ -49,6 +49,6 @@ Ici le dernier import date de 2017, donc il est déjà à jour. Supposons qu'il 
 
 2. Génération du bâti depuis [http://cadastre.openstreetmap.fr/](http://cadastre.openstreetmap.fr/) (cela prend plusieurs minutes, selon la taille de la commune) : `./tools/osm-cadastre-generate-import.sh 26358`
 
-3. Ouverture des fichiers dans nautilus CL358-UPIE-houses-prediction_segmente.osm et CL358-UPIE-houses-simplifie.osm via JOSM.
+3. Ouverture des fichiers CL358-UPIE-houses-prediction_segmente.osm et CL358-UPIE-houses-simplifie.osm dans JOSM via nautilus.
 
 4. Voir le [guide complet](https://wiki.openstreetmap.org/wiki/WikiProject_France/Cadastre/Import_semi-automatique_des_b%C3%A2timents#Utilisation_du_plugin_.C2.ABConflation.C2.BB_dans_JOSM) pour la suite ou le [guide vidéo](https://www.youtube.com/watch?v=8n34tYJXnEI)…
