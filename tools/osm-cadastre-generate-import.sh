@@ -15,18 +15,19 @@ if [ $# = 0 ]; then
 fi
 
 for insee in "$@"; do
-    department="$(echo $insee | sed -E 's/([0-9]{2,3})[0-9]{3}/\1/g')"
+    department="$(echo $insee | sed -nE 's/([0-9]{2,3})[0-9]{3}/\1/p')"
+
+    if [[ ! "$insee" =~ [0-9] ]] || [ -z "$department" ]; then
+        info "${red}Invalid insee code? '$insee'. Expected 26001 or similar."
+        continue
+    fi
+
     if [ ${#department} = 2 ]; then
         department="0$department"
     fi
 
     if [ ! -f "$workdir/stats/$department-list.txt" ]; then
         wget -O "$workdir/stats/$department-list.txt" http://cadastre.openstreetmap.fr/data/$department/$department-liste.txt
-    fi
-
-    if [[ ! "$insee" =~ [0-9] ]]; then
-        info "${red}Invalid insee code? '$1'"
-        continue
     fi
 
     insee_3lastdigit="$(echo $insee | sed -E 's/[0-9]{2,3}([0-9]{3})/\1/g')"
