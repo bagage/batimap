@@ -6,7 +6,7 @@ reset='\033[0m'
 info() {
     echo -e "$green$@$reset"
 }
-workdir="$(dirname "$0")/../data"
+workdir="$(dirname "$(realpath $0)")/../data"
 test -d "$workdir" || mkdir -p "$workdir/"{stats,ok}
 
 if [ $# = 0 ]; then
