@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
+import sys
 import logging
 import os
 from os import path
+import datetime
+
+from colour import Color
 
 import geojson
 import overpass
@@ -47,6 +51,42 @@ def lines_to_polygon(ways):
 
     return border
 
+def color_for_insee(department, insee):
+    colors = {
+        "RASTER": "Black",
+        None: "Gray",
+    }
+
+    stats_path = path.join(STATS_PATH, '{}-statistics.csv'.format(department))
+    if not os.path.isfile(stats_path):
+        logging.warning("{} does not exist, cannot find color for {}".format(stats_path, insee))
+        return colors[None]
+
+    with open(stats_path, 'r') as file:
+        for line in file:
+            fields = [x.strip() for x in line.split("\t")]
+            if insee == fields[0]:
+                date = fields[5]
+
+                # Retrieve the last cadastre import for the given insee municipality.
+                # 2009 and below should be red,
+                # current year should be green
+                # previous year should be orange
+                # below 2009 and previous year, use a color gradient
+                this_year = datetime.datetime.now().year
+                gradient_colors = list(Color("red").range_to(Color("orange"), this_year - 2009))
+                for year in range(2009, this_year):
+                    colors[str(year)] = gradient_colors[year - 2009].hex
+                colors[str(this_year)] = "Green"
+
+                if date in colors:
+                    return colors[date]
+                else:
+                    logging.warning("Unknown date '{}'! Using gray.".format(date));
+                    return "Gray"
+
+    return colors[None]
+
 def build_municipality_list(department):
     """Build municipality list
     """
@@ -82,6 +122,7 @@ def build_municipality_list(department):
                 'name': name,
                 'postcode': postcode,
                 '_storage_options': {
+                    'color': color_for_insee(department, insee),
                     'weight': '1',
                     'fillOpacity': '0.5',
                 },
@@ -107,4 +148,9 @@ def build_municipality_list(department):
 
 
 if __name__ == '__main__':
-    build_municipality_list(38)
+    logging.basicConfig(level=logging.INFO)
+    if len(sys.argv) != 2:
+        logging.error("Please provide ONE argument: department to treat. Example: {} 26".format(sys.argv[0]))
+    else:
+        build_municipality_list(sys.argv[1])
+
