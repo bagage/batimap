@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 import sys
 from os import path
 
@@ -17,6 +18,8 @@ STATS_PATH = path.join(DATA_PATH, 'stats')
 BORDER_PATH = path.join(DATA_PATH, 'borders')
 os.makedirs(STATS_PATH, exist_ok=True)
 os.makedirs(BORDER_PATH, exist_ok=True)
+
+CADASTRE_PROG = re.compile(r'.*cadastre.*(\d{4})', flags=re.IGNORECASE)
 
 
 def pseudo_distance(p1, p2):
@@ -168,6 +171,39 @@ def get_vectorized_insee(department):
     for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
         vectorized.append('{}{}'.format(dep[1:], code[2:]))
     return vectorized
+
+
+def count_sources(datatype, insee):
+    logging.info('Count {} sources for {} (overpass-api.de)'.format(datatype, insee))
+
+    if datatype == 'building':
+        request = """[out:json];
+            area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
+            ( node['building'](area.a);
+              way['building'](area.a);
+              relation['building'](area.a);
+            );
+            out tags qt;""".format(insee)
+    elif datatype == 'relation':
+        request = """[out:json];
+            area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
+            ( relation[type='associatedStreet'](area.a);
+              node['addr:housenumber']['addr:street'](area.a);
+            );
+            out tags qt;""".format(insee)
+
+    api = overpass.API()
+    response = api.Get(request, responseformat="json", build=False)
+
+    sources = {}
+    for element in response.get('elements'):
+        src = element.get('tags').get('source') or 'unknown'
+        src = re.sub(CADASTRE_PROG, r'cadastre \1', src)
+        if src not in sources:
+            sources[src] = 0
+        sources[src] += 1
+
+    return sources
 
 
 if __name__ == '__main__':
