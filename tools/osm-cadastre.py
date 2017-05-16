@@ -94,6 +94,7 @@ def build_municipality_list(department, vectorized):
     """Build municipality list
     """
     api = overpass.API()
+    logging.info('Fetch cities boundary for departement {} (overpass-api.de)'.format(department))
     response = api.Get('''[out:json];
         relation
             [boundary="administrative"]
@@ -142,9 +143,10 @@ def build_municipality_list(department, vectorized):
         vector = 'vector' if insee in vectorized else 'raster'
         txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
 
-        # write municipality geojson
-        muni_geojson_path = path.join(BORDER_PATH, '{}.geojson'.format(insee))
-        with open(muni_geojson_path, 'w') as fd:
+        # write geojson
+        logging.debug('Write {}.geojson'.format(insee))
+        geojson_path = path.join(BORDER_PATH, '{}.geojson'.format(insee))
+        with open(geojson_path, 'w') as fd:
             fd.write(geojson.dumps(municipality_border))
 
     # write department geojson
@@ -153,12 +155,14 @@ def build_municipality_list(department, vectorized):
         fd.write(geojson.dumps(FeatureCollection(features)))
 
     # write txt
+    logging.debug('Write {}-municipality.txt'.format(department))
     txt_path = path.join(STATS_PATH, '{}-municipality.txt'.format(department))
     with open(txt_path, 'w') as fd:
         fd.write(txt_content)
 
 
 def get_vectorized_insee(department):
+    logging.info('Fetch list of vectorized cities in department {}'.format(department))
     vectorized = []
     response = requests.get('http://cadastre.openstreetmap.fr/data/0{0}/0{0}-liste.txt'.format(department))
     for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
@@ -167,7 +171,7 @@ def get_vectorized_insee(department):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
     if len(sys.argv) != 2:
         logging.error("Please provide ONE argument: department to treat. Example: {} 26".format(sys.argv[0]))
     else:
