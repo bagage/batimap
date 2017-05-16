@@ -112,14 +112,14 @@ else
         sleep 1
         info "Overpass request for associated streets…"
         tmp=$(mktemp)
-        wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv('id';false)][timeout:100];
+        wget -O $tmp "http://overpass-api.de/api/interpreter?data=[out:csv(::id,::type;false)][timeout:100];
         area[boundary='administrative'][admin_level='8']['ref:INSEE'='$insee']->.searchArea;
         (
-          relation[type='associatedStreet'](area.searchArea);
-          node['addr:housenumber']['addr:street'](area.searchArea);
+            way[building](area.searchArea);
+            node(w)['addr:housenumber'];
         );
         out;"
-        mv $tmp "${output}.relations"
+        grep 'node' $tmp > "${output}.relations" || touch "${output}.relations"
     fi
 
     uniques="$(sort $output | uniq -c | sort -rn | sed -E 's/^[[:space:]]*([0-9]*)[[:space:]]*(.*)$/\1\t\2/g')"
