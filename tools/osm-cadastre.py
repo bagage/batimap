@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-import sys
+import datetime
 import logging
 import os
+import sys
 from os import path
-import datetime
-
-from colour import Color
 
 import geojson
 import overpass
-from geojson import Feature, Polygon, FeatureCollection
+import requests
+from colour import Color
+from geojson import Feature, Polygon
 
 DATA_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 STATS_PATH = path.join(DATA_PATH, 'stats')
@@ -21,6 +21,7 @@ os.makedirs(BORDER_PATH, exist_ok=True)
 
 def pseudo_distance(p1, p2):
     return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
+
 
 def lines_to_polygon(ways):
     if not ways:
@@ -50,6 +51,7 @@ def lines_to_polygon(ways):
         border += n
 
     return border
+
 
 def color_for_insee(department, insee):
     colors = {
@@ -87,7 +89,8 @@ def color_for_insee(department, insee):
 
     return colors[None]
 
-def build_municipality_list(department):
+
+def build_municipality_list(department, vectorized):
     """Build municipality list
     """
     api = overpass.API()
@@ -136,8 +139,8 @@ def build_municipality_list(department):
         else:
             municipality_border.geometry = Polygon([border])
 
-        features.append(municipality_border)
-        txt_content += '{},{},{}\n'.format(insee, name, postcode)
+        vector = 'vector' if insee in vectorized else 'raster'
+        txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
 
         # write municipality geojson
         muni_geojson_path = path.join(BORDER_PATH, '{}.geojson'.format(insee))
@@ -155,10 +158,19 @@ def build_municipality_list(department):
         fd.write(txt_content)
 
 
+def get_vectorized_insee(department):
+    vectorized = []
+    response = requests.get('http://cadastre.openstreetmap.fr/data/0{0}/0{0}-liste.txt'.format(department))
+    for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
+        vectorized.append('{}{}'.format(dep[1:], code[2:]))
+    return vectorized
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     if len(sys.argv) != 2:
         logging.error("Please provide ONE argument: department to treat. Example: {} 26".format(sys.argv[0]))
     else:
-        build_municipality_list(sys.argv[1])
-
+        department = sys.argv[1]
+        vectorized = get_vectorized_insee(department)
+        build_municipality_list(department, vectorized)
