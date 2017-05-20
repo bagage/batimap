@@ -10,7 +10,7 @@ from colour import Color
 
 import geojson
 import overpass
-from geojson import Feature, Polygon
+from geojson import Feature, Polygon, FeatureCollection
 
 DATA_PATH = path.normpath(path.join(path.dirname(__file__), '..', 'data'))
 STATS_PATH = path.join(DATA_PATH, 'stats')
@@ -101,6 +101,8 @@ def build_municipality_list(department):
         build=False,
     )
 
+    features = []
+
     txt_content = ''
     for relation in response.get('elements'):
         outer_ways = []
@@ -134,12 +136,18 @@ def build_municipality_list(department):
         else:
             municipality_border.geometry = Polygon([border])
 
+        features.append(municipality_border)
         txt_content += '{},{},{}\n'.format(insee, name, postcode)
 
-        # write geojson
-        geojson_path = path.join(BORDER_PATH, '{}.geojson'.format(insee))
-        with open(geojson_path, 'w') as fd:
+        # write municipality geojson
+        muni_geojson_path = path.join(BORDER_PATH, '{}.geojson'.format(insee))
+        with open(muni_geojson_path, 'w') as fd:
             fd.write(geojson.dumps(municipality_border))
+
+    # write department geojson
+    dep_geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
+    with open(dep_geojson_path, 'w') as fd:
+        fd.write(geojson.dumps(FeatureCollection(features)))
 
     # write txt
     txt_path = path.join(STATS_PATH, '{}-municipality.txt'.format(department))
