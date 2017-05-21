@@ -19,7 +19,7 @@ BORDER_PATH = path.join(DATA_PATH, 'borders')
 os.makedirs(STATS_PATH, exist_ok=True)
 os.makedirs(BORDER_PATH, exist_ok=True)
 
-CADASTRE_PROG = re.compile(r'.*cadastre.*(\d{4})', flags=re.IGNORECASE)
+CADASTRE_PROG = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
 
 
 def pseudo_distance(p1, p2):
@@ -198,7 +198,8 @@ def count_sources(datatype, insee):
     sources = {}
     for element in response.get('elements'):
         src = element.get('tags').get('source') or 'unknown'
-        src = re.sub(CADASTRE_PROG, r'cadastre \1', src)
+        src = src.lower()
+        src = re.sub(CADASTRE_PROG, r'\2', src)
         if src not in sources:
             sources[src] = 0
         sources[src] += 1
