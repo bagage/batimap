@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import datetime
+import json
 import logging
 import os
 import re
@@ -195,6 +196,12 @@ def get_vectorized_insee(department):
 def count_sources(datatype, insee):
     logging.info('Count {} sources for {} (overpass-api.de)'.format(datatype, insee))
 
+    json_path = path.join(DATA_PATH, '{}.{}.json'.format(insee, datatype))
+    if path.exists(json_path):
+        logging.debug('Use cache file {}.{}.json'.format(insee, datatype))
+        with open(json_path) as fd:
+            return json.load(fd)
+
     if datatype == 'building':
         request = """[out:json];
             area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
@@ -221,6 +228,10 @@ def count_sources(datatype, insee):
         if src not in sources:
             sources[src] = 0
         sources[src] += 1
+
+    logging.debug('Write cache file {}.{}.json'.format(insee, datatype))
+    with open(json_path, 'w') as fd:
+        fd.write(json.dumps(sources))
 
     return sources
 
