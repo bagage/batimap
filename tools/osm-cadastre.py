@@ -5,13 +5,14 @@ import logging
 import os
 import re
 import sys
+
 from os import path
 
 import geojson
 import overpass
 import requests
 from colour import Color
-from geojson import Feature, Polygon
+from geojson import Feature, Polygon, FeatureCollection
 
 DATA_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 STATS_PATH = path.join(DATA_PATH, 'stats')
@@ -23,6 +24,20 @@ CADASTRE_PROG = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
 
 API = overpass.API()
 
+
+def init_colors():
+    # Retrieve the last cadastre import for the given insee municipality.
+    # 2009 and below should be red,
+    # current year should be green
+    # previous year should be orange
+    # below 2009 and previous year, use a color gradient
+    this_year = datetime.datetime.now().year
+    colors = list(Color('red').range_to(Color('orange'), this_year - 2009))
+    colors.append(Color('green'))
+    return dict(zip(range(2009, this_year + 1), [c.hex for c in colors]))
+
+
+COLORS = init_colors()
 
 
 def pseudo_distance(p1, p2):
@@ -59,41 +74,30 @@ def lines_to_polygon(ways):
     return border
 
 
-def color_for_insee(department, insee):
-    colors = {
-        "RASTER": "Black",
-        None: "Gray",
-    }
+def color_by_stats(building_src, relation_src):
+    dates = sorted(building_src.items(), key=lambda t: t[1])
+    dates.reverse()
+    try:
+        date = int(dates[0][0])
+    except:
+        logging.warning("Unknown date '{}'! Using gray.".format(dates[0][0]));
+        return 'gray'
 
-    stats_path = path.join(STATS_PATH, '{}-statistics.csv'.format(department))
-    if not os.path.isfile(stats_path):
-        logging.warning("{} does not exist, cannot find color for {}".format(stats_path, insee))
-        return colors[None]
+    if date <= 2009:
+        return '#f00'
+    else:
+        return COLORS[date]
 
-    with open(stats_path, 'r') as file:
-        for line in file:
-            fields = [x.strip() for x in line.split("\t")]
-            if insee == fields[0]:
-                date = fields[5]
 
-                # Retrieve the last cadastre import for the given insee municipality.
-                # 2009 and below should be red,
-                # current year should be green
-                # previous year should be orange
-                # below 2009 and previous year, use a color gradient
-                this_year = datetime.datetime.now().year
-                gradient_colors = list(Color("red").range_to(Color("orange"), this_year - 2009))
-                for year in range(2009, this_year):
-                    colors[str(year)] = gradient_colors[year - 2009].hex
-                colors[str(this_year)] = "Green"
-
-                if date in colors:
-                    return colors[date]
-                else:
-                    logging.warning("Unknown date '{}'! Using gray.".format(date));
-                    return "Gray"
-
-    return colors[None]
+def stats_to_txt(stats):
+    out = ''
+    dates = sorted(stats.items(), key=lambda t: t[1])
+    dates.reverse()
+    total = sum(stats.values())
+    for date, val in dates:
+        out += '{}\t{} ({:.1%})\n'.format(date, val, val/total)
+    out += 'Total\t{}\n'.format(total)
+    return out
 
 
 def build_municipality_list(department, vectorized):
@@ -112,6 +116,8 @@ def build_municipality_list(department, vectorized):
     features = []
 
     txt_content = ''
+    department_stats = []
+
     for relation in response.get('elements'):
         outer_ways = []
         for member in relation.get('members'):
@@ -125,16 +131,28 @@ def build_municipality_list(department, vectorized):
         insee = tags.get('ref:INSEE')
         name = tags.get('name')
         postcode = tags.get('addr:postcode')
+        if insee in vectorized:
+            vector = 'vector'
+            building_src = count_sources('building', insee)
+            relation_src = count_sources('relation', insee)
+            color = color_by_stats(building_src, relation_src)
+            description = 'Building:\n{}\nRelation:\n{}'.format(stats_to_txt(building_src), stats_to_txt(relation_src))
+        else:
+            vector = 'raster'
+            color = 'black'
+            description = 'Raster'
 
         municipality_border = Feature(
             properties={
                 'insee': insee,
                 'name': name,
                 'postcode': postcode,
+                'description': description,
                 '_storage_options': {
-                    'color': color_for_insee(department, insee),
+                    'color': color,
                     'weight': '1',
                     'fillOpacity': '0.5',
+                    'labelHover': True,
                 },
             },
         )
@@ -144,14 +162,14 @@ def build_municipality_list(department, vectorized):
         else:
             municipality_border.geometry = Polygon([border])
 
-        vector = 'vector' if insee in vectorized else 'raster'
+        department_stats.append(municipality_border)
         txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
 
-        # write geojson
-        logging.debug('Write {}.geojson'.format(insee))
-        geojson_path = path.join(BORDER_PATH, '{}.geojson'.format(insee))
-        with open(geojson_path, 'w') as fd:
-            fd.write(geojson.dumps(municipality_border))
+    # write geojson
+    logging.debug('Write {}.geojson'.format(department))
+    geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
+    with open(geojson_path, 'w') as fd:
+        fd.write(geojson.dumps(FeatureCollection(department_stats)))
 
     # write department geojson
     dep_geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
