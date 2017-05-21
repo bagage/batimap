@@ -21,6 +21,9 @@ os.makedirs(BORDER_PATH, exist_ok=True)
 
 CADASTRE_PROG = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
 
+API = overpass.API()
+
+
 
 def pseudo_distance(p1, p2):
     return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
@@ -96,17 +99,15 @@ def color_for_insee(department, insee):
 def build_municipality_list(department, vectorized):
     """Build municipality list
     """
-    api = overpass.API()
     logging.info('Fetch cities boundary for departement {} (overpass-api.de)'.format(department))
-    response = api.Get('''[out:json];
+    request = """[out:json];
         relation
-            [boundary="administrative"]
-            [admin_level=8]
-            ["ref:INSEE"~"{}..."];
-        out geom qt;'''.format(department),
-        responseformat="json",
-        build=False,
-    )
+          [boundary="administrative"]
+          [admin_level=8]
+          ["ref:INSEE"~"{}..."];
+        out geom qt;""".format(department)
+
+    response = API.Get(request, responseformat="json", build=False)
 
     features = []
 
@@ -192,8 +193,7 @@ def count_sources(datatype, insee):
             );
             out tags qt;""".format(insee)
 
-    api = overpass.API()
-    response = api.Get(request, responseformat="json", build=False)
+    response = API.Get(request, responseformat="json", build=False)
 
     sources = {}
     for element in response.get('elements'):
