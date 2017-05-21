@@ -213,8 +213,8 @@ def count_sources(datatype, insee):
     elif datatype == 'relation':
         request = """[out:json];
             area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
-            ( relation[type='associatedStreet'](area.a);
-              node['addr:housenumber']['addr:street'](area.a);
+            ( way['building'](area.a);
+              node(w)['addr:housenumber'];
             );
             out tags qt;""".format(insee)
 
