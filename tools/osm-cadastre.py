@@ -123,7 +123,10 @@ def build_municipality_list(department, vectorized):
     txt_content = ''
     department_stats = []
 
-    for relation in response.get('elements'):
+    relations = response.get('elements')
+    relations.sort(key=lambda x: x.get('tags').get('ref:INSEE'))
+
+    for relation in relations:
         outer_ways = []
         for member in relation.get('members'):
             if member.get('role') == 'outer':
@@ -175,11 +178,6 @@ def build_municipality_list(department, vectorized):
     geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
     with open(geojson_path, 'w') as fd:
         fd.write(geojson.dumps(FeatureCollection(department_stats)))
-
-    # write department geojson
-    dep_geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
-    with open(dep_geojson_path, 'w') as fd:
-        fd.write(geojson.dumps(FeatureCollection(features)))
 
     # write txt
     log.debug('Write {}-municipality.txt'.format(department))
