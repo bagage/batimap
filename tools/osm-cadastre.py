@@ -198,6 +198,10 @@ def get_vectorized_insee(department):
     log.info('Fetch list of vectorized cities in department {}'.format(department))
     vectorized = []
     response = requests.get('http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(department.zfill(3)))
+    if response.status_code >= 400:
+        log.critical('Unknown department {}'.format(department))
+        exit(1)
+
     for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
         if int(department) > 900:
             vectorized.append('{}{}'.format(dep, code[3:]))
@@ -234,7 +238,7 @@ def count_sources(datatype, insee, force_download):
     try:
         response = API.Get(request, responseformat='json', build=False)
     except overpass.errors.ServerRuntimeError as e:
-        log.error("Fail to query overpass. Consider reporting the bug: {}".format(e))
+        log.critical("Fail to query overpass. Consider reporting the bug: {}".format(e))
         exit(1)
 
     sources = {}
@@ -297,7 +301,7 @@ def generate(args):
             break
 
     if 'ville' not in data:
-        log.error('Cannot find city for {}.'.format(args.insee))
+        log.critical('Cannot find city for {}.'.format(args.insee))
         exit(1)
 
     #  Then we invoke Cadastre generation
