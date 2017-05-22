@@ -9,6 +9,8 @@ import sys
 import logging
 from colorlog import ColoredFormatter
 
+import  argparse
+
 from os import path
 
 import geojson
@@ -105,16 +107,17 @@ def stats_to_txt(stats):
     return out
 
 
-def build_municipality_list(department, vectorized):
+def build_municipality_list(department, vectorized, insee=None, force_download=False):
     """Build municipality list
     """
-    log.info('Fetch cities boundary for departement {} (via {})'.format(department, API.endpoint))
+    department = department.zfill(2)
+    log.info('Fetch cities boundary for department {} (via {})'.format(department, API.endpoint))
     request = """[out:json];
         relation
           [boundary="administrative"]
           [admin_level=8]
-          ["ref:INSEE"~"{}..."];
-        out geom qt;""".format(department)
+          ["ref:INSEE"~"^{}"];
+        out geom qt;""".format(insee if insee is not None else department)
 
     response = API.Get(request, responseformat='json', build=False)
 
@@ -141,8 +144,8 @@ def build_municipality_list(department, vectorized):
         postcode = tags.get('addr:postcode')
         if insee in vectorized:
             vector = 'vector'
-            building_src = count_sources('building', insee)
-            relation_src = count_sources('relation', insee)
+            building_src = count_sources('building', insee, force_download)
+            relation_src = count_sources('relation', insee, force_download)
             color = color_by_stats(building_src, relation_src)
             description = 'Building:\n{}\nRelation:\n{}'.format(stats_to_txt(building_src), stats_to_txt(relation_src))
         else:
@@ -177,7 +180,7 @@ def build_municipality_list(department, vectorized):
     log.debug('Write {}.geojson'.format(department))
     geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
     with open(geojson_path, 'w') as fd:
-        fd.write(geojson.dumps(FeatureCollection(department_stats)))
+        fd.write(geojson.dumps(FeatureCollection(department_stats), indent=4))
 
     # write txt
     log.debug('Write {}-municipality.txt'.format(department))
@@ -189,17 +192,17 @@ def build_municipality_list(department, vectorized):
 def get_vectorized_insee(department):
     log.info('Fetch list of vectorized cities in department {}'.format(department))
     vectorized = []
-    response = requests.get('http://cadastre.openstreetmap.fr/data/0{0}/0{0}-liste.txt'.format(department))
+    response = requests.get('http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(department.zfill(3)))
     for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
         vectorized.append('{}{}'.format(dep[1:], code[2:]))
     return vectorized
 
 
-def count_sources(datatype, insee):
+def count_sources(datatype, insee, force_download):
     log.info('Count {} sources for {} (via {})'.format(datatype, insee, API.endpoint))
 
     json_path = path.join(DATA_PATH, '{}.{}.json'.format(insee, datatype))
-    if path.exists(json_path):
+    if not force_download and path.exists(json_path):
         log.debug('Use cache file {}.{}.json'.format(insee, datatype))
         with open(json_path) as fd:
             return json.load(fd)
@@ -233,7 +236,7 @@ def count_sources(datatype, insee):
 
     log.debug('Write cache file {}.{}.json'.format(insee, datatype))
     with open(json_path, 'w') as fd:
-        fd.write(json.dumps(sources))
+        fd.write(json.dumps(sources, indent=4))
 
     return sources
 
@@ -254,12 +257,29 @@ def init_log():
         logging.basicConfig(format='%(asctime)s %(message)s', datefmt="%H:%M:%S")
         log = logging
 
+def stats(args):
+    if args.department:
+        vectorized = get_vectorized_insee(args.department)
+        build_municipality_list(args.department.zfill(2), vectorized, force_download=args.force)
+    elif args.insee:
+        vectorized = {}
+        for insee in args.insee:
+            department = insee[:-3]
+            vectorized[department] = get_vectorized_insee(department)
+            build_municipality_list(department, vectorized[department], insee=insee, force_download=args.force)
+
 
 if __name__ == '__main__':
     init_log()
-    if len(sys.argv) != 2:
-        log.error('Please provide ONE argument: department to treat. Example: {} 26'.format(sys.argv[0]))
-    else:
-        department = sys.argv[1]
-        vectorized = get_vectorized_insee(department)
-        build_municipality_list(department, vectorized)
+
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+    stats_parser = subparsers.add_parser('stats')
+    stats_parser.add_argument('--force', '-f', action='store_true')
+    stats_group = stats_parser.add_mutually_exclusive_group(required=True)
+    stats_group.add_argument( '--department', '-d', type=str)
+    stats_group.add_argument( '--insee', '-i', type=str, nargs='+')
+    stats_group.set_defaults(func=stats)
+
+    args = parser.parse_args()
+    args.func(args)
