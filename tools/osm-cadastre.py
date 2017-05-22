@@ -2,10 +2,12 @@
 
 import datetime
 import json
-import logging
 import os
 import re
 import sys
+
+import logging
+from colorlog import ColoredFormatter
 
 from os import path
 
@@ -21,9 +23,11 @@ BORDER_PATH = path.join(DATA_PATH, 'borders')
 os.makedirs(STATS_PATH, exist_ok=True)
 os.makedirs(BORDER_PATH, exist_ok=True)
 
+log = None
+
 CADASTRE_PROG = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
 
-API = overpass.API(endpoint="http://api.openstreetmap.fr/oapi/interpreter")
+API = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
 
 
 def init_colors():
@@ -81,7 +85,7 @@ def color_by_stats(building_src, relation_src):
     try:
         date = int(dates[0][0])
     except:
-        logging.warning("Unknown date '{}'! Using gray.".format(dates[0][0]));
+        log.warning('Unknown date "{}"! Using gray.'.format(dates[0][0]));
         return 'gray'
 
     if date <= 2009:
@@ -104,7 +108,7 @@ def stats_to_txt(stats):
 def build_municipality_list(department, vectorized):
     """Build municipality list
     """
-    logging.info('Fetch cities boundary for departement {} (via {})'.format(department, API.endpoint))
+    log.info('Fetch cities boundary for departement {} (via {})'.format(department, API.endpoint))
     request = """[out:json];
         relation
           [boundary="administrative"]
@@ -112,7 +116,7 @@ def build_municipality_list(department, vectorized):
           ["ref:INSEE"~"{}..."];
         out geom qt;""".format(department)
 
-    response = API.Get(request, responseformat="json", build=False)
+    response = API.Get(request, responseformat='json', build=False)
 
     features = []
 
@@ -159,7 +163,7 @@ def build_municipality_list(department, vectorized):
         )
         border = lines_to_polygon(outer_ways)
         if not border:
-            logging.warning('{} does not have borders'.format(name))
+            log.warning('{} does not have borders'.format(name))
         else:
             municipality_border.geometry = Polygon([border])
 
@@ -167,7 +171,7 @@ def build_municipality_list(department, vectorized):
         txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
 
     # write geojson
-    logging.debug('Write {}.geojson'.format(department))
+    log.debug('Write {}.geojson'.format(department))
     geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
     with open(geojson_path, 'w') as fd:
         fd.write(geojson.dumps(FeatureCollection(department_stats)))
@@ -178,14 +182,14 @@ def build_municipality_list(department, vectorized):
         fd.write(geojson.dumps(FeatureCollection(features)))
 
     # write txt
-    logging.debug('Write {}-municipality.txt'.format(department))
+    log.debug('Write {}-municipality.txt'.format(department))
     txt_path = path.join(STATS_PATH, '{}-municipality.txt'.format(department))
     with open(txt_path, 'w') as fd:
         fd.write(txt_content)
 
 
 def get_vectorized_insee(department):
-    logging.info('Fetch list of vectorized cities in department {}'.format(department))
+    log.info('Fetch list of vectorized cities in department {}'.format(department))
     vectorized = []
     response = requests.get('http://cadastre.openstreetmap.fr/data/0{0}/0{0}-liste.txt'.format(department))
     for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
@@ -194,11 +198,11 @@ def get_vectorized_insee(department):
 
 
 def count_sources(datatype, insee):
-    logging.info('Count {} sources for {} (via {})'.format(datatype, insee, API.endpoint))
+    log.info('Count {} sources for {} (via {})'.format(datatype, insee, API.endpoint))
 
     json_path = path.join(DATA_PATH, '{}.{}.json'.format(insee, datatype))
     if path.exists(json_path):
-        logging.debug('Use cache file {}.{}.json'.format(insee, datatype))
+        log.debug('Use cache file {}.{}.json'.format(insee, datatype))
         with open(json_path) as fd:
             return json.load(fd)
 
@@ -218,7 +222,7 @@ def count_sources(datatype, insee):
             );
             out tags qt;""".format(insee)
 
-    response = API.Get(request, responseformat="json", build=False)
+    response = API.Get(request, responseformat='json', build=False)
 
     sources = {}
     for element in response.get('elements'):
@@ -229,17 +233,34 @@ def count_sources(datatype, insee):
             sources[src] = 0
         sources[src] += 1
 
-    logging.debug('Write cache file {}.{}.json'.format(insee, datatype))
+    log.debug('Write cache file {}.{}.json'.format(insee, datatype))
     with open(json_path, 'w') as fd:
         fd.write(json.dumps(sources))
 
     return sources
 
 
+def init_log():
+    global log
+    LOG_LEVEL = logging.INFO
+    logging.root.setLevel(LOG_LEVEL)
+    if sys.stdout.isatty():
+        formatter = ColoredFormatter('%(asctime)s %(log_color)s%(message)s%(reset)s', "%H:%M:%S")
+        stream = logging.StreamHandler()
+        stream.setLevel(LOG_LEVEL)
+        stream.setFormatter(formatter)
+        log = logging.getLogger('pythonConfig')
+        log.setLevel(LOG_LEVEL)
+        log.addHandler(stream)
+    else:
+        logging.basicConfig(format='%(asctime)s %(message)s', datefmt="%H:%M:%S")
+        log = logging
+
+
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+    init_log()
     if len(sys.argv) != 2:
-        logging.error("Please provide ONE argument: department to treat. Example: {} 26".format(sys.argv[0]))
+        log.error('Please provide ONE argument: department to treat. Example: {} 26'.format(sys.argv[0]))
     else:
         department = sys.argv[1]
         vectorized = get_vectorized_insee(department)
