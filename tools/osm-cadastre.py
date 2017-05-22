@@ -195,7 +195,10 @@ def get_vectorized_insee(department):
     vectorized = []
     response = requests.get('http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(department.zfill(3)))
     for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
-        vectorized.append('{}{}'.format(dep[1:], code[2:]))
+        if int(department) > 900:
+            vectorized.append('{}{}'.format(dep, code[3:]))
+        else:
+            vectorized.append('{}{}'.format(str(int(dep)), code[2:]))
     return vectorized
 
 
