@@ -146,6 +146,7 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
         insee = tags.get('ref:INSEE')
         name = tags.get('name')
         postcode = tags.get('addr:postcode')
+
         if insee in vectorized:
             vector = 'vector'
             building_src = count_sources('building', insee, force_download)
@@ -230,7 +231,11 @@ def count_sources(datatype, insee, force_download):
             );
             out tags qt;""".format(insee)
 
-    response = API.Get(request, responseformat='json', build=False)
+    try:
+        response = API.Get(request, responseformat='json', build=False)
+    except overpass.errors.ServerRuntimeError as e:
+        log.error("Fail to query overpass. Consider reporting the bug: {}".format(e))
+        exit(1)
 
     sources = {}
     for element in response.get('elements'):
