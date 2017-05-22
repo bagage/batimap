@@ -5,6 +5,7 @@ import json
 import os
 import re
 import sys
+import subprocess
 
 import logging
 from colorlog import ColoredFormatter
@@ -234,7 +235,7 @@ def count_sources(datatype, insee, force_download):
             sources[src] = 0
         sources[src] += 1
 
-    log.debug('Write cache file {}.{}.json'.format(insee, datatype))
+    log.debug('Write cache file {}'.format(json_path))
     with open(json_path, 'w') as fd:
         fd.write(json.dumps(sources, indent=4))
 
@@ -243,7 +244,7 @@ def count_sources(datatype, insee, force_download):
 
 def init_log():
     global log
-    LOG_LEVEL = logging.INFO
+    LOG_LEVEL = logging.DEBUG
     logging.root.setLevel(LOG_LEVEL)
     if sys.stdout.isatty():
         formatter = ColoredFormatter('%(asctime)s %(log_color)s%(message)s%(reset)s', "%H:%M:%S")
@@ -268,18 +269,54 @@ def stats(args):
             vectorized[department] = get_vectorized_insee(department)
             build_municipality_list(department, vectorized[department], insee=insee, force_download=args.force)
 
+def generate(args):
+    url = 'http://cadastre.openstreetmap.fr'
+    data = {
+        'dep': args.insee[:-3].zfill(3),
+        'type': 'bati',
+        'force': False
+    }
+
+    # First we need to get Cadastre name for the city (which is different from the OSM one)
+    r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}-liste.txt".format(data['dep'], data['dep']))
+    for line in r.text.split('\n'):
+        if '{} "'.format(args.insee[3:]) in line:
+            linesplit = line.split(' ')
+            data['ville'] = "{}-{}".format(linesplit[1],linesplit[2])
+            break
+
+    if 'ville' not in data:
+        log.error('Cannot find city for {}.'.format(args.insee))
+        exit(1)
+
+    #  Then we invoke Cadastre generation
+    response = subprocess.Popen(['curl', '-N', url, '-d', '&'.join(["{}={}".format(k, v) for (k,v) in data.items()])])
+    response.wait()
+
+    r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
+
+    output_path = path.join(DATA_PATH, "{}.tar.bz2".format(data['ville']))
+    log.debug('Write archive file {}'.format(output_path))
+    with open(output_path, 'wb') as fd:
+        fd.write(r.content)
 
 if __name__ == '__main__':
     init_log()
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
+    subparsers.required = True
+    subparsers.dest = 'command'
     stats_parser = subparsers.add_parser('stats')
     stats_parser.add_argument('--force', '-f', action='store_true')
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
     stats_group.add_argument( '--department', '-d', type=str)
     stats_group.add_argument( '--insee', '-i', type=str, nargs='+')
     stats_group.set_defaults(func=stats)
+
+    generate_parser = subparsers.add_parser('generate')
+    generate_parser.add_argument( '--insee', '-i', type=str, required=True)
+    generate_parser.set_defaults(func=generate)
 
     args = parser.parse_args()
     args.func(args)
