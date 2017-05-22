@@ -88,7 +88,10 @@ def color_by_stats(building_src, relation_src):
     try:
         date = int(dates[0][0])
     except:
-        log.warning('Unknown date "{}"! Using gray.'.format(dates[0][0]));
+        if len(dates) > 0:
+            log.warning('Unknown date "{}"! Using gray.'.format(dates[0][0]));
+        else:
+            log.warning('No buildings found! Using gray.');
         return 'gray'
 
     if date <= 2009:
