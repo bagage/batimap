@@ -121,7 +121,7 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
           [boundary="administrative"]
           [admin_level=8]
           ["ref:INSEE"~"^{}"];
-        out geom qt;""".format(insee if insee is not None else department)
+        out geom qt;""".format(insee if insee else department)
 
     response = API.Get(request, responseformat='json', build=False)
 
