@@ -30,7 +30,7 @@ log = None
 
 CADASTRE_PROG = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
 
-API = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
+API = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter', timeout=100)
 
 
 def init_colors():
