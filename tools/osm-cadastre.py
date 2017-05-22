@@ -203,7 +203,7 @@ def get_vectorized_insee(department):
         exit(1)
 
     for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
-        if int(department) > 900:
+        if int(department) > 95:
             vectorized.append('{}{}'.format(dep, code[3:]))
         else:
             vectorized.append('{}{}'.format(str(int(dep)), code[2:]))
@@ -280,7 +280,10 @@ def stats(args):
     elif args.insee:
         vectorized = {}
         for insee in args.insee:
-            department = insee[:-3]
+            if int(insee) > 96000:
+                department =  insee[:-2]
+            else:
+                department =  insee[:-3]
             vectorized[department] = get_vectorized_insee(department)
             build_municipality_list(department, vectorized[department], insee=insee, force_download=args.force)
 
