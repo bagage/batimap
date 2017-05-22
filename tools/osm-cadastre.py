@@ -23,7 +23,7 @@ os.makedirs(BORDER_PATH, exist_ok=True)
 
 CADASTRE_PROG = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
 
-API = overpass.API()
+API = overpass.API(endpoint="http://api.openstreetmap.fr/oapi/interpreter")
 
 
 def init_colors():
@@ -104,7 +104,7 @@ def stats_to_txt(stats):
 def build_municipality_list(department, vectorized):
     """Build municipality list
     """
-    logging.info('Fetch cities boundary for departement {} (overpass-api.de)'.format(department))
+    logging.info('Fetch cities boundary for departement {} (via {})'.format(department, API.endpoint))
     request = """[out:json];
         relation
           [boundary="administrative"]
@@ -194,7 +194,7 @@ def get_vectorized_insee(department):
 
 
 def count_sources(datatype, insee):
-    logging.info('Count {} sources for {} (overpass-api.de)'.format(datatype, insee))
+    logging.info('Count {} sources for {} (via {})'.format(datatype, insee, API.endpoint))
 
     json_path = path.join(DATA_PATH, '{}.{}.json'.format(insee, datatype))
     if path.exists(json_path):
