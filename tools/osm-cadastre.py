@@ -111,11 +111,16 @@ def stats_to_txt(stats):
     return out
 
 
-def build_municipality_list(department, vectorized, insee=None, force_download=False):
-    """Build municipality list
-    """
-    department = department.zfill(2)
+def get_municipality_relations(department, insee=None, force_download=False):
     log.info('Fetch cities boundary for department {} (via {})'.format(department, API.endpoint))
+
+    json_path = path.join(DATA_PATH, '{}-limits.json'.format(department))
+
+    if not force_download and path.exists(json_path):
+        log.debug('Use cache file {}'.format(json_path))
+        with open(json_path) as fd:
+            return json.load(fd)
+
     request = """[out:json];
         relation
           [boundary="administrative"]
@@ -125,15 +130,26 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
 
     response = API.Get(request, responseformat='json', build=False)
 
-    features = []
-
-    txt_content = ''
-    department_stats = []
-
     relations = response.get('elements')
     relations.sort(key=lambda x: x.get('tags').get('ref:INSEE'))
 
-    for relation in relations:
+    log.debug('Write cache file {}'.format(json_path))
+    with open(json_path, 'w') as fd:
+        fd.write(json.dumps(relations))
+
+    return relations
+
+def build_municipality_list(department, vectorized, insee=None, force_download=False):
+    """Build municipality list
+    """
+    department = department.zfill(2)
+
+    features = []
+    txt_content = ''
+    department_stats = []
+
+
+    for relation in get_municipality_relations(department, insee, force_download):
         outer_ways = []
         for member in relation.get('members'):
             if member.get('role') == 'outer':
@@ -196,6 +212,14 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
 
 def get_vectorized_insee(department):
     log.info('Fetch list of vectorized cities in department {}'.format(department))
+    json_path = path.join(DATA_PATH, '{}-cadastre.json'.format(department))
+
+    if path.exists(json_path):
+        log.debug('Use cache file {}'.format(json_path))
+        with open(json_path) as fd:
+            return json.load(fd)
+
+
     vectorized = []
     response = requests.get('http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(department.zfill(3)))
     if response.status_code >= 400:
@@ -207,6 +231,11 @@ def get_vectorized_insee(department):
             vectorized.append('{}{}'.format(dep, code[3:]))
         else:
             vectorized.append('{}{}'.format(str(int(dep)), code[2:]))
+
+    log.debug('Write cache file {}'.format(json_path))
+    with open(json_path, 'w') as fd:
+        fd.write(json.dumps(vectorized, indent=4))
+
     return vectorized
 
 
@@ -215,7 +244,7 @@ def count_sources(datatype, insee, force_download):
 
     json_path = path.join(DATA_PATH, '{}.{}.json'.format(insee, datatype))
     if not force_download and path.exists(json_path):
-        log.debug('Use cache file {}.{}.json'.format(insee, datatype))
+        log.debug('Use cache file {}'.format(json_path))
         with open(json_path) as fd:
             return json.load(fd)
 
