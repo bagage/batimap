@@ -228,8 +228,8 @@ def get_vectorized_insee(department):
         log.critical('Unknown department {}'.format(department))
         exit(1)
 
-    for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
-        if int(department) > 95:
+    for _, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
+        if code.isdigit() and int(code) > 95:
             vectorized.append('{}{}'.format(department, code[3:]))
         else:
             vectorized.append('{}{}'.format(department, code[2:]))
@@ -318,7 +318,7 @@ def stats(args):
     elif args.insee:
         vectorized = {}
         for insee in args.insee:
-            if int(insee) > 96000:
+            if insee.isdigit() and int(insee) > 96000:
                 department =  insee[:-2]
             else:
                 department =  insee[:-3]
