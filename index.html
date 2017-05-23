@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Date du bâti</title>
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"
+    integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ=="
+    crossorigin=""/>
+
+    <style>
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+</head>
+<body>
+
+   <div id="map"></div>
+
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+   <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"
+   integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
+   crossorigin=""></script>
+
+   <script src="http://makinacorpus.github.io/Leaflet.RestoreView/leaflet.restoreview.js"></script>
+
+   <script>
+    var map = L.map('map');
+
+    if (!map.restoreView()) {
+        map.setView([47.651, 2.791], 6);
+    }
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    var layers = []
+
+    var loadgeoJSON = function(filepath) {
+        $.getJSON(filepath, function(json) {
+            layers.push(L.geoJSON(json, {
+                style: function(feature) {
+                    return {color: feature.properties.color};
+                },
+                onEachFeature: function (feature, layer) {
+                   layer.bindPopup(`${feature.properties.insee} - ${feature.properties.name}<br>${feature.properties.description}`);
+                }
+            }).addTo(map));
+        });
+    };
+
+    var onzoom = function(e) {
+        for (var l in layers) map.removeLayer(l);
+        layers = [];
+
+        if (map.getZoom() <= 7) {
+            // what to do?
+
+        } else if (map.getZoom() >= 7 && map.getZoom() <= 10) {
+            // get regions
+        } else if (map.getZoom() >= 11) {
+            for (var i = 1; i < 977; i++) {
+                if (i == 96) i = 971;
+
+                var filepath = './data/stats/' + (i < 10 ? '0' : '') + i + '.geojson';
+                loadgeoJSON(filepath);
+            }
+        }
+    };
+
+    map.on('zoomend', onzoom);
+    onzoom(null);
+</script>
+
+</body>
+</html>
