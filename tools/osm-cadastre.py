@@ -22,9 +22,7 @@ from geojson import Feature, Polygon, FeatureCollection
 
 DATA_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 STATS_PATH = path.join(DATA_PATH, 'stats')
-BORDER_PATH = path.join(DATA_PATH, 'borders')
 os.makedirs(STATS_PATH, exist_ok=True)
-os.makedirs(BORDER_PATH, exist_ok=True)
 
 log = None
 
