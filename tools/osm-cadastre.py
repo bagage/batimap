@@ -201,7 +201,9 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
     log.debug('Write {}.geojson'.format(department))
     geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
     with open(geojson_path, 'w') as fd:
-        fd.write(geojson.dumps(FeatureCollection(department_stats), indent=4))
+        # we should not indent the GeoJSON because it drastically reduce the final size
+        # (x10 or so)
+        fd.write(geojson.dumps(FeatureCollection(department_stats), indent=None))
 
     # write txt
     log.debug('Write {}-municipality.txt'.format(department))
