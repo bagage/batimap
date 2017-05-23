@@ -112,7 +112,7 @@ def stats_to_txt(stats):
 def get_municipality_relations(department, insee=None, force_download=False):
     log.info('Fetch cities boundary for department {} (via {})'.format(department, API.endpoint))
 
-    json_path = path.join(DATA_PATH, '{}-limits.json'.format(department))
+    json_path = path.join(STATS_PATH, '{}-limits.json'.format(department))
 
     if not force_download and path.exists(json_path):
         log.debug('Use cache file {}'.format(json_path))
@@ -212,7 +212,7 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
 
 def get_vectorized_insee(department):
     log.info('Fetch list of vectorized cities in department {}'.format(department))
-    json_path = path.join(DATA_PATH, '{}-cadastre.json'.format(department))
+    json_path = path.join(STATS_PATH, '{}-cadastre.json'.format(department))
 
     if path.exists(json_path):
         log.debug('Use cache file {}'.format(json_path))
