@@ -287,9 +287,16 @@ def count_sources(datatype, insee, force_download):
     return sources
 
 
-def init_log():
+def init_log(args):
+    levels = {
+        "no": logging.CRITICAL,
+        "error": logging.ERROR,
+        "warning": logging.WARNING,
+        "info": logging.INFO,
+        "debug": logging.DEBUG,
+    }
     global log
-    LOG_LEVEL = logging.DEBUG
+    LOG_LEVEL = levels[args.verbose]
     logging.root.setLevel(LOG_LEVEL)
     if sys.stdout.isatty():
         formatter = ColoredFormatter('%(asctime)s %(log_color)s%(message)s%(reset)s', "%H:%M:%S")
@@ -349,9 +356,8 @@ def generate(args):
         fd.write(r.content)
 
 if __name__ == '__main__':
-    init_log()
-
     parser = argparse.ArgumentParser()
+    parser.add_argument( '--verbose', '-v', choices=['debug','info','warning','error','no'], default='info')
     subparsers = parser.add_subparsers()
     subparsers.required = True
     subparsers.dest = 'command'
@@ -367,4 +373,5 @@ if __name__ == '__main__':
     generate_parser.set_defaults(func=generate)
 
     args = parser.parse_args()
+    init_log(args)
     args.func(args)
