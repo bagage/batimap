@@ -211,6 +211,7 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
 
 
 def get_vectorized_insee(department):
+    department = department.zfill(2)
     log.info('Fetch list of vectorized cities in department {}'.format(department))
     json_path = path.join(STATS_PATH, '{}-cadastre.json'.format(department))
 
@@ -228,9 +229,9 @@ def get_vectorized_insee(department):
 
     for dep, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
         if int(department) > 95:
-            vectorized.append('{}{}'.format(dep, code[3:]))
+            vectorized.append('{}{}'.format(department, code[3:]))
         else:
-            vectorized.append('{}{}'.format(str(int(dep)), code[2:]))
+            vectorized.append('{}{}'.format(department, code[2:]))
 
     log.debug('Write cache file {}'.format(json_path))
     with open(json_path, 'w') as fd:
