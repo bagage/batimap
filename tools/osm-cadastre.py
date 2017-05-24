@@ -116,7 +116,7 @@ def get_municipality_relations(department, insee=None, force_download=False):
 
     json_path = path.join(STATS_PATH, '{}-limits.json'.format(department))
 
-    if not force_download and path.exists(json_path):
+    if not force_download and path.exists(json_path) and not insee:
         log.debug('Use cache file {}'.format(json_path))
         with open(json_path) as fd:
             return json.load(fd)
@@ -133,9 +133,10 @@ def get_municipality_relations(department, insee=None, force_download=False):
     relations = response.get('elements')
     relations.sort(key=lambda x: x.get('tags').get('ref:INSEE'))
 
-    log.debug('Write cache file {}'.format(json_path))
-    with open(json_path, 'w') as fd:
-        fd.write(json.dumps(relations))
+    if not insee:
+        log.debug('Write cache file {}'.format(json_path))
+        with open(json_path, 'w') as fd:
+            fd.write(json.dumps(relations))
 
     return relations
 
