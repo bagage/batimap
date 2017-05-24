@@ -140,7 +140,7 @@ def get_municipality_relations(department, insee=None, force_download=False):
 
     return relations
 
-def build_municipality_list(department, vectorized, insee=None, force_download=False):
+def build_municipality_list(department, vectorized, insee=None, force_download=False, umap=False):
     """Build municipality list
     """
     department = department.zfill(2)
@@ -184,19 +184,24 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
             description = 'Raster'
 
         municipality_border = Feature(
-            properties={
+            properties = {
                 'insee': insee,
                 'name': name,
                 'postcode': postcode,
                 'description': description,
-                '_storage_options': {
-                    'color': color,
-                    'weight': '1',
-                    'fillOpacity': '0.5',
-                    'labelHover': True,
-                },
             },
         )
+
+        if umap:
+            municipality_border.properties['_storage_options'] = {
+                'color': color,
+                'weight': '1',
+                'fillOpacity': '0.5',
+                'labelHover': True,
+            }
+        else:
+            municipality_border.properties['color'] = color
+
         border = lines_to_polygon(outer_ways)
         if not border:
             log.warning('{} does not have borders'.format(name))
@@ -351,7 +356,7 @@ def stats(args):
 
     elif args.department:
         vectorized = get_vectorized_insee(args.department)
-        build_municipality_list(args.department.zfill(2), vectorized, force_download=args.force)
+        build_municipality_list(args.department.zfill(2), vectorized, force_download=args.force, umap=args.umap)
     elif args.insee:
         vectorized = {}
         for insee in args.insee:
@@ -360,7 +365,7 @@ def stats(args):
             else:
                 department =  insee[:-3]
             vectorized[department] = get_vectorized_insee(department)
-            build_municipality_list(department, vectorized[department], insee=insee, force_download=args.force)
+            build_municipality_list(department, vectorized[department], insee=insee, force_download=args.force, umap=args.umap)
 
 def generate(args):
     url = 'http://cadastre.openstreetmap.fr'
@@ -401,6 +406,7 @@ if __name__ == '__main__':
     subparsers.required = True
     subparsers.dest = 'command'
     stats_parser = subparsers.add_parser('stats')
+    stats_parser.add_argument('--umap', action='store_true')
     stats_parser.add_argument('--force', '-f', action='store_true')
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
     stats_group.add_argument( '--department', '-d', type=str)
