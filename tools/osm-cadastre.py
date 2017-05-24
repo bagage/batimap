@@ -306,11 +306,11 @@ def init_overpass(args):
 
 def init_log(args):
     levels = {
-        "no": logging.CRITICAL,
-        "error": logging.ERROR,
-        "warning": logging.WARNING,
-        "info": logging.INFO,
-        "debug": logging.DEBUG,
+        'no': logging.CRITICAL,
+        'error': logging.ERROR,
+        'warning': logging.WARNING,
+        'info': logging.INFO,
+        'debug': logging.DEBUG,
     }
     global log
     LOG_LEVEL = levels[args.verbose]
