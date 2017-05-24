@@ -20,7 +20,7 @@ import requests
 from colour import Color
 from geojson import Point, Feature, Polygon, FeatureCollection
 
-import visvalingamwyatt as vw
+import pygeoj
 
 DATA_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 STATS_PATH = path.join(DATA_PATH, 'stats')
@@ -328,7 +328,28 @@ def init_log(args):
         log = logging
 
 def stats(args):
-    if args.department:
+    if args.country:
+        france = []
+        files = [path.join(STATS_PATH, x) for x in os.listdir(STATS_PATH) if x.endswith('.geojson') and x != "france.geojson"]
+        files.sort()
+        counter = 0
+        for json_path in files:
+            counter += 1
+            log.info("{:.2f}% Treating {}".format(100 * counter / len(files), json_path))
+            with open(json_path) as fd:
+                department = geojson.load(fd)
+
+            for city in department.features:
+                if city.geometry:
+                    [x1,x2,y1,y2] = pygeoj.load(data=FeatureCollection([city])).bbox
+                    city.geometry = Polygon([[(x1,y1),(x1,y2),(x2,y2),(x2,y1)]])
+                france.append(city)
+
+        json_path = path.join(STATS_PATH, "france.geojson")
+        with open(json_path, 'w') as fd:
+            fd.write(geojson.dumps(FeatureCollection(france), indent=None))
+
+    elif args.department:
         vectorized = get_vectorized_insee(args.department)
         build_municipality_list(args.department.zfill(2), vectorized, force_download=args.force)
     elif args.insee:
@@ -384,6 +405,7 @@ if __name__ == '__main__':
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
     stats_group.add_argument( '--department', '-d', type=str)
     stats_group.add_argument( '--insee', '-i', type=str, nargs='+')
+    stats_group.add_argument( '--country', '-c', action='store_true')
     stats_group.set_defaults(func=stats)
 
     generate_parser = subparsers.add_parser('generate')
