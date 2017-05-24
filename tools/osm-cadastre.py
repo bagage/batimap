@@ -18,18 +18,18 @@ import geojson
 import overpass
 import requests
 from colour import Color
-from geojson import Feature, Polygon, FeatureCollection
+from geojson import Point, Feature, Polygon, FeatureCollection
+
+import visvalingamwyatt as vw
 
 DATA_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 STATS_PATH = path.join(DATA_PATH, 'stats')
 os.makedirs(STATS_PATH, exist_ok=True)
 
 log = None
+API = None
 
 CADASTRE_PROG = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
-
-API = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter', timeout=100)
-
 
 def init_colors():
     # Retrieve the last cadastre import for the given insee municipality.
@@ -288,6 +288,16 @@ def count_sources(datatype, insee, force_download):
     return sources
 
 
+def init_overpass(args):
+    endpoints = {
+        'overpass.de': 'https://overpass-api.de/api/interpreter',
+        'api.openstreetmap.fr': 'http://api.openstreetmap.fr/oapi/interpreter',
+        'localhost': 'http://localhost:5001/api/interpreter' #default port/url for docker image
+    }
+    global API
+
+    API = overpass.API(endpoint=endpoints[args.overpass], timeout=100)
+
 def init_log(args):
     levels = {
         "no": logging.CRITICAL,
@@ -359,6 +369,7 @@ def generate(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument( '--verbose', '-v', choices=['debug','info','warning','error','no'], default='info')
+    parser.add_argument( '--overpass', choices=['overpass.de','api.openstreetmap.fr','localhost'], default='api.openstreetmap.fr')
     subparsers = parser.add_subparsers()
     subparsers.required = True
     subparsers.dest = 'command'
@@ -375,4 +386,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     init_log(args)
+    init_overpass(args)
     args.func(args)
