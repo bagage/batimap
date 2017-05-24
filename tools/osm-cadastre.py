@@ -149,8 +149,10 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
     txt_content = ''
     department_stats = []
 
-
-    for relation in get_municipality_relations(department, insee, force_download):
+    counter = 0
+    relations = get_municipality_relations(department, insee, force_download)
+    for relation in relations:
+        counter += 1
         outer_ways = []
         for member in relation.get('members'):
             if member.get('role') == 'outer':
@@ -164,6 +166,7 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
         name = tags.get('name')
         postcode = tags.get('addr:postcode')
 
+        log.info("{:.2f}% Treating {} - {}".format(100 * counter / len(relations), insee, name))
         if insee in vectorized:
             vector = 'vector'
             building_src = count_sources('building', insee, force_download)
