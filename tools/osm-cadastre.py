@@ -289,7 +289,7 @@ def count_sources(datatype, insee, force_download):
 
     log.debug('Write cache file {}'.format(json_path))
     with open(json_path, 'w') as fd:
-        fd.write(json.dumps(sources, indent=4))
+        fd.write(json.dumps(sources, sort_keys=True, indent=4))
 
     return sources
 
