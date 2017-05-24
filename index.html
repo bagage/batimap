@@ -30,8 +30,15 @@
    <script src="http://makinacorpus.github.io/Leaflet.RestoreView/leaflet.restoreview.js"></script>
    <script src="https://unpkg.com/@mapbox/leaflet-pip@latest/leaflet-pip.js"></script>
 
+   <script>
+      var module = { exports: {} };
+    </script>
+   <script src="https://unpkg.com/spin@0.0.1"></script>
+   <script src="https://unpkg.com/leaflet-spin@1.1.0/leaflet.spin.min.js"></script>
+
 
    <script>
+
     var map = L.map('map');
 
     if (!map.restoreView()) {
@@ -41,16 +48,17 @@
     L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png').addTo(map);
     var layers = []
 
+
     $('#map').on('click', '.trigger', function() {
         alert("TODO");
     });
 
     var loadgeoJSON = function(filepath) {
-
+        map.spin(true);
         $.getJSON(filepath, function(json) {
             for (r in layers) {
                 if (layers[r].options.filepath == filepath) {
-                    console.warn("already present, skipping!");
+                    map.spin(false);
                     return;
                 }
             }
@@ -65,13 +73,16 @@
                     layer.bindPopup(link);
                 }
             }).addTo(map));
+            map.spin(false);
         });
     };
 
     let france;
+    map.spin(true);
     $.getJSON('./data/stats/france.geojson', function(json) {
         france = L.geoJSON(json);//.addTo(map);
         onmove(null);
+        map.spin(false);
     });
 
     var onmove = function(e) {
@@ -85,15 +96,16 @@
             if (newer.indexOf(path)==-1) newer.push(path);
         }
 
-        if (JSON.stringify(newer) === JSON.stringify(current)) {
-            return;
+        if (JSON.stringify(newer) !== JSON.stringify(current)) {
+            map.spin(true);
+            for (var l in layers) map.removeLayer(layers[l]);
+            layers = [];
+
+            for (var p in newer)
+                loadgeoJSON(newer[p]);
+            map.spin(false);
         }
 
-        for (var l in layers) map.removeLayer(layers[l]);
-        layers = [];
-
-        for (var p in newer)
-            loadgeoJSON(newer[p]);
     };
 
     map.on('moveend', onmove);
