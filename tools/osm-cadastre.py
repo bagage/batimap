@@ -169,8 +169,13 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
         log.info("{:.2f}% Treating {} - {}".format(100 * counter / len(relations), insee, name))
         if insee in vectorized:
             vector = 'vector'
-            building_src = count_sources('building', insee, force_download)
-            relation_src = count_sources('relation', insee, force_download)
+            try:
+                relation_src = count_sources('relation', insee, force_download)
+                building_src = count_sources('building', insee, force_download)
+            except overpass.errors.ServerRuntimeError as e:
+                log.error("Fail to query overpass for {}. Consider reporting the bug: {}. Skipping".format(insee, e))
+                continue
+
             color = color_by_stats(building_src, relation_src)
             description = 'Building:\n{}\nRelation:\n{}'.format(stats_to_txt(building_src), stats_to_txt(relation_src))
         else:
@@ -271,11 +276,7 @@ def count_sources(datatype, insee, force_download):
             );
             out tags qt;""".format(insee)
 
-    try:
-        response = API.Get(request, responseformat='json', build=False)
-    except overpass.errors.ServerRuntimeError as e:
-        log.critical("Fail to query overpass. Consider reporting the bug: {}".format(e))
-        exit(1)
+    response = API.Get(request, responseformat='json', build=False)
 
     sources = {}
     for element in response.get('elements'):
