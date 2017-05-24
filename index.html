@@ -28,6 +28,8 @@
    crossorigin=""></script>
 
    <script src="http://makinacorpus.github.io/Leaflet.RestoreView/leaflet.restoreview.js"></script>
+   <script src="https://unpkg.com/@mapbox/leaflet-pip@latest/leaflet-pip.js"></script>
+
 
    <script>
     var map = L.map('map');
@@ -39,40 +41,62 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var layers = []
 
+    $('#map').on('click', '.trigger', function() {
+        alert("TODO");
+    });
+
     var loadgeoJSON = function(filepath) {
+
         $.getJSON(filepath, function(json) {
+            for (r in layers) {
+                if (layers[r].options.filepath == filepath) {
+                    console.warn("already present, skipping!");
+                    return;
+                }
+            }
             layers.push(L.geoJSON(json, {
+                filepath: filepath,
+
                 style: function(feature) {
                     return {color: feature.properties.color};
                 },
                 onEachFeature: function (feature, layer) {
-                   layer.bindPopup(`${feature.properties.insee} - ${feature.properties.name}<br>${feature.properties.description}`);
+                    var link = `${feature.properties.insee} - ${feature.properties.name}<br>${feature.properties.description}<br><button class="trigger">Refresh</button>`
+                    layer.bindPopup(link);
                 }
             }).addTo(map));
         });
     };
 
-    var onzoom = function(e) {
-        for (var l in layers) map.removeLayer(l);
+    let france;
+    $.getJSON('./data/stats/france.geojson', function(json) {
+        france = L.geoJSON(json);//.addTo(map);
+        onmove(null);
+    });
+
+    var onmove = function(e) {
+        current = []
+        for (var l in layers) current.push(layers[l].options.filepath);
+
+        newer = []
+        var results = leafletPip.pointInLayer(map.getCenter(), france);
+        for (var r in results) {
+            var path = './data/stats/' + results[r].feature.properties.insee.substring(0,2) + '.geojson';
+            if (newer.indexOf(path)==-1) newer.push(path);
+        }
+
+        if (JSON.stringify(newer) === JSON.stringify(current)) {
+            return;
+        }
+
+        for (var l in layers) map.removeLayer(layers[l]);
         layers = [];
 
-        if (map.getZoom() <= 7) {
-            // what to do?
-
-        } else if (map.getZoom() >= 7 && map.getZoom() <= 10) {
-            // get regions
-        } else if (map.getZoom() >= 11) {
-            for (var i = 1; i < 977; i++) {
-                if (i == 96) i = 971;
-
-                var filepath = './data/stats/' + (i < 10 ? '0' : '') + i + '.geojson';
-                loadgeoJSON(filepath);
-            }
-        }
+        for (var p in newer)
+            loadgeoJSON(newer[p]);
     };
 
-    map.on('zoomend', onzoom);
-    onzoom(null);
+    map.on('moveend', onmove);
 </script>
 
 </body>
