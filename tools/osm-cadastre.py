@@ -252,7 +252,7 @@ def get_vectorized_insee(department):
 
 
 def count_sources(datatype, insee, force_download):
-    log.info('Count {} sources for {} (via {})'.format(datatype, insee, API.endpoint))
+    log.debug('Count {} sources for {} (via {})'.format(datatype, insee, API.endpoint))
 
     json_path = path.join(DATA_PATH, '{}.{}.json'.format(insee, datatype))
     if not force_download and path.exists(json_path):
