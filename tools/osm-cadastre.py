@@ -402,7 +402,7 @@ def generate(args):
     # First we need to get Cadastre name for the city (which is different from the OSM one)
     r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}-liste.txt".format(data['dep'], data['dep']))
     for line in r.text.split('\n'):
-        if '{} "'.format(args.insee[3:]) in line:
+        if '{} "'.format(args.insee[:-3]) in line:
             linesplit = line.split(' ')
             data['ville'] = "{}-{}".format(linesplit[1],linesplit[2].replace('"', ''))
 
