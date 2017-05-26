@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import subprocess
+import time
 
 import logging
 from colorlog import ColoredFormatter
@@ -214,10 +215,25 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
     # write geojson
     log.debug('Write {}.geojson'.format(department))
     geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
+    if path.exists( geojson_path ) and insee:
+        department_geojson = geojson.loads( open( geojson_path ).read() )
+        found = False
+        for municipality in department_geojson["features"]:
+            if municipality["properties"]["insee"] == insee:
+                found = True
+                index = department_geojson["features"].index( municipality )
+                department_geojson["features"] = department_geojson["features"][:index] + department_stats + department_geojson["features"][index+1:]
+                break
+        if not found:
+            department_geojson["features"] += department_stats
+
+    else:
+        department_geojson = FeatureCollection(department_stats)
+        
     with open(geojson_path, 'w') as fd:
         # we should not indent the GeoJSON because it drastically reduce the final size
         # (x10 or so)
-        fd.write(geojson.dumps(FeatureCollection(department_stats), indent=None))
+        fd.write(geojson.dumps(department_geojson, indent=None))
 
     # write txt
     log.debug('Write {}-municipality.txt'.format(department))
@@ -281,7 +297,15 @@ def count_sources(datatype, insee, force_download):
             );
             out tags qt;""".format(insee)
 
-    response = API.Get(request, responseformat='json', build=False)
+    for  retry in range(9, 0, -1):
+        try:
+            response = API.Get(request, responseformat='json', build=False)
+            break
+        except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
+            log.warning("Oops : {} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry ) )
+            if retry == 0:
+                raise e
+            time.sleep( 5 * round(( 10 - retry ) / 3) ) # Sleep for n * 5 seconds before a new attempt
 
     sources = {}
     for element in response.get('elements'):
