@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import subprocess
+import time
 
 import logging
 from colorlog import ColoredFormatter
@@ -296,7 +297,15 @@ def count_sources(datatype, insee, force_download):
             );
             out tags qt;""".format(insee)
 
-    response = API.Get(request, responseformat='json', build=False)
+    for  retry in range(9, 0, -1):
+        try:
+            response = API.Get(request, responseformat='json', build=False)
+            break
+        except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
+            log.warning("Oops : {} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry ) )
+            if retry == 0:
+                raise e
+            time.sleep( 5 * round(( 10 - retry ) / 3) ) # Sleep for n * 5 seconds before a new attempt
 
     sources = {}
     for element in response.get('elements'):
