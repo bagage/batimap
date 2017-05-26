@@ -380,7 +380,8 @@ def generate(args):
     for line in r.text.split('\n'):
         if '{} "'.format(args.insee[3:]) in line:
             linesplit = line.split(' ')
-            data['ville'] = "{}-{}".format(linesplit[1],linesplit[2])
+            data['ville'] = "{}-{}".format(linesplit[1],linesplit[2].replace('"', ''))
+
             break
 
     if 'ville' not in data:
