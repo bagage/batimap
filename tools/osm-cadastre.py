@@ -390,10 +390,10 @@ def stats(args):
     elif args.insee:
         vectorized = {}
         for insee in args.insee:
-            if insee.isdigit() and int(insee) > 96000:
-                department = insee[:-2]
-            else:
-                department = insee[-3:]
+            if insee.isdigit():
+                # Format of insee if [0-9]{2-3}[0-9]{3} the first part is the department number, the second the city unique id
+                # We just need to junk the last 3 caracters
+                department = insee[:-3]
             vectorized[department] = get_vectorized_insee(department)
             build_municipality_list(department, vectorized[department], given_insee=insee, force_download=args.force, umap=args.umap)
 
