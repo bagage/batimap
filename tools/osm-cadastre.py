@@ -387,7 +387,7 @@ def stats(args):
             if insee.isdigit() and int(insee) > 96000:
                 department =  insee[:-2]
             else:
-                department =  insee[:-3]
+                department =  insee[-3:]
             vectorized[department] = get_vectorized_insee(department)
             build_municipality_list(department, vectorized[department], given_insee=insee, force_download=args.force, umap=args.umap)
 
