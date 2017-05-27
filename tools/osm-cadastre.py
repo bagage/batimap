@@ -141,7 +141,7 @@ def get_municipality_relations(department, insee=None, force_download=False):
 
     return relations
 
-def build_municipality_list(department, vectorized, insee=None, force_download=False, umap=False):
+def build_municipality_list(department, vectorized, given_insee=None, force_download=False, umap=False):
     """Build municipality list
     """
     department = department.zfill(2)
@@ -151,7 +151,7 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
     department_stats = []
 
     counter = 0
-    relations = get_municipality_relations(department, insee, force_download)
+    relations = get_municipality_relations(department, given_insee, force_download)
     for relation in relations:
         counter += 1
         outer_ways = []
@@ -215,11 +215,11 @@ def build_municipality_list(department, vectorized, insee=None, force_download=F
     # write geojson
     log.debug('Write {}.geojson'.format(department))
     geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
-    if path.exists( geojson_path ) and insee:
+    if path.exists( geojson_path ) and given_insee:
         department_geojson = geojson.loads( open( geojson_path ).read() )
         found = False
         for municipality in department_geojson["features"]:
-            if municipality["properties"]["insee"] == insee:
+            if municipality["properties"]["insee"] == given_insee:
                 found = True
                 index = department_geojson["features"].index( municipality )
                 department_geojson["features"] = department_geojson["features"][:index] + department_stats + department_geojson["features"][index+1:]
@@ -389,7 +389,7 @@ def stats(args):
             else:
                 department =  insee[:-3]
             vectorized[department] = get_vectorized_insee(department)
-            build_municipality_list(department, vectorized[department], insee=insee, force_download=args.force, umap=args.umap)
+            build_municipality_list(department, vectorized[department], given_insee=insee, force_download=args.force, umap=args.umap)
 
 def generate(args):
     url = 'http://cadastre.openstreetmap.fr'
