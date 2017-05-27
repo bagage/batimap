@@ -229,11 +229,11 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
 
     else:
         department_geojson = FeatureCollection(department_stats)
-        
+
     with open(geojson_path, 'w') as fd:
         # we should not indent the GeoJSON because it drastically reduce the final size
         # (x10 or so)
-        fd.write(geojson.dumps(department_geojson, indent=None))
+        fd.write(geojson.dumps(department_geojson, indent=None, sort_keys=True))
 
     # write txt
     log.debug('Write {}-municipality.txt'.format(department))
