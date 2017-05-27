@@ -81,7 +81,7 @@ def lines_to_polygon(ways):
     return border
 
 
-def color_by_stats(building_src, relation_src):
+def color_by_stats(building_src):
     dates = sorted(building_src.items(), key=lambda t: t[1])
     dates.reverse()
     try:
@@ -177,7 +177,7 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
                 log.error("Fail to query overpass for {}. Consider reporting the bug: {}. Skipping".format(insee, e))
                 continue
 
-            color = color_by_stats(building_src, relation_src)
+            color = color_by_stats(building_src)
             description = 'Building:\n{}\nRelation:\n{}'.format(stats_to_txt(building_src), stats_to_txt(relation_src))
         else:
             vector = 'raster'
