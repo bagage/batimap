@@ -6,10 +6,10 @@ import json
 import logging
 import os
 import re
-import subprocess
 import sys
 import time
 
+from contextlib import closing
 from os import path
 
 from colorlog import ColoredFormatter
@@ -420,8 +420,9 @@ def generate(args):
         exit(1)
 
     #  Then we invoke Cadastre generation
-    response = subprocess.Popen(['curl', '-N', url, '-d', '&'.join(["{}={}".format(k, v) for (k, v) in data.items()])])
-    response.wait()
+    with closing(requests.post(url, data=data, stream=True)) as r:
+        for line in r.iter_lines(decode_unicode=True):
+            log.info(line)
 
     r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
 
