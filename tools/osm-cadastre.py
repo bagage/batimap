@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
 
+import argparse
 import datetime
 import json
+import logging
 import os
 import re
-import sys
 import subprocess
+import sys
 import time
-
-import logging
-from colorlog import ColoredFormatter
-
-import  argparse
 
 from os import path
 
-import geojson
-import overpass
-import requests
+from colorlog import ColoredFormatter
+
 from colour import Color
-from geojson import Point, Feature, Polygon, FeatureCollection
+
+import geojson
+from geojson import Feature, FeatureCollection, Polygon
+
+import overpass
 
 import pygeoj
+
+import requests
+
 
 DATA_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 STATS_PATH = path.join(DATA_PATH, 'stats')
@@ -31,6 +34,7 @@ log = None
 API = None
 
 CADASTRE_PROG = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
+
 
 def init_colors():
     # Retrieve the last cadastre import for the given insee municipality.
@@ -89,10 +93,10 @@ def color_by_stats(building_src):
     except:
         if len(dates) > 0:
             if dates[0][0] != "unknown":
-                log.warning('Unknown date "{}"! Using gray.'.format(dates[0][0]));
+                log.warning('Unknown date "{}"! Using gray.'.format(dates[0][0]))
             return 'gray'
         else:
-            log.warning('No buildings found! Using pink.');
+            log.warning('No buildings found! Using pink.')
             return 'pink'
 
     if date <= 2009:
@@ -107,7 +111,7 @@ def stats_to_txt(stats):
     dates.reverse()
     total = sum(stats.values())
     for date, val in dates:
-        out += '{}\t{} ({:.1%})\n'.format(date, val, val/total)
+        out += '{}\t{} ({:.1%})\n'.format(date, val, val / total)
     out += 'Total\t{}\n'.format(total)
     return out
 
@@ -141,12 +145,12 @@ def get_municipality_relations(department, insee=None, force_download=False):
 
     return relations
 
+
 def build_municipality_list(department, vectorized, given_insee=None, force_download=False, umap=False):
     """Build municipality list
     """
     department = department.zfill(2)
 
-    features = []
     txt_content = ''
     department_stats = []
 
@@ -185,7 +189,7 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
             description = 'Raster'
 
         municipality_border = Feature(
-            properties = {
+            properties={
                 'insee': insee,
                 'name': name,
                 'postcode': postcode,
@@ -215,14 +219,14 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
     # write geojson
     log.debug('Write {}.geojson'.format(department))
     geojson_path = path.join(STATS_PATH, '{}.geojson'.format(department))
-    if path.exists( geojson_path ) and given_insee:
-        department_geojson = geojson.loads( open( geojson_path ).read() )
+    if path.exists(geojson_path) and given_insee:
+        department_geojson = geojson.loads(open(geojson_path).read())
         found = False
         for municipality in department_geojson["features"]:
             if municipality["properties"]["insee"] == given_insee:
                 found = True
-                index = department_geojson["features"].index( municipality )
-                department_geojson["features"] = department_geojson["features"][:index] + department_stats + department_geojson["features"][index+1:]
+                index = department_geojson["features"].index(municipality)
+                department_geojson["features"] = department_geojson["features"][:index] + department_stats + department_geojson["features"][index + 1:]
                 break
         if not found:
             department_geojson["features"] += department_stats
@@ -251,7 +255,6 @@ def get_vectorized_insee(department):
         log.debug('Use cache file {}'.format(json_path))
         with open(json_path) as fd:
             return json.load(fd)
-
 
     vectorized = []
     response = requests.get('http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(department.zfill(3)))
@@ -297,15 +300,16 @@ def count_sources(datatype, insee, force_download):
             );
             out tags qt;""".format(insee)
 
-    for  retry in range(9, 0, -1):
+    for retry in range(9, 0, -1):
         try:
             response = API.Get(request, responseformat='json', build=False)
             break
         except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
-            log.warning("Oops : {} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry ) )
+            log.warning("Oops : {} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry))
             if retry == 0:
                 raise e
-            time.sleep( 5 * round(( 10 - retry ) / 3) ) # Sleep for n * 5 seconds before a new attempt
+            # Sleep for n * 5 seconds before a new attempt
+            time.sleep(5 * round((10 - retry) / 3))
 
     sources = {}
     for element in response.get('elements'):
@@ -327,11 +331,12 @@ def init_overpass(args):
     endpoints = {
         'overpass.de': 'https://overpass-api.de/api/interpreter',
         'api.openstreetmap.fr': 'http://api.openstreetmap.fr/oapi/interpreter',
-        'localhost': 'http://localhost:5001/api/interpreter' #default port/url for docker image
+        'localhost': 'http://localhost:5001/api/interpreter'  # default port/url for docker image
     }
     global API
 
     API = overpass.API(endpoint=endpoints[args.overpass], timeout=100)
+
 
 def init_log(args):
     levels = {
@@ -342,19 +347,20 @@ def init_log(args):
         'debug': logging.DEBUG,
     }
     global log
-    LOG_LEVEL = levels[args.verbose]
-    logging.root.setLevel(LOG_LEVEL)
+    log_level = levels[args.verbose]
+    logging.root.setLevel(log_level)
     if sys.stdout.isatty():
         formatter = ColoredFormatter('%(asctime)s %(log_color)s%(message)s%(reset)s', "%H:%M:%S")
         stream = logging.StreamHandler()
-        stream.setLevel(LOG_LEVEL)
+        stream.setLevel(log_level)
         stream.setFormatter(formatter)
         log = logging.getLogger('pythonConfig')
-        log.setLevel(LOG_LEVEL)
+        log.setLevel(log_level)
         log.addHandler(stream)
     else:
         logging.basicConfig(format='%(asctime)s %(message)s', datefmt="%H:%M:%S")
         log = logging
+
 
 def stats(args):
     if args.country:
@@ -370,8 +376,8 @@ def stats(args):
 
             for city in department.features:
                 if city.geometry:
-                    [x1,x2,y1,y2] = pygeoj.load(data=FeatureCollection([city])).bbox
-                    city.geometry = Polygon([[(x1,y1),(x1,y2),(x2,y2),(x2,y1)]])
+                    [x1, x2, y1, y2] = pygeoj.load(data=FeatureCollection([city])).bbox
+                    city.geometry = Polygon([[(x1, y1), (x1, y2), (x2, y2), (x2, y1)]])
                 france.append(city)
 
         json_path = path.join(STATS_PATH, "france.geojson")
@@ -385,11 +391,12 @@ def stats(args):
         vectorized = {}
         for insee in args.insee:
             if insee.isdigit() and int(insee) > 96000:
-                department =  insee[:-2]
+                department = insee[:-2]
             else:
-                department =  insee[-3:]
+                department = insee[-3:]
             vectorized[department] = get_vectorized_insee(department)
             build_municipality_list(department, vectorized[department], given_insee=insee, force_download=args.force, umap=args.umap)
+
 
 def generate(args):
     url = 'http://cadastre.openstreetmap.fr'
@@ -404,7 +411,7 @@ def generate(args):
     for line in r.text.split('\n'):
         if '{} "'.format(args.insee[:-3]) in line:
             linesplit = line.split(' ')
-            data['ville'] = "{}-{}".format(linesplit[1],linesplit[2].replace('"', ''))
+            data['ville'] = "{}-{}".format(linesplit[1], linesplit[2].replace('"', ''))
 
             break
 
@@ -413,7 +420,7 @@ def generate(args):
         exit(1)
 
     #  Then we invoke Cadastre generation
-    response = subprocess.Popen(['curl', '-N', url, '-d', '&'.join(["{}={}".format(k, v) for (k,v) in data.items()])])
+    response = subprocess.Popen(['curl', '-N', url, '-d', '&'.join(["{}={}".format(k, v) for (k, v) in data.items()])])
     response.wait()
 
     r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
@@ -425,8 +432,8 @@ def generate(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument( '--verbose', '-v', choices=['debug','info','warning','error','no'], default='info')
-    parser.add_argument( '--overpass', choices=['overpass.de','api.openstreetmap.fr','localhost'], default='api.openstreetmap.fr')
+    parser.add_argument('--verbose', '-v', choices=['debug', 'info', 'warning', 'error', 'no'], default='info')
+    parser.add_argument('--overpass', choices=['overpass.de', 'api.openstreetmap.fr', 'localhost'], default='api.openstreetmap.fr')
     subparsers = parser.add_subparsers()
     subparsers.required = True
     subparsers.dest = 'command'
@@ -434,13 +441,13 @@ if __name__ == '__main__':
     stats_parser.add_argument('--umap', action='store_true')
     stats_parser.add_argument('--force', '-f', action='store_true')
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
-    stats_group.add_argument( '--department', '-d', type=str)
-    stats_group.add_argument( '--insee', '-i', type=str, nargs='+')
-    stats_group.add_argument( '--country', '-c', action='store_true')
+    stats_group.add_argument('--department', '-d', type=str)
+    stats_group.add_argument('--insee', '-i', type=str, nargs='+')
+    stats_group.add_argument('--country', '-c', action='store_true')
     stats_group.set_defaults(func=stats)
 
     generate_parser = subparsers.add_parser('generate')
-    generate_parser.add_argument( '--insee', '-i', type=str, required=True)
+    generate_parser.add_argument('--insee', '-i', type=str, required=True)
     generate_parser.set_defaults(func=generate)
 
     args = parser.parse_args()
