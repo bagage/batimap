@@ -430,6 +430,7 @@ def generate(args):
     with open(output_path, 'wb') as fd:
         fd.write(r.content)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', '-v', choices=['debug', 'info', 'warning', 'error', 'no'], default='info')
