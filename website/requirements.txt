@@ -1,0 +1,7 @@
+mypy-lang
+requests
+ujson
+geojson
+flask
+psycopg2
+gunicorn
