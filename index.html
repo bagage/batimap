@@ -53,9 +53,10 @@
         alert("TODO");
     });
 
+    reqs = []
     var loadgeoJSON = function(filepath) {
         map.spin(true);
-        $.getJSON(filepath, function(json) {
+        reqs.push($.getJSON(filepath, function(json) {
             for (r in layers) {
                 if (layers[r].options.filepath == filepath) {
                     map.spin(false);
@@ -74,7 +75,7 @@
                 }
             }).addTo(map));
             map.spin(false);
-        });
+        }));
     };
 
     let france;
@@ -101,8 +102,14 @@
             for (var l in layers) map.removeLayer(layers[l]);
             layers = [];
 
-            for (var p in newer)
+            // remove previous operations
+            for (var r in reqs) {
+                reqs[r].abort()
+            }
+            reqs = [];
+            for (var p in newer) {
                 loadgeoJSON(newer[p]);
+            }
             map.spin(false);
         }
 
