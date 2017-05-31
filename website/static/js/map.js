@@ -3,7 +3,7 @@
  */
 
 $(function () {
-    var map, marker, markerRadius;
+    var map, marker, markerRadius, bgLayer;
     var initPosition = [47.651, 2.791];
     initMap = function () {
         console.log('Map is ready.');
@@ -41,7 +41,7 @@ $(function () {
         });
 
 
-        L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png').addTo(map);
+        bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png').addTo(map);
 
         marker = L.marker(initPosition, {draggable: true})
             .addTo(map).bindPopup('Drag me around');
@@ -90,19 +90,12 @@ $(function () {
     }
 
     var json_req;
-    var layers = [];
 
     getCitiesInView = function (map) {
         console.log("loading cities…");
         // cancel previous request first
         if (json_req)
             json_req.abort();
-
-        // flush previous layers
-        for (layer in layers) {
-            layers[layer].removeFrom(map);
-        }
-        layers = []
 
         var lonNW = map.getBounds().getWest();
         var latNW = map.getBounds().getNorth();
@@ -112,17 +105,30 @@ $(function () {
         $('#filter-group > input[type="checkbox"]:checked').each(function () {
             colors.push($(this).val());
         });
-        if (colors.length == 0) return;
+        if (colors.length == 0) {
+            // flush previous layers
+            map.eachLayer(function(layer) {
+                if (layer !== bgLayer)
+                    layer.removeFrom(map);
+            });
+            return;
+        }
 
         json_req = $.getJSON('/colors/' + lonNW + '/' + latNW + '/' + lonSE + '/' + latSE + '/' + encodeURIComponent(colors.join()), function (geojson) {
-            layers.push(L.geoJson(geojson, {
+            // flush previous layers
+            map.eachLayer(function(layer) {
+                if (layer !== bgLayer)
+                    layer.removeFrom(map);
+            });
+
+            L.geoJson(geojson, {
                 style: function(feature) {
                     return {color: feature.properties.color};
                 },
                 onEachFeature: function (feature, layer) {
                     layer.bindPopup(feature.properties.name || 'Unknown');
                 }
-            }).addTo(map));
+            }).addTo(map);
             console.log("done. Have loaded ", geojson.features.length);
         });
     };
