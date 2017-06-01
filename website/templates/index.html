@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Import du bâti</title>
 
-    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="http://makinacorpus.github.io/Leaflet.RestoreView/leaflet.restoreview.js"></script>
     <script src="{{ url_for('static', filename='js/jquery-3.1.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>
@@ -12,7 +12,7 @@
 
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
 </head>
@@ -21,24 +21,7 @@
 <nav id='filter-group' class='filter-group'></nav>
 <script>
     $(document).ready(function () {
-        var map = initMap();
-
-        var btnLocateMe = L.Control.extend({
-            options: {
-                position: 'bottomleft'
-            },
-            onAdd: function (map) {
-                var container = L.DomUtil.create('a', 'btn-floating btn-large waves-effect waves-light');
-                var icon = L.DomUtil.create('i', 'material-icons locate-me', container);
-
-                container.onclick = function () {
-                    locate($(this));
-                };
-                return container;
-            }
-        });
-        map.addControl(new btnLocateMe());
-        $('i.material-icons.locate-me').text('my_location');
+        initMap();
     });
 </script>
 </body>

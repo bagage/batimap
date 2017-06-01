@@ -3,7 +3,8 @@
  */
 
 $(function () {
-    var map, marker, markerRadius, bgLayer;
+    var map, bgLayer;
+    var json_req;
     var initPosition = [47.651, 2.791];
     initMap = function () {
         console.log('Map is ready.');
@@ -13,6 +14,8 @@ $(function () {
         if (!map.restoreView()) {
             map.setView(initPosition, 6);
         }
+
+        bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png').addTo(map);
 
         // load available colors
         $.getJSON('/colors', function (colors) {
@@ -40,56 +43,10 @@ $(function () {
             getCitiesInView(map);
         });
 
-
-        bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png').addTo(map);
-
-        marker = L.marker(initPosition, {draggable: true})
-            .addTo(map).bindPopup('Drag me around');
-
-        markerRadius = L.circle(initPosition, 2500)
-            .addTo(map);
-        marker.on('drag', function (event) {
-            markerRadius.setLatLng(marker.getLatLng());
-        });
-
-        map.on('locationfound', onLocationFound);
-        map.on('locationerror', onLocationError);
-
         map.on('moveend', function(e) { getCitiesInView(map); });
 
         return map;
     };
-
-    updateMarker = function (radius) {
-        markerRadius.setRadius(radius);
-    };
-
-    var elemLocation = null;
-    locate = function (e) {
-        elemLocation = e;
-        elemLocation.find('i').text('loop');
-        elemLocation.toggleClass('enabled disabled');
-        map.locate({setView: true, maxZoom: 16});
-    };
-
-    function onLocationFound(e) {
-        var radius = e.accuracy / 2;
-
-        L.marker(e.latlng).addTo(map)
-            .bindPopup("You're within " + radius + " meters from this point").openPopup();
-        L.circle(e.latlng, radius).addTo(map);
-
-        if (elemLocation != null) {
-            elemLocation.find('i').text('done');
-            elemLocation.toggleClass('enabled disabled');
-        }
-    }
-
-    function onLocationError(e) {
-        alert("Couldn't get your location!");
-    }
-
-    var json_req;
 
     getCitiesInView = function (map) {
         console.log("loading cities…");
