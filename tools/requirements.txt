@@ -1,6 +1,7 @@
-colour
-overpass
-geojson
-requests
 colorlog
+colour
+geojson
+overpass
+psycopg2
 pygeoj
+requests

@@ -25,6 +25,7 @@ import pygeoj
 
 import requests
 
+import psycopg2
 
 DATA_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 STATS_PATH = path.join(DATA_PATH, 'stats')
@@ -212,6 +213,15 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
             log.warning('{} does not have borders'.format(name))
         else:
             municipality_border.geometry = Polygon([border])
+
+        # TODO: add arguments for database/user/password!
+        try:
+            connection = psycopg2.connect(database='gis', user='docker', password='docker', port=25432, host='localhost')
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO color_city VALUES ('{}', '{}') ON CONFLICT (insee) DO UPDATE SET color = excluded.color".format(insee, color));
+            connection.commit()
+        except:
+            pass
 
         department_stats.append(municipality_border)
         txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
