@@ -86,15 +86,13 @@ def lines_to_polygon(ways):
     return border
 
 
-def color_by_stats(building_src):
-    dates = sorted(building_src.items(), key=lambda t: t[1])
-    dates.reverse()
+def color_by_date(date):
     try:
-        date = int(dates[0][0])
+        date = int(date)
     except:
-        if len(dates) > 0:
-            if dates[0][0] != "unknown":
-                log.warning('Unknown date "{}"! Using gray.'.format(dates[0][0]))
+        if date:
+            if date != "unknown":
+                log.warning('Unknown date "{}"! Using gray.'.format(date))
             return 'gray'
         else:
             log.warning('No buildings found! Using pink.')
@@ -172,7 +170,6 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
         name = tags.get('name')
         postcode = tags.get('addr:postcode')
 
-        log.info("{:.2f}% Treating {} - {}".format(100 * counter / len(relations), insee, name))
         if insee in vectorized:
             vector = 'vector'
             try:
@@ -182,7 +179,9 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
                 log.error("Fail to query overpass for {}. Consider reporting the bug: {}. Skipping".format(insee, e))
                 continue
 
-            color = color_by_stats(building_src)
+            dates = sorted(building_src.items(), key=lambda t: t[1], reverse=True)
+            date = dates[0][0] if len(dates) else None
+            color = color_by_date(date)
             description = 'Building:\n{}\nRelation:\n{}'.format(stats_to_txt(building_src), stats_to_txt(relation_src))
         else:
             vector = 'raster'
@@ -222,6 +221,8 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
             connection.commit()
         except:
             pass
+
+        log.info("{:.2f}% Treated {} - {} (last import: {})".format(100 * counter / len(relations), insee, name, date))
 
         department_stats.append(municipality_border)
         txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
