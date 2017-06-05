@@ -257,6 +257,30 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
         fd.write(txt_content)
 
 
+def get_insee_for(name):
+    log.info("Fetch INSEE for {}".format(name))
+    request = """[out:csv("ref:INSEE";false)];
+        relation
+          [boundary="administrative"]
+          [admin_level=8]
+          ["name"~"^{}$"];
+        out;""".format(name)
+
+    response = API.Get(request, responseformat='csv', build=False)
+    insee = response.strip().split('\n')
+
+    if len(insee[0]) == 0:
+        log.critical("Cannot found city with name {}.".format(name))
+        exit(1)
+    elif len(insee) == 1:
+        return insee[0]
+    else:
+        user_input = ""
+        while user_input not in insee:
+            user_input = input("More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(insee)))
+        return user_input
+
+
 def get_vectorized_insee(department):
     department = department.zfill(2)
     log.info('Fetch list of vectorized cities in department {}'.format(department))
@@ -394,7 +418,6 @@ def stats(args):
         json_path = path.join(STATS_PATH, "france.geojson")
         with open(json_path, 'w') as fd:
             fd.write(geojson.dumps(FeatureCollection(france), indent=None))
-
     elif args.department:
         vectorized = get_vectorized_insee(args.department)
         build_municipality_list(args.department.zfill(2), vectorized, force_download=args.force, umap=args.umap)
@@ -407,12 +430,22 @@ def stats(args):
                 department = insee[:-3]
             vectorized[department] = get_vectorized_insee(department)
             build_municipality_list(department, vectorized[department], given_insee=insee, force_download=args.force, umap=args.umap)
-
+    elif args.name:
+        # if we got a name, we must find the associated INSEE
+        args.insee = []
+        for name in args.name:
+            args.insee.append(get_insee_for(name))
+        stats(args)
+    else:
+        log.critical("Unhandled case")
 
 def generate(args):
+
+    insee = get_insee_for(args.name) if args.name else args.insee
+
     url = 'http://cadastre.openstreetmap.fr'
     data = {
-        'dep': args.insee[:-3].zfill(3),
+        'dep': insee[:-3].zfill(3),
         'type': 'bati',
         'force': False
     }
@@ -420,14 +453,14 @@ def generate(args):
     # First we need to get Cadastre name for the city (which is different from the OSM one)
     r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}-liste.txt".format(data['dep'], data['dep']))
     for line in r.text.split('\n'):
-        if '{} "'.format(args.insee[-3:]) in line:
+        if '{} "'.format(insee[-3:]) in line:
             linesplit = line.split(' ')
             data['ville'] = "{}-{}".format(linesplit[1], linesplit[2].replace('"', ''))
 
             break
 
     if 'ville' not in data:
-        log.critical('Cannot find city for {}.'.format(args.insee))
+        log.critical('Cannot find city for {}.'.format(insee))
         exit(1)
 
     #  Then we invoke Cadastre generation
@@ -454,13 +487,16 @@ if __name__ == '__main__':
     stats_parser.add_argument('--umap', action='store_true')
     stats_parser.add_argument('--force', '-f', action='store_true')
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
+    stats_group.add_argument('--country', '-c', action='store_true')
     stats_group.add_argument('--department', '-d', type=str)
     stats_group.add_argument('--insee', '-i', type=str, nargs='+')
-    stats_group.add_argument('--country', '-c', action='store_true')
+    stats_group.add_argument('--name', '-n', type=str, nargs='+')
     stats_group.set_defaults(func=stats)
 
     generate_parser = subparsers.add_parser('generate')
-    generate_parser.add_argument('--insee', '-i', type=str, required=True)
+    generate_group = generate_parser.add_mutually_exclusive_group(required=True)
+    generate_group.add_argument('--insee', '-i', type=str)
+    generate_group.add_argument('--name', '-n', type=str)
     generate_parser.set_defaults(func=generate)
 
     args = parser.parse_args()
