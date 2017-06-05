@@ -446,7 +446,7 @@ def generate(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', '-v', choices=['debug', 'info', 'warning', 'error', 'no'], default='info')
-    parser.add_argument('--overpass', choices=['overpass.de', 'api.openstreetmap.fr', 'localhost'], default='api.openstreetmap.fr')
+    parser.add_argument('--overpass', choices=['overpass.de', 'api.openstreetmap.fr', 'localhost'], default='overpass.de')
     subparsers = parser.add_subparsers()
     subparsers.required = True
     subparsers.dest = 'command'
