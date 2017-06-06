@@ -4,7 +4,7 @@
         <center lat="44.66898859916428" lon="4.803171157836914"/>
         <scale meter-per-pixel="3.3975307564499286"/>
     </viewport>
-    <layers active="1">
+    <layers active="0">
         <layer index="1" name="Strava cycling and running heatmap" type="imagery" version="0.1" visible="true">
             <name>Strava cycling and running heatmap</name>
             <id>strava_both_heatmap</id>
