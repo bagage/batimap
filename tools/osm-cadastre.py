@@ -468,7 +468,10 @@ def generate(args):
     #  Then we invoke Cadastre generation
     with closing(requests.post(url, data=data, stream=True)) as r:
         for line in r.iter_lines(decode_unicode=True):
-            log.info(line)
+            # only display progression
+            # TODO: improve this…
+            if "pdf" in line:
+                log.info(line)
 
     r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
 
