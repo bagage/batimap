@@ -27,8 +27,10 @@ import requests
 
 import psycopg2
 
-DATA_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
-STATS_PATH = path.join(DATA_PATH, 'stats')
+BASE_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
+DATA_PATH = path.join(BASE_PATH, 'cities')
+STATS_PATH = path.join(BASE_PATH, 'stats')
+os.makedirs(DATA_PATH, exist_ok=True)
 os.makedirs(STATS_PATH, exist_ok=True)
 
 log = None
@@ -470,7 +472,7 @@ def generate(args):
 
     r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
 
-    output_path = path.join(DATA_PATH, "{}.tar.bz2".format(data['ville']))
+    output_path = path.join(BASE_PATH, "{}.tar.bz2".format(data['ville']))
     log.debug('Write archive file {}'.format(output_path))
     with open(output_path, 'wb') as fd:
         fd.write(r.content)
