@@ -124,10 +124,13 @@ def get_municipality_relations(department, insee=None, force_download=False):
 
     json_path = path.join(STATS_PATH, '{}-limits.json'.format(department))
 
-    if not force_download and path.exists(json_path) and not insee:
+    if not force_download and path.exists(json_path):
         log.debug('Use cache file {}'.format(json_path))
         with open(json_path) as fd:
-            return json.load(fd)
+            r = json.load(fd)
+        if insee:
+            return [ x for x in r if x.get('tags').get('ref:INSEE') == insee]
+        return r
 
     request = """[out:json];
         relation
@@ -382,7 +385,7 @@ def init_overpass(args):
     }
     global API
 
-    API = overpass.API(endpoint=endpoints[args.overpass], timeout=100)
+    API = overpass.API(endpoint=endpoints[args.overpass], timeout=300)
 
 
 def init_log(args):
@@ -500,7 +503,7 @@ if __name__ == '__main__':
     subparsers.dest = 'command'
     stats_parser = subparsers.add_parser('stats')
     stats_parser.add_argument('--umap', action='store_true')
-    stats_parser.add_argument('--force', '-f', choices=['all', 'buildings', 'relations'], help='Ignore cache file for item if set')
+    stats_parser.add_argument('--force', '-f', choices=['all', 'buildings', 'relations'], default='', help='Ignore cache file for item if set')
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
     stats_group.add_argument('--country', '-c', action='store_true')
     stats_group.add_argument('--department', '-d', type=str)
