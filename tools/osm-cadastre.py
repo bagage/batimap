@@ -29,6 +29,8 @@ import requests
 
 import psycopg2
 
+import tarfile
+
 BASE_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 DATA_PATH = path.join(BASE_PATH, 'cities')
 STATS_PATH = path.join(BASE_PATH, 'stats')
@@ -129,7 +131,7 @@ def get_municipality_relations(department, insee=None, force_download=False):
         with open(json_path) as fd:
             r = json.load(fd)
         if insee:
-            return [ x for x in r if x.get('tags').get('ref:INSEE') == insee]
+            return [x for x in r if x.get('tags').get('ref:INSEE') == insee]
         return r
 
     request = """[out:json];
@@ -152,6 +154,23 @@ def get_municipality_relations(department, insee=None, force_download=False):
     return relations
 
 
+def get_geometry_for(relation):
+    outer_ways = []
+    for member in relation.get('members'):
+        if member.get('role') == 'outer':
+            way = []
+            for point in member.get('geometry'):
+                way.append((point.get('lon'), point.get('lat')))
+            outer_ways.append(way)
+    border = lines_to_polygon(outer_ways)
+
+    if not border:
+        log.warning('{} does not have borders'.format(relation.get('tags').get('name')))
+        return None
+    else:
+        return Polygon([border])
+
+
 def build_municipality_list(department, vectorized, given_insee=None, force_download=None, umap=False):
     """Build municipality list
     """
@@ -161,16 +180,9 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
     department_stats = []
 
     counter = 0
-    relations = get_municipality_relations(department, given_insee, force_download =="all" )
+    relations = get_municipality_relations(department, given_insee, force_download == "all")
     for relation in relations:
         counter += 1
-        outer_ways = []
-        for member in relation.get('members'):
-            if member.get('role') == 'outer':
-                way = []
-                for point in member.get('geometry'):
-                    way.append((point.get('lon'), point.get('lat')))
-                outer_ways.append(way)
 
         tags = relation.get('tags')
         insee = tags.get('ref:INSEE')
@@ -214,17 +226,17 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
         else:
             municipality_border.properties['color'] = color
 
-        border = lines_to_polygon(outer_ways)
-        if not border:
-            log.warning('{} does not have borders'.format(name))
-        else:
-            municipality_border.geometry = Polygon([border])
+        municipality_border.geometry = get_geometry_for(relation)
 
         # TODO: add arguments for database/user/password!
         try:
             connection = psycopg2.connect(database='gis', user='docker', password='docker', port=25432, host='localhost')
             cursor = connection.cursor()
-            cursor.execute("INSERT INTO color_city VALUES ('{}', '{}') ON CONFLICT (insee) DO UPDATE SET color = excluded.color".format(insee, color));
+            cursor.execute("""
+                INSERT INTO color_city
+                VALUES ('{}', '{}')
+                ON CONFLICT (insee) DO UPDATE SET color = excluded.color
+                """.format(insee, color))
             connection.commit()
         except:
             pass
@@ -262,6 +274,18 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
     txt_path = path.join(STATS_PATH, '{}-municipality.txt'.format(department))
     with open(txt_path, 'w') as fd:
         fd.write(txt_content)
+
+
+def get_bbox_for(insee):
+    """
+    Returns left/right/bottom/top (min and max latitude / longitude) of the
+    bounding box around the INSEE code
+    """
+    relation = get_municipality_relations(insee[:-3], insee, False)
+    city = pygeoj.new()
+    city.add_feature(geometry=get_geometry_for(relation[0]))
+    city.update_bbox()
+    return city.bbox
 
 
 def get_insee_for(name):
@@ -440,11 +464,16 @@ def stats(args):
         vectorized = {}
         for insee in args.insee:
             if insee.isdigit():
-                # Format of insee if [0-9]{2-3}[0-9]{3} the first part is the department number, the second the city unique id
+                # Format of INSEE if [0-9]{2-3}[0-9]{3}
+                # the first part is the department number, the second the city unique id
                 # We just need to junk the last 3 caracters
                 department = insee[:-3]
             vectorized[department] = get_vectorized_insee(department)
-            build_municipality_list(department, vectorized[department], given_insee=insee, force_download=args.force, umap=args.umap)
+            build_municipality_list(department,
+                                    vectorized[department],
+                                    given_insee=insee,
+                                    force_download=args.force,
+                                    umap=args.umap)
     elif args.name:
         # if we got a name, we must find the associated INSEE
         args.insee = []
@@ -454,8 +483,8 @@ def stats(args):
     else:
         log.critical("Unhandled case")
 
-def generate(args):
 
+def generate(args):
     insee = get_insee_for(args.name) if args.name else args.insee
 
     url = 'http://cadastre.openstreetmap.fr'
@@ -471,14 +500,19 @@ def generate(args):
         if '{} "'.format(insee[-3:]) in line:
             linesplit = line.split(' ')
             data['ville'] = "{}-{}".format(linesplit[1], linesplit[2].replace('"', ''))
-
             break
 
     if 'ville' not in data:
         log.critical('Cannot find city for {}.'.format(insee))
         exit(1)
 
-    #  Then we invoke Cadastre generation
+    output_path = path.join(BASE_PATH, data['ville'])
+    # if data already exists, exit
+    if path.exists(output_path):
+        log.info("{} has already been downloaded".format(output_path))
+        return output_path
+
+    # otherwise we invoke Cadastre generation
     with closing(requests.post(url, data=data, stream=True)) as r:
         for line in r.iter_lines(decode_unicode=True):
             # only display progression
@@ -486,12 +520,78 @@ def generate(args):
             if "pdf" in line:
                 log.info(line)
 
+    output_archive_path = path.join(BASE_PATH, "{}.tar.bz2".format(data['ville']))
     r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
-
-    output_path = path.join(BASE_PATH, "{}.tar.bz2".format(data['ville']))
-    log.debug('Write archive file {}'.format(output_path))
-    with open(output_path, 'wb') as fd:
+    log.debug('Write archive file {}'.format(output_archive_path))
+    with open(output_archive_path, 'wb') as fd:
         fd.write(r.content)
+
+    # finally decompress it
+    tar = tarfile.open(output_archive_path)
+    tar.extractall()
+    tar.close()
+
+    return output_path
+
+
+def work(args):
+    insee = get_insee_for(args.name) if args.name else args.insee
+
+    # 1. we should display current state for the city
+    args2 = args
+    args2.insee = [insee]
+    args2.force_download = 'buildings'
+    args2.country = False
+    args2.department = None
+    args2.force = ''
+    args2.umap = ''
+    stats(args2)
+
+    # 2. we must generate data from the Cadastre
+    city_path = generate(args)
+
+    # 3. start JOSM
+    base_url = 'http://0.0.0.0:8111/'
+
+    # a. ensure JOSM is running
+    try:
+        r = requests.get(base_url + 'version')
+    except:
+        # TODO: try opening JOSM via subprocess or similar (but how since probably not in path?)
+        log.critical("Cannot connect to JOSM - is it running?")
+        return
+
+    # b. open Strava and BDOrtho IGN imageries
+    imageries = {
+        "Strava": "http://globalheat.strava.com/tiles/both/color2/{zoom}/{x}/{y}.png",
+        "BDOrtho IGN": "http://proxy-ign.openstreetmap.fr/bdortho/{zoom}/{x}/{y}.jpg"
+    }
+    for k, v in imageries.items():
+        r = requests.get(base_url + 'imagery?title={}&type=tms&url={}'.format(k, v))
+        if r.status_code != 200:
+            log.critical("Cannot add imagery ({}): {}".format(r.status_code, r.text))
+
+    # c. open both houses-simplifie.osm and houses-prediction_segmente.osm files
+    files = [path.join(city_path, x) for x in os.listdir(city_path)
+             if x.endswith('-houses-simplifie.osm') or x.endswith('-houses-prediction_segmente.osm')]
+    files.sort()
+    for x in files:
+        r = requests.get(base_url + 'open_file?filename={}'.format(x))
+        if r.status_code != 200:
+            error = r.text
+            if r.status_code == 403:
+                error = "did you enable 'Open local files' in Remote Control Preferences?"
+
+            log.critical("Cannot launch JOSM ({}): {}".format(r.status_code, error))
+            break
+
+    # d. download city data from OSM as well
+    bbox = get_bbox_for(insee)
+    url = base_url + 'load_and_zoom?new_layer=true&layer_name=Données OSM pour {}&left={}&right={}&bottom={}&top={}'
+    url = url.format(insee, bbox[0], bbox[1], bbox[2], bbox[3])
+    r = requests.get(url)
+    if r.status_code != 200:
+        log.critical("Cannot load OSM data ({}): {}".format(r.status_code, r.text))
 
 
 if __name__ == '__main__':
@@ -516,6 +616,12 @@ if __name__ == '__main__':
     generate_group.add_argument('--insee', '-i', type=str)
     generate_group.add_argument('--name', '-n', type=str)
     generate_parser.set_defaults(func=generate)
+
+    work_parser = subparsers.add_parser('work')
+    work_group = work_parser.add_mutually_exclusive_group(required=True)
+    work_group.add_argument('--insee', '-i', type=str)
+    work_group.add_argument('--name', '-n', type=str)
+    work_parser.set_defaults(func=work)
 
     args = parser.parse_args()
     init_log(args)

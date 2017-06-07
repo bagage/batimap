@@ -32,24 +32,7 @@ function do_work() {
         todoPlugin.dialog.trigger();
     }
 
-    // 3. Add aerial layers
-    var aerials = {
-        "BDOrtho IGN": "http://proxy-ign.openstreetmap.fr/bdortho/{zoom}/{x}/{y}.jpg",
-        "Strava": "http://globalheat.strava.com/tiles/both/color2/{zoom}/{x}/{y}.png"
-    }
-    for (var a in aerials) {
-        var found = false;
-        for (var i = 0; !found && i < josm.layers.length; i++) {
-            found = (josm.layers.get(i).name.contains(a))
-        }
-        if (!found) {
-            var stravaInfo = new org.openstreetmap.josm.data.imagery.ImageryInfo(a, aerials[a], "tms", "", "");
-            var tmsLayer = org.openstreetmap.josm.gui.layer.TMSLayer(stravaInfo)
-            josm.layers.add(tmsLayer);
-        }
-    }
-
-    // 4. select work layer
+    // 3. select work layer
     josm.layers.activeLayer = housesLayer;
 }
 
