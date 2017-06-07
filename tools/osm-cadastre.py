@@ -16,6 +16,8 @@ from colorlog import ColoredFormatter
 
 from colour import Color
 
+import csv
+
 import geojson
 from geojson import Feature, FeatureCollection, Polygon
 
@@ -261,26 +263,34 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
 
 def get_insee_for(name):
     log.info("Fetch INSEE for {}".format(name))
-    request = """[out:csv("ref:INSEE";false)];
-        relation
-          [boundary="administrative"]
-          [admin_level=8]
-          ["name"~"^{}$"];
-        out;""".format(name)
 
-    response = API.Get(request, responseformat='csv', build=False)
-    insee = response.strip().split('\n')
+    csv_path = path.join(STATS_PATH, 'france-cities.csv')
+    if not path.exists(csv_path):
+        request = """
+            area[boundary='administrative'][admin_level='2']['name'='France']->.a;
+            relation[boundary="administrative"][admin_level=8](area.a)
+        """
 
-    if len(insee[0]) == 0:
-        log.critical("Cannot found city with name {}.".format(name))
-        exit(1)
-    elif len(insee) == 1:
-        return insee[0]
-    else:
-        user_input = ""
-        while user_input not in insee:
-            user_input = input("More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(insee)))
-        return user_input
+        response = API.Get(request, responseformat='csv("ref:INSEE","name")')
+        with open(csv_path, 'w') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            for row in response.split("\n"):
+                csv_writer.writerow(row.split("\t"))
+
+    with open(csv_path, 'r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        insee = [x['ref:INSEE'] for x in csv_reader if name == x['name']]
+
+        if len(insee) == 0:
+            log.critical("Cannot found city with name {}.".format(name))
+            exit(1)
+        elif len(insee) == 1:
+            return insee[0]
+        else:
+            user_input = ""
+            while user_input not in insee:
+                user_input = input("More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(insee)))
+            return user_input
 
 
 def get_vectorized_insee(department):
