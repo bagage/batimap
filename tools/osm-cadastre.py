@@ -149,7 +149,7 @@ def get_municipality_relations(department, insee=None, force_download=False):
     return relations
 
 
-def build_municipality_list(department, vectorized, given_insee=None, force_download=False, umap=False):
+def build_municipality_list(department, vectorized, given_insee=None, force_download=None, umap=False):
     """Build municipality list
     """
     department = department.zfill(2)
@@ -158,7 +158,7 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
     department_stats = []
 
     counter = 0
-    relations = get_municipality_relations(department, given_insee, force_download)
+    relations = get_municipality_relations(department, given_insee, force_download =="all" )
     for relation in relations:
         counter += 1
         outer_ways = []
@@ -177,8 +177,8 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
         if insee in vectorized:
             vector = 'vector'
             try:
-                relation_src = count_sources('relation', insee, force_download)
-                building_src = count_sources('building', insee, force_download)
+                relation_src = count_sources('relation', insee, force_download in ["all", "relations"])
+                building_src = count_sources('building', insee, force_download in ["all", "buildings"])
             except overpass.errors.ServerRuntimeError as e:
                 log.error("Fail to query overpass for {}. Consider reporting the bug: {}. Skipping".format(insee, e))
                 continue
@@ -500,7 +500,7 @@ if __name__ == '__main__':
     subparsers.dest = 'command'
     stats_parser = subparsers.add_parser('stats')
     stats_parser.add_argument('--umap', action='store_true')
-    stats_parser.add_argument('--force', '-f', action='store_true')
+    stats_parser.add_argument('--force', '-f', choices=['all', 'buildings', 'relations'], help='Ignore cache file for item if set')
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
     stats_group.add_argument('--country', '-c', action='store_true')
     stats_group.add_argument('--department', '-d', type=str)
