@@ -1,28 +1,33 @@
-# What's in the box
+Ce projet contient plusieurs outils pour simplifier l'import / la mise à jour du bâti sur [OpenStreetMap](https://openstreetmap.org) via l'éditeur [JOSM](https://josm.openstreetmap.de/) et le plugin [Conflation](http://wiki.openstreetmap.org/wiki/JOSM/Plugins/Conflation).
 
- * [josm-custom.jar](./josm-custom.jar): patched JOSM (fix [#14666](https://josm.openstreetmap.de/ticket/14666), highlights `wall=no`, allow unglueing multiple nodes at once)
- * [josm-init.jos](./josm-init.jos): automatically opens Strava and BDOrtho IGN on JOSM startup
- * [plugins](./plugins): patched plugins for a better conflation workflow
-   * [todo.jar](./plugins/todo.jar): add "Mark as selected" button and multilayers support
-   * [conflation.jar](./plugins/conflation.jar): zoom on problem if any
- * [desktop](./desktop): better desktop integration
-   * [josm-mime.xml](./desktop/josm-mime.xml): mime types (.jos, .joz, .osm) to be opened with JOSM
+L'état actuel des données peut être visualisé sur http://overpass.damsy.net (beta).
+
+# Contenu de la boîte
+
+ * [desktop](./desktop): Intégration système pour JOSM
+   * [josm-mime.xml](./desktop/josm-mime.xml): types MIME (`.jos`, `.joz`, `.osm`) à ouvrir avec JOSM
    * [icons](./desktop/icons)
-     * [josm.png](./desktop/icons/josm.png): .jos and .joz files associated icon
-     * [osm.svg](./desktop/icons/osm.svg): .osm files associated icon
-   * [josm.desktop.in](./desktop/josm.desktop.in): JOSM desktop entry
+     * [josm.png](./desktop/icons/josm.png): icône associée aux fichiers `.jos` et `.joz`
+     * [osm.svg](./desktop/icons/osm.svg): icône associée aux fichiers `.osm`
+   * [josm.desktop.in](./desktop/josm.desktop.in): Entrée [desktop](https://standards.freedesktop.org/desktop-entry-spec/latest/) pour JOSM
+ * [josm-custom.jar](./josm-custom.jar): un JOSM modifié (correction du bug [#14666](https://josm.openstreetmap.de/ticket/14666), coloration des éléments``wall=no`, possibilité de décoller plusieurs éléments d'une traite, …)
+ * [plugins](./plugins): plugins patchés
+   * [conflation.jar](./plugins/conflation.jar): zoom automatique en cas de problème
+   * [todo.jar](./plugins/todo.jar): ajout d'un bouton "Mark as selected" et gestion du support multicouches
+ * [website](./website): code du site https://overpass.damsy.net
  * [tools](./tools)
-   * [osm-cadastre-generate-import.sh](./tools/osm-cadastre-generate-import.sh): generate buildings from cadastre for given cities
-   * [osm-cadastre-stats.sh](./tools/osm-cadastre-stats.sh): number of buildings imported per year for given cities
-   * [osm-cadastre-umap-csv2geojson.py](./tools/osm-cadastre-umap-csv2geojson.py): convert CSV to GeoJSON format so that [it can be used on UMap for instance](http://umap.openstreetmap.fr/fr/map/bati-drome_143285#8/45.370/4.329)
+   * [osm-cadastre.py](./tools/osm-cadastre.py): script principal (voir plus bas)
+ * [js](./js): scripts à utiliser dans JOSM via le plugin [Scripting](http://wiki.openstreetmap.org/wiki/JOSM/Plugins/Scripting)
+   * [1segmented.js](./js/1segmented.js): mise en place initiale
+   * [2conflation.js](./js/2conflation.js): mise en place de la conflation
+   * [3cleanup.js](./js/3cleanup.js): nettoyage final
 
-![UMap demo](https://cloud.githubusercontent.com/assets/1451988/25699562/170bb266-30c4-11e7-9e14-e72bf19bed89.png)
+![Visualisation de l'état du cadastre](https://user-images.githubusercontent.com/1451988/26934158-d6e63858-4c68-11e7-8cd8-534718e6b3f6.png)
 
 # Instructions
 
-Installation de JOSM et des plugins patchés :
-
-```sh
+1. Installation de JOSM et des plugins patchés :
+```bash
 mkdir -p $HOME/.local/share/{applications,mime/packages,icons,JOSM/plugins}
 
 sed "s|PWD|$PWD|g" desktop/josm.desktop.in > $HOME/.local/share/applications/josm.desktop
@@ -32,23 +37,66 @@ ln -sr desktop/icons/* $HOME/.local/share/icons
 update-mime-database $HOME/.local/share/mime
 
 ln -srf plugins/* $HOME/.local/share/JOSM/plugins
+
+josm_config="${XDG_CONFIG_HOME-$HOME/.config}/JOSM/preferences.xml"
+test -f "$josm_config" && \
+    ! grep -q scripting.RunScriptDialog.file-history "$josm_config" && \
+    sed -i '/<\/preferences/d' "$josm_config" \
+    echo "
+      <list key='scripting.RunScriptDialog.file-history'>
+        <entry value='$PWD/js/1segmented.js'/>
+        <entry value='$PWD/js/3cleanup.js'/>
+        <entry value='$PWD/js/2conflation.js'/>
+      </list>
+    </preferences>
+    " >> "$josm_config"
+```
+
+2. Installer le plugin `Scripting` dans JOSM
+
+3. Activer l'accès aux fichiers locaux dans les préférences du Contrôle à distance, nécessaire pour utiliser le script (voir ci-dessous).
+
+![Activation de l'accès aux fichiers locaux](https://user-images.githubusercontent.com/1451988/26930245-137b43fa-4c5d-11e7-8445-5508278ef958.png)
+
+# Description du script osm-cadastre.py
+
+```
+usage: osm-cadastre.py [-h] [--verbose {debug,info,warning,error,no}]
+                       [--overpass {overpass.de,api.openstreetmap.fr,localhost}]
+                       {stats,generate,work} ...
+
+positional arguments:
+  {stats,generate,work}
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --verbose {debug,info,warning,error,no}, -v {debug,info,warning,error,no}
+  --overpass {overpass.de,api.openstreetmap.fr,localhost}
 ```
 
 # Guide
 
 Supposons que l'on souhaite mettre à jour le cadastre de [Upie, code insee 26358](http://www.openstreetmap.org/relation/83680) :
 
-1. Vérification de l'état du cadastre dans OSM : `./tools/osm-cadastre-stats.sh Upie`
-
+1. Vérification de l'état du cadastre dans OSM : `./tools/osm-cadastre.py stats --name Upie`
+ Ici le dernier import date de 2017, donc il est déjà à jour. Supposons qu'il ne le soit pas et qu'on veuille effectuer la mise à jour.
 >
-    Treatment done! Summary:
-    1NSEE   NOM COUNT   DATE    ASSOCIATEDSTREET
-    26358   Upie    1805     2017   0
+    14:56:05 Fetch INSEE for Upie
+    14:56:05 Fetch list of vectorized cities in department 26
+    14:56:05 Fetch cities boundary for department 26 (via https://overpass-api.de/api/interpreter)
+    14:56:06 100.00% Treated 26358 - Upie (last import: 2017)
 
-Ici le dernier import date de 2017, donc il est déjà à jour. Supposons qu'il ne le soit pas.
 
-2. Génération du bâti depuis [http://cadastre.openstreetmap.fr/](http://cadastre.openstreetmap.fr/) (cela prend plusieurs minutes, selon la taille de la commune) : `./tools/osm-cadastre-generate-import.sh 26358`
+2. Mise en place de l'environnement : `./tools/osm-cadastre.py work --name Upie`. Cela va générer le bâti depuis le cadastre et ouvrir JOSM dès que c'est prêt.
 
-3. Ouverture des fichiers CL358-UPIE-houses-prediction_segmente.osm et CL358-UPIE-houses-simplifie.osm dans JOSM via nautilus.
+3. Dans JOSM, ouvrir le menu `Scripting` puis choisir `1segmented.js`. La TODO list va se remplir.
 
-4. Voir le [guide complet](https://wiki.openstreetmap.org/wiki/WikiProject_France/Cadastre/Import_semi-automatique_des_b%C3%A2timents#Utilisation_du_plugin_.C2.ABConflation.C2.BB_dans_JOSM) pour la suite ou le [guide vidéo](https://www.youtube.com/watch?v=8n34tYJXnEI)…
+4. Lorsque la TODO liste est vidée/terminée, ouvrir le menu `Scripting` puis choisir `2conflation.js`.
+
+5. Configurer et effectuer la conflation.
+
+6. Une fois terminée, ouvrir une derniére fois le menu `Scripting` puis choisir `3cleanup.js`.
+
+7. Finalement valider les erreurs (`Shift+U`) et envoyer les changements.
+
+Voir le [guide complet](https://wiki.openstreetmap.org/wiki/WikiProject_France/Cadastre/Import_semi-automatique_des_b%C3%A2timents#Utilisation_du_plugin_.C2.ABConflation.C2.BB_dans_JOSM) pour plus d'informations ou le [guide vidéo](https://www.youtube.com/watch?v=8n34tYJXnEI)… ⚠ La démarche a évolué depuis la vidéo.
