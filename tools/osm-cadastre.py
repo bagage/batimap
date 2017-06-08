@@ -28,7 +28,7 @@ import pygeoj
 import requests
 
 import psycopg2
-
+import copy
 import tarfile
 import subprocess
 import shutil
@@ -558,15 +558,17 @@ def generate(args):
 
 
 def work(args):
-    insee = get_insee_for(args.name) if args.name else args.insee
+    if args.name:
+        args.insee = get_insee_for(args.name)
+        args.name = None
 
     # 1. we should display current state for the city
-    args2 = args
-    args2.insee = [insee]
+    args2 = copy.copy(args) # must make a copy because stats expect an array of INSEE instead
+    args2.insee = [args.insee]
     args2.force_download = 'buildings'
     args2.country = False
     args2.department = None
-    args2.force = ''
+    args2.force = 'buildings'
     args2.umap = ''
     stats(args2)
 
