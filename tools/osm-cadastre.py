@@ -563,7 +563,7 @@ def work(args):
         args.name = None
 
     # 1. we should display current state for the city
-    args2 = copy.copy(args) # must make a copy because stats expect an array of INSEE instead
+    args2 = copy.copy(args)  # must make a copy because stats expect an array of INSEE instead
     args2.insee = [args.insee]
     args2.force_download = 'buildings'
     args2.country = False
@@ -624,9 +624,9 @@ def work(args):
             break
 
     # d. download city data from OSM as well
-    bbox = get_bbox_for(insee)
+    bbox = get_bbox_for(args.insee)
     url = base_url + 'load_and_zoom?new_layer=true&layer_name=Données OSM pour {}&left={}&right={}&bottom={}&top={}'
-    url = url.format(insee, bbox[0], bbox[1], bbox[2], bbox[3])
+    url = url.format(args.insee, bbox[0], bbox[1], bbox[2], bbox[3])
     r = requests.get(url)
     if r.status_code != 200:
         log.critical("Cannot load OSM data ({}): {}".format(r.status_code, r.text))
