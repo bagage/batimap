@@ -15,7 +15,9 @@ $(function () {
             map.setView(initPosition, 6);
         }
 
-        bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png').addTo(map);
+        bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+            { attribution: '© Contributeurs OpenStreetMap'}
+        ).addTo(map);
 
         // load available colors
         $.getJSON('/colors', function (colors) {
