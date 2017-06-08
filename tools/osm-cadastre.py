@@ -30,6 +30,7 @@ import requests
 import psycopg2
 
 import tarfile
+import subprocess
 
 BASE_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 DATA_PATH = path.join(BASE_PATH, 'cities')
@@ -401,6 +402,25 @@ def count_sources(datatype, insee, force_download):
     return sources
 
 
+def get_josm_path():
+    for p in os.environ['PATH']:
+        if p.lower().endswith("josm"):
+            return p
+
+    for d in [os.environ['HOME'] + "/.local/share/applications/", "/usr/share/applications", "/usr/local/share/applications"]:
+        desktop = path.join(d, "josm.desktop")
+        if os.path.exists(desktop):
+            with open(desktop, 'r') as fd:
+                for line in fd:
+                    if "Exec=" in line:
+                        # could probably be better
+                        cmd = "=".join(line.split("=")[1:]).split(" ")
+                        cmd = [x for x in cmd if not x.startswith("%")]
+                        return cmd
+
+    return None
+
+
 def init_overpass(args):
     endpoints = {
         'overpass.de': 'https://overpass-api.de/api/interpreter',
@@ -557,9 +577,22 @@ def work(args):
     try:
         r = requests.get(base_url + 'version')
     except:
-        # TODO: try opening JOSM via subprocess or similar (but how since probably not in path?)
-        log.critical("Cannot connect to JOSM - is it running?")
-        return
+        # Hack: look in PATH and .desktop files if JOSM is referenced
+        josm_path = get_josm_path()
+        # If we found it, start it and try to connect to it (aborting after 1 min)
+        if josm_path is not None:
+            subprocess.Popen(josm_path)
+            timeout = time.time() + 60
+            while True:
+                try:
+                    r = requests.get(base_url + 'version')
+                    if r.status_code == 200 or time.time() > timeout:
+                        break
+                except:
+                    pass
+            if time.time() > timeout:
+                log.critical("Cannot connect to JOSM - is it running? Tip: add JOSM to your PATH so that I can run it for you ;)")
+                return
 
     # b. open Strava and BDOrtho IGN imageries
     imageries = {
