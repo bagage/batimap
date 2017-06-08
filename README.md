@@ -2,6 +2,8 @@ Ce projet contient plusieurs outils pour simplifier l'import / la mise à jour d
 
 L'état actuel des données peut être visualisé sur http://overpass.damsy.net (beta).
 
+![Visualisation de l'état du cadastre](https://user-images.githubusercontent.com/1451988/26934158-d6e63858-4c68-11e7-8cd8-534718e6b3f6.png)
+
 # Contenu de la boîte
 
  * [desktop](./desktop): Intégration système pour JOSM
@@ -10,7 +12,7 @@ L'état actuel des données peut être visualisé sur http://overpass.damsy.net 
      * [josm.png](./desktop/icons/josm.png): icône associée aux fichiers `.jos` et `.joz`
      * [osm.svg](./desktop/icons/osm.svg): icône associée aux fichiers `.osm`
    * [josm.desktop.in](./desktop/josm.desktop.in): Entrée [desktop](https://standards.freedesktop.org/desktop-entry-spec/latest/) pour JOSM
- * [josm-custom.jar](./josm-custom.jar): un JOSM modifié (correction du bug [#14666](https://josm.openstreetmap.de/ticket/14666), coloration des éléments``wall=no`, possibilité de décoller plusieurs éléments d'une traite, …)
+ * [josm-custom.jar](./josm-custom.jar): un JOSM modifié (correction du bug [#14666](https://josm.openstreetmap.de/ticket/14666), coloration des éléments `wall=no`, possibilité de décoller plusieurs éléments d'une seule traite, …)
  * [plugins](./plugins): plugins patchés
    * [conflation.jar](./plugins/conflation.jar): zoom automatique en cas de problème
    * [todo.jar](./plugins/todo.jar): ajout d'un bouton "Mark as selected" et gestion du support multicouches
@@ -21,8 +23,6 @@ L'état actuel des données peut être visualisé sur http://overpass.damsy.net 
    * [1segmented.js](./js/1segmented.js): mise en place initiale
    * [2conflation.js](./js/2conflation.js): mise en place de la conflation
    * [3cleanup.js](./js/3cleanup.js): nettoyage final
-
-![Visualisation de l'état du cadastre](https://user-images.githubusercontent.com/1451988/26934158-d6e63858-4c68-11e7-8cd8-534718e6b3f6.png)
 
 # Instructions
 
@@ -78,8 +78,8 @@ optional arguments:
 
 Supposons que l'on souhaite mettre à jour le cadastre de [Upie, code insee 26358](http://www.openstreetmap.org/relation/83680) :
 
-1. Vérification de l'état du cadastre dans OSM : `./tools/osm-cadastre.py stats --name Upie`
- Ici le dernier import date de 2017, donc il est déjà à jour. Supposons qu'il ne le soit pas et qu'on veuille effectuer la mise à jour.
+1. Vérification de l'état du cadastre dans OSM : `./tools/osm-cadastre.py stats --name Upie`.
+    Ici le dernier import date de 2017, donc il est déjà à jour. Supposons qu'il ne le soit pas et qu'on veuille effectuer la mise à jour.
 >
     14:56:05 Fetch INSEE for Upie
     14:56:05 Fetch list of vectorized cities in department 26
@@ -89,9 +89,9 @@ Supposons que l'on souhaite mettre à jour le cadastre de [Upie, code insee 2635
 
 2. Mise en place de l'environnement : `./tools/osm-cadastre.py work --name Upie`. Cela va générer le bâti depuis le cadastre et ouvrir JOSM dès que c'est prêt.
 
-3. Dans JOSM, ouvrir le menu `Scripting` puis choisir `1segmented.js`. La TODO list va se remplir.
+3. Dans JOSM, ouvrir le menu `Scripting` puis choisir `1segmented.js`. La TODO list va se remplir. Chaque élément correspond à un bâtiment qui est possible segmenté, à vous de décider si oui (et alors il faut le fusionner via le menu `Outils -> Joindre les zones superposées`) ou non.
 
-4. Lorsque la TODO liste est vidée/terminée, ouvrir le menu `Scripting` puis choisir `2conflation.js`.
+4. Lorsque toute la TODO liste a été traitée, ouvrir le menu `Scripting` puis choisir `2conflation.js`.
 
 5. Configurer et effectuer la conflation.
 
