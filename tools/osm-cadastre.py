@@ -31,10 +31,13 @@ import psycopg2
 
 import tarfile
 import subprocess
+import shutil
 
 BASE_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
-DATA_PATH = path.join(BASE_PATH, 'cities')
+WORKDONE_PATH = path.join(BASE_PATH, '_done')
 STATS_PATH = path.join(BASE_PATH, 'stats')
+DATA_PATH = path.join(STATS_PATH, 'cities')
+os.makedirs(WORKDONE_PATH, exist_ok=True)
 os.makedirs(DATA_PATH, exist_ok=True)
 os.makedirs(STATS_PATH, exist_ok=True)
 
@@ -625,6 +628,13 @@ def work(args):
     r = requests.get(url)
     if r.status_code != 200:
         log.critical("Cannot load OSM data ({}): {}".format(r.status_code, r.text))
+
+    resp = input("Is the job done? (yes/No)")
+    if resp.lower() == "yes":
+        log.info("Congratulations! Moving {} to archives".format(city_path))
+        shutil.move(city_path, path.join(WORKDONE_PATH, city_path))
+        # also regenerate stats
+        stats(args2)
 
 
 if __name__ == '__main__':
