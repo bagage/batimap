@@ -17,7 +17,7 @@ L'état actuel des données peut être visualisé sur http://overpass.damsy.net 
  * [website](./website): code du site https://overpass.damsy.net
  * [tools](./tools)
    * [osm-cadastre.py](./tools/osm-cadastre.py): script principal (voir plus bas)
- * [js](./js): scripts à utiliser dans JOSM via le plugin [Scripting](http://wiki.openstreetmap.org/wiki/JOSM/Plugins/Scripting)
+ * [josm-scripts](./josm-scripts): scripts à utiliser dans JOSM via le plugin [Scripting](http://wiki.openstreetmap.org/wiki/JOSM/Plugins/Scripting)
    * [1segmented.js](./js/1segmented.js): mise en place initiale
    * [2conflation.js](./js/2conflation.js): mise en place de la conflation
    * [3cleanup.js](./js/3cleanup.js): nettoyage final
@@ -44,9 +44,9 @@ test -f "$josm_config" && \
     sed -i '/<\/preferences/d' "$josm_config" \
     echo "
       <list key='scripting.RunScriptDialog.file-history'>
-        <entry value='$PWD/js/1segmented.js'/>
-        <entry value='$PWD/js/3cleanup.js'/>
-        <entry value='$PWD/js/2conflation.js'/>
+        <entry value='$PWD/josm-scripts/1segmented.js'/>
+        <entry value='$PWD/josm-scripts/3cleanup.js'/>
+        <entry value='$PWD/josm-scripts/2conflation.js'/>
       </list>
     </preferences>
     " >> "$josm_config"
