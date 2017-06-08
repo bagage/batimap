@@ -12,12 +12,14 @@
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.0/gh-fork-ribbon.min.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
 </head>
 <body>
+<a class="github-fork-ribbon left-bottom fixed" href="https://github.com/bagage/cadastre-conflation" title="Voir sur GitHub">Voir sur GitHub</a>
 <div id="map-view"></div>
 <nav id='filter-group' class='filter-group'></nav>
 <script>
