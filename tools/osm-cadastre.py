@@ -207,6 +207,7 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
             color = color_by_date(date)
             description = 'Building:\n{}\nRelation:\n{}'.format(stats_to_txt(building_src), stats_to_txt(relation_src))
         else:
+            date = 'raster'
             vector = 'raster'
             color = 'black'
             description = 'Raster'
