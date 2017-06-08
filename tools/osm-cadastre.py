@@ -543,15 +543,15 @@ def generate(args):
             if "pdf" in line:
                 log.info(line)
 
-    output_archive_path = path.join(BASE_PATH, "{}.tar.bz2".format(data['ville']))
+    output_archive_path = path.join(BASE_PATH, "{}".format(data['ville']))
     r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
-    log.debug('Write archive file {}'.format(output_archive_path))
-    with open(output_archive_path, 'wb') as fd:
+    log.debug('Write archive file {}.tar.bz2'.format(output_archive_path))
+    with open(output_archive_path + '.tar.bz2', 'wb') as fd:
         fd.write(r.content)
 
     # finally decompress it
-    tar = tarfile.open(output_archive_path)
-    tar.extractall()
+    tar = tarfile.open(output_archive_path + '.tar.bz2')
+    tar.extractall(path=output_archive_path)
     tar.close()
 
     return output_path
