@@ -488,18 +488,17 @@ def stats(args):
 
         json_path = path.join(STATS_PATH, "france.geojson")
         with open(json_path, 'w') as fd:
-            fd.write(geojson.dumps(FeatureCollection(france), indent=None))
+            fd.write(geojson.dumps(FeatureCollection(france), indent=1))
     elif args.department:
         vectorized = get_vectorized_insee(args.department)
         build_municipality_list(args.department.zfill(2), vectorized, force_download=args.force, umap=args.umap)
     elif args.insee:
         vectorized = {}
         for insee in args.insee:
-            if insee.isdigit():
-                # Format of INSEE if [0-9]{2-3}[0-9]{3}
-                # the first part is the department number, the second the city unique id
-                # We just need to junk the last 3 caracters
-                department = insee[:-3]
+            # Format of INSEE if [0-9]{2-3}[0-9]{3}
+            # the first part is the department number, the second the city unique id
+            # We just need to junk the last 3 caracters
+            department = insee[:-3]
             vectorized[department] = get_vectorized_insee(department)
             build_municipality_list(department,
                                     vectorized[department],
