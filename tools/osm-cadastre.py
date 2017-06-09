@@ -195,9 +195,16 @@ def get_municipality_relations(department, insee=None, force_download=False):
 
         # sometimes, the geometry of some cities is not set (probably due to an overpass error)
         # in that case, we will requery overpass instead
-        missing_borders = len([x.get('geometry') is None for x in result]) > 0
-        if missing_borders:
-            result = None
+        for x in result:
+            found = False
+            for y in x.get('members'):
+                if y.get('type') == 'way' and not y.get('role'):
+                    log.error("Missing role for {} - requerying Overpass".format(x.get('tags').get('name')))
+                    result = None
+                    found = True
+                    break
+            if found:
+                break
 
         if result is not None:
             log.debug('Use cache file {}'.format(json_path))
