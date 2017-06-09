@@ -131,12 +131,20 @@ def get_municipality_relations(department, insee=None, force_download=False):
     json_path = path.join(STATS_PATH, '{}-limits.json'.format(department))
 
     if not force_download and path.exists(json_path):
-        log.debug('Use cache file {}'.format(json_path))
         with open(json_path) as fd:
-            r = json.load(fd)
+            result = json.load(fd)
         if insee:
-            return [x for x in r if x.get('tags').get('ref:INSEE') == insee]
-        return r
+            result = [x for x in result if x.get('tags').get('ref:INSEE') == insee]
+
+        # sometimes, the geometry of some cities is not set (probably due to an overpass error)
+        # in that case, we will requery overpass instead
+        missing_borders = len([x.get('geometry') is None for x in result]) > 0
+        if missing_borders:
+            result = None
+
+        if result is not None:
+            log.debug('Use cache file {}'.format(json_path))
+            return result
 
     request = """[out:json];
         relation
