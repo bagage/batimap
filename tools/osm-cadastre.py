@@ -33,6 +33,8 @@ import tarfile
 import subprocess
 import shutil
 
+import math
+
 BASE_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 WORKDONE_PATH = path.join(BASE_PATH, '_done')
 STATS_PATH = path.join(BASE_PATH, 'stats')
@@ -65,8 +67,54 @@ COLORS = init_colors()
 def pseudo_distance(p1, p2):
     return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
 
+
+def ringArea(coords):
+    """
+        This is borrowed from mapbox/geojson-rewind
+
+        Calculate the approximate area of the polygon were it projected onto
+          the earth.  Note that this area will be positive if ring is oriented
+          clockwise, otherwise it will be negative.
+
+        Reference:
+        Robert. G. Chamberlain and William H. Duquette, "Some Algorithms for
+          Polygons on a Sphere", JPL Publication 07-03, Jet Propulsion
+          Laboratory, Pasadena, CA, June 2007 http://trs-new.jpl.nasa.gov/dspace/handle/2014/40409
+
+        Returns:
+        {float} The approximate signed geodesic area of the polygon in square
+          meters.
+    """
+    area = 0
+
+    if len(coords) > 2:
+        for i in range(len(coords)-1):
+            p1 = coords[i]
+            p2 = coords[i + 1]
+            area += math.radians(p2[0] - p1[0]) * (2 + math.sin(math.radians(p1[1])) + math.sin(math.radians(p2[1])))
+
+        radius = 6378137
+        area = area * radius * radius / 2
+
+    return area
+
+
+def correctRings(rings):
+    """
+    Polygons should be rotating anticlockwise (right-hand rule)
+    """
+    if ringArea(rings[0]) > 0:
+        rings[0].reverse()
+    for i in range(len(rings)):
+        if ringArea(rings[i]) < 0:
+            rings[i].reverse()
+    return rings
+
+
 def lines_to_polygons(ways):
-    # There might be multiple polygons for a single set of ways
+    """
+    Note: there might be multiple polygons for a single set of ways
+    """
 
     if not ways:
         return []
@@ -101,6 +149,7 @@ def lines_to_polygons(ways):
 
     polygons.append(border)
 
+    polygons = correctRings(polygons)
     return polygons
 
 
