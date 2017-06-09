@@ -65,11 +65,13 @@ COLORS = init_colors()
 def pseudo_distance(p1, p2):
     return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
 
+def lines_to_polygons(ways):
+    # There might be multiple polygons for a single set of ways
 
-def lines_to_polygon(ways):
     if not ways:
         return []
 
+    polygons = []
     border = ways.pop(0)
     while ways:
         dist = -1
@@ -77,23 +79,29 @@ def lines_to_polygon(ways):
         reverse = False
         for i in range(len(ways)):
             d = pseudo_distance(border[-1], ways[i][0])
-            if dist > d or i == 0:
+            if i == 0 or d < dist:
                 dist = d
                 closest = i
                 reverse = False
             d = pseudo_distance(border[-1], ways[i][-1])
-            if dist > d:
+            if d < dist:
                 dist = d
                 closest = i
                 reverse = True
         n = ways.pop(closest)
         if reverse:
             n.reverse()
+
         if dist == 0:
             n.pop(0)
-        border += n
+            border += n
+        else:
+            polygons.append(border)
+            border = n
 
-    return border
+    polygons.append(border)
+
+    return polygons
 
 
 def color_by_date(date):
@@ -174,13 +182,14 @@ def get_geometry_for(relation):
             for point in member.get('geometry'):
                 way.append((point.get('lon'), point.get('lat')))
             outer_ways.append(way)
-    border = lines_to_polygon(outer_ways)
+    borders = lines_to_polygons(outer_ways)
 
-    if not border:
+    if not borders:
         log.warning('{} does not have borders'.format(relation.get('tags').get('name')))
+        exit(1)
         return None
     else:
-        return Polygon([border])
+        return Polygon(borders)
 
 
 def build_municipality_list(department, vectorized, given_insee=None, force_download=None, umap=False):
