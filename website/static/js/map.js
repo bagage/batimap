@@ -7,7 +7,7 @@ $(function () {
     var json_req;
     var initPosition = [47.651, 2.791];
     initMap = function () {
-        console.log('Map is ready.');
+        // console.log('Map is ready.');
         map = L.map('map-view', {
             zoom: 11
         });
@@ -19,6 +19,45 @@ $(function () {
             { attribution: '© Contributeurs OpenStreetMap'}
         ).addTo(map);
 
+        var stylingFunction = function(properties, zoom, type) {
+            color_input = $('input[type=checkbox]#color-' + properties.color.replace('#', ''));
+            if (color_input.length == 1 && color_input[0].checked !== true) {
+                // console.log(properties.color, "is unchecked, do not render");
+                return []; //do not render it
+            }
+
+            return {
+                weight: 2,
+                color: properties.color,
+                opacity: 1,
+                fill: true,
+                radius: type === 'point' ? zoom / 2 : 1,
+                fillOpacity: 0.7
+            }
+        }
+
+
+        var cadastreURL = "http://overpass.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
+        var vectorTileOptions = {
+            rendererFactory: L.canvas.tile,
+            maxNativeZoom: 14,
+            vectorTileLayerStyles: {
+                'cities-point': function(properties, zoom) {
+                    return stylingFunction(properties, zoom, 'point')
+                },
+
+                'cities': function(properties, zoom) {
+                    return stylingFunction(properties, zoom, 'polygon')
+                },
+            },
+            interactive: true,  // Make sure that this VectorGrid fires mouse/pointer events
+            getFeatureId: function(f) {
+                return f.properties.color;
+            }
+        };
+        L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        var pbfLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions).addTo(map);
+
         // load available colors
         $.getJSON('/colors', function (colors) {
             var filterGroup = document.getElementById('filter-group');
@@ -26,7 +65,7 @@ $(function () {
             for (color in colors) {
                 var input = document.createElement('input');
                 input.type = 'checkbox';
-                input.id = 'color-' + colors[color];
+                input.id = 'color-' + colors[color].replace('#', '');
                 input.checked = true;
                 input.className += 'filled-in';
                 input.value = colors[color];
@@ -39,56 +78,13 @@ $(function () {
                 filterGroup.appendChild(label);
 
                 input.addEventListener('change', function(e) {
-                    getCitiesInView(map);
+                    // todo: could be done better by reappling style
+                    // but couldn't make it work
+                    pbfLayer.redraw();
                 });
             }
-            getCitiesInView(map);
         });
-
-        map.on('moveend', function(e) { getCitiesInView(map); });
 
         return map;
-    };
-
-    getCitiesInView = function (map) {
-        console.log("loading cities…");
-        // cancel previous request first
-        if (json_req)
-            json_req.abort();
-
-        var lonNW = map.getBounds().getWest();
-        var latNW = map.getBounds().getNorth();
-        var lonSE = map.getBounds().getEast();
-        var latSE = map.getBounds().getSouth();
-        var colors = [];
-        $('#filter-group > input[type="checkbox"]:checked').each(function () {
-            colors.push($(this).val());
-        });
-        if (colors.length == 0) {
-            // flush previous layers
-            map.eachLayer(function(layer) {
-                if (layer !== bgLayer)
-                    layer.removeFrom(map);
-            });
-            return;
-        }
-
-        json_req = $.getJSON('/colors/' + lonNW + '/' + latNW + '/' + lonSE + '/' + latSE + '/' + encodeURIComponent(colors.join()), function (geojson) {
-            // flush previous layers
-            map.eachLayer(function(layer) {
-                if (layer !== bgLayer)
-                    layer.removeFrom(map);
-            });
-
-            L.geoJson(geojson, {
-                style: function(feature) {
-                    return {color: feature.properties.color};
-                },
-                onEachFeature: function (feature, layer) {
-                    layer.bindPopup(feature.properties.name || 'Unknown');
-                }
-            }).addTo(map);
-            console.log("done. Have loaded ", geojson.features.length);
-        });
     };
 });
