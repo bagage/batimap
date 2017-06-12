@@ -41,7 +41,7 @@ $(function () {
         var cadastreURL = "http://overpass.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
         var vectorTileOptions = {
             rendererFactory: L.canvas.tile,
-            maxNativeZoom: 14,
+            maxNativeZoom: 20,
             vectorTileLayerStyles: {
                 'cities-point': function(properties, zoom) {
                     return stylingFunction(properties, zoom, 'point')
@@ -57,7 +57,15 @@ $(function () {
             }
         };
         L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        var pbfLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions).addTo(map);
+        var pbfLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions)
+            .on('click', function(e) {  // The .on method attaches an event handler
+                L.popup()
+                    .setContent(e.layer.properties.insee + " - " + e.layer.properties.name)
+                    .setLatLng(e.latlng)
+                    .openOn(map);
+                    L.DomEvent.stop(e);
+            })
+            .addTo(map);
 
         // load available colors
         $.getJSON('/colors', function (colors) {
