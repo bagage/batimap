@@ -2,7 +2,7 @@
 Name=JOSM
 Comment=
 Type=Application
-Exec=java -jar PWD/josm-custom.jar PWD/josm-init.jos %U
+Exec=java -jar PWD/josm-custom.jar %U
 TryExec=java
 Terminal=false
 Icon=josm
