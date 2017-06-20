@@ -4,7 +4,14 @@ from db_utils import Postgis
 from flask import Flask, render_template, jsonify
 
 app = Flask(__name__)
-db = Postgis('gis', 'docker', 'docker', 25432, 'localhost')
+
+app.config.from_pyfile(app.root_path + '/app.conf')
+
+db = Postgis(app.config['DB_NAME'],
+             app.config['DB_USER'],
+             app.config['DB_PASSWORD'],
+             app.config['DB_PORT'],
+             app.config['DB_HOST'])
 
 
 @app.route('/')

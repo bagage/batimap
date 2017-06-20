@@ -159,3 +159,4 @@ pyvenv.cfg
 .venv
 pip-selfcheck.json
 .idea/dataSources/
+app.conf

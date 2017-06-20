@@ -29,7 +29,7 @@ done
 
 ```sh
 pip3 install -r requirements.txt
-# modify app.py with your database credentials
-FLASK_APP=app.py flask run
+# modify app.conf with your database settings
+FLASK_DEBUG=1 FLASK_APP=app.py flask run
 open http://localhost:5000
 ```
