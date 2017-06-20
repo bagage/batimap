@@ -9,6 +9,7 @@ $(function () {
     initMap = function () {
         // console.log('Map is ready.');
         map = L.map('map-view', {
+            minZoom: 5,
             zoom: 11
         });
         if (!map.restoreView()) {
