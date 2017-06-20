@@ -22,15 +22,17 @@ $(function () {
         ).addTo(map);
 
         var stylingFunction = function(properties, zoom, type) {
-            color_input = $('input[type=checkbox]#color-' + properties.color.replace('#', ''));
+            color = $.trim(properties.color) //fixme: why do we need that? It looks
+            // like tegola is adding extra space around this properties… weird
+
+            color_input = $('input[type=checkbox]#color-' + color.replace('#', ''));
             if (color_input.length == 1 && color_input[0].checked !== true) {
-                // console.log(properties.color, "is unchecked, do not render");
+                // console.log(color, "is unchecked, do not render");
                 return []; //do not render it
             }
-
             return {
                 weight: 2,
-                color: properties.color,
+                color: color,
                 opacity: 1,
                 fill: true,
                 radius: type === 'point' ? zoom / 2 : 1,
