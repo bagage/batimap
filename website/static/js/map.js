@@ -74,21 +74,28 @@ $(function () {
 
         // load available colors
         $.getJSON('/colors', function (colors) {
+            total = 0
+            for (c in colors) {
+                total += colors[c][1];
+            }
             var filterGroup = document.getElementById('filter-group');
             filterGroup.style.height += 25 * colors.length + 'px';
-            for (color in colors) {
+            for (c in colors) {
+                var color = colors[c][0];
+                var percentage = colors[c][1] * 100 / total;
+
                 var input = document.createElement('input');
                 input.type = 'checkbox';
-                input.id = 'color-' + colors[color].replace('#', '');
+                input.id = 'color-' + color.replace('#', '');
                 input.checked = true;
                 input.className += 'filled-in';
-                input.value = colors[color];
+                input.value = color;
                 filterGroup.appendChild(input);
 
                 var label = document.createElement('label');
                 label.setAttribute('for', input.id);
-                label.style.color = colors[color];
-                label.textContent = colors[color];
+                label.style.color = color;
+                label.textContent = color + ' (' + percentage.toFixed(2) + '%)';
                 filterGroup.appendChild(label);
 
                 input.addEventListener('change', function(e) {

@@ -30,12 +30,13 @@ class Postgis(object):
 
     def get_colors(self):
         req = ((""
-                "        SELECT DISTINCT color\n"
+                "        SELECT color, count(*)\n"
                 "        FROM color_city\n"
+                "        GROUP BY color\n"
                 ""))
         self.cursor.execute(req)
 
-        return sorted([x[0].strip() for x in self.cursor.fetchall()])
+        return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
     def get_city_with_colors(self, colors, lonNW: float, latNW: float, lonSE: float, latSE: float) -> FeatureCollection:
         req = ((""
