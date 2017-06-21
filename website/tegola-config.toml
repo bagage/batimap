@@ -1,0 +1,49 @@
+[webserver]
+port = ":8080"
+
+# register data providers
+[[providers]]
+name = "cadastre"           # provider name is referenced from map layers
+type = "postgis"        # the type of data provider. currently only supports postgis
+host = "localhost"      # postgis database host
+port = 25432             # postgis database port
+database = "gis"       # postgis database name
+user = "docker"         # postgis database user
+password = "docker"           # postgis database password
+srid = 4326             # The default srid for this provider. If not provided it will be WebMercator (3857)
+
+[[providers.layers]]
+  name = "cities"
+  geometry_fieldname = "way"
+  id_fieldname = "osm_id"
+  sql = "SELECT ST_AsBinary(way) AS way, name, insee, color, osm_id FROM planet_osm_polygon, color_city WHERE tags->'admin_level' = '8' AND tags->'ref:INSEE' = insee AND way && !BBOX!"
+
+[[providers.layers]]
+  name = "cities-point"
+  geometry_fieldname = "way"
+  id_fieldname = "osm_id"
+  sql = "SELECT ST_AsBinary(ST_Centroid(way)) AS way, name, insee, color, osm_id FROM planet_osm_polygon, color_city WHERE tags->'admin_level' = '8' AND tags->'ref:INSEE' = insee AND way && !BBOX!"
+
+[[providers.layers]]
+  name = "departments"
+  geometry_fieldname = "way"
+  id_fieldname = "osm_id"
+  #sql = "SELECT DISTINCT ON (name) ST_AsBinary(way) AS way, name, tags->'ref:INSEE' as insee, 'gray' as color, osm_id FROM planet_osm_polygon WHERE tags->'admin_level' = '6' AND way && !BBOX!"
+  sql = "with x as (select DISTINCT ON (department) department, color from color_city group by department, color order by department, count(color) desc) select ST_AsBinary(way) as way, color, name, tags->'ref:INSEE' as insee, osm_id FROM planet_osm_polygon, x WHERE tags->'admin_level' = '6' AND tags->'ref:INSEE' like department || '%' And way && !BBOX!"
+
+[[maps]]
+name = "bati"
+  [[maps.layers]]
+  provider_layer = "cadastre.cities"
+  min_zoom = 9
+  max_zoom = 20
+
+  [[maps.layers]]
+  provider_layer = "cadastre.cities-point"
+  min_zoom = 8
+  max_zoom = 8
+
+  [[maps.layers]]
+  provider_layer = "cadastre.departments"
+  min_zoom = 0
+  max_zoom = 7

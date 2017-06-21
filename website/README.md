@@ -35,3 +35,9 @@ pip3 install -r requirements.txt
 FLASK_DEBUG=1 FLASK_APP=app.py flask run
 open http://localhost:5000
 ```
+
+## Tile server
+
+Instead of using `http://overpass.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf`
+as vector tile server, you can run your own instance of [Tegola](https://http://tegola.io/).
+`tegola-config.toml` is the configuration file used for this project.
