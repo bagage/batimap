@@ -81,3 +81,15 @@ class Postgis(object):
                                     geometry=loads(row[3])))
 
         return FeatureCollection(features)
+
+    def get_department_colors(self, department):
+        req = ((""
+                "        SELECT color\n"
+                "        FROM color_city\n"
+                "        WHERE department = '{}'\n"
+                "        GROUP BY color\n"
+                "        ORDER BY count(*) DESC\n"
+                "").format(department))
+        self.cursor.execute(req)
+
+        return sorted([x[0].strip() for x in self.cursor.fetchall()])

@@ -38,5 +38,10 @@ def api_colors_list() -> dict:
     return jsonify(db.get_colors())
 
 
+@app.route('/status/<department>', methods=['GET'])
+def api_status(department) -> dict:
+    return jsonify(db.get_department_colors(department))
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
