@@ -5,3 +5,4 @@ geojson
 flask
 psycopg2
 gunicorn
+flask-cors

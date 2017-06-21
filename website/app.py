@@ -2,8 +2,10 @@ import geojson
 
 from db_utils import Postgis
 from flask import Flask, render_template, jsonify
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app)
 
 app.config.from_pyfile(app.root_path + '/app.conf')
 
