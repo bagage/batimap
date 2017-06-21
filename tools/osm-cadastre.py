@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import datetime
+from datetime import datetime
 import json
 import logging
 import os
@@ -55,7 +55,7 @@ def init_colors():
     # current year should be green
     # previous year should be orange
     # below 2009 and previous year, use a color gradient
-    this_year = datetime.datetime.now().year
+    this_year = datetime.now().year
     colors = list(Color('red').range_to(Color('orange'), this_year - 2009))
     colors.append(Color('green'))
     return dict(zip(range(2009, this_year + 1), [c.hex for c in colors]))
@@ -256,6 +256,11 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
     txt_content = ''
     department_stats = []
 
+    if args.database is not None:
+        (host, port, user, password, database) = args.database.split(":")
+        connection = psycopg2.connect(host=host, port=port, user=user, password=password, database=database)
+        cursor = connection.cursor()
+
     counter = 0
     relations = get_municipality_relations(department, given_insee, force_download == "all")
     for relation in relations:
@@ -306,23 +311,30 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
 
         municipality_border.geometry = get_geometry_for(relation)
 
-        # TODO: add arguments for database/user/password!
-        try:
-            connection = psycopg2.connect(database='gis', user='docker', password='docker', port=25432, host='localhost')
-            cursor = connection.cursor()
-            cursor.execute("""
-                INSERT INTO color_city
-                VALUES ('{}', '{}')
-                ON CONFLICT (insee) DO UPDATE SET color = excluded.color
-                """.format(insee, color))
-            connection.commit()
-        except:
-            pass
+        if args.database is not None:
+            log.debug("Updating database")
+            try:
+                req = ("""
+                    INSERT INTO color_city
+                    VALUES ('{}', '{}', '{}', now())
+                    ON CONFLICT (insee) DO UPDATE SET color = excluded.color, department = excluded.department
+                    """.format(insee, color, department))
+                # only update date if we did not use cache files for buildings
+                if force_download in ["all", "buildings"]:
+                    req += ", last_update = excluded.last_update"
+                cursor.execute(req)
+            except Exception as e:
+                log.warning("Cannot write in database: " + str(e))
+                pass
 
         log.info("{:.2f}% Treated {} - {} (last import: {})".format(100 * counter / len(relations), insee, name, date))
 
         department_stats.append(municipality_border)
         txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
+
+    # commit database changes only after the whole loop to 1. speed up 2. avoid
+    # semi-updated database in case of error in the middle
+    connection.commit()
 
     # write geojson
     log.debug('Write {}.geojson'.format(department))
@@ -722,6 +734,7 @@ if __name__ == '__main__':
     stats_parser = subparsers.add_parser('stats', help="Récupère la date du dernier import pour une commune ou un département ou la France entière et génère un .geojson pour une utilisation externe")
     stats_parser.add_argument('--umap', action='store_true', help="À utiliser si le geojson est à destination de UMap")
     stats_parser.add_argument('--force', '-f', choices=['all', 'buildings', 'relations'], default='', help="De ne pas utiliser les fichiers en cache et forcer la requête Overpass")
+    stats_parser.add_argument('--database', type=str, help="identifiants pour la base de donnée sous la forme host:port:user:password:database (ex: 'localhost:25432:docker:docker:gis')")
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
     stats_group.add_argument('--country', '-c', action='store_true', help="France entière")
     stats_group.add_argument('--department', '-d', type=str, help="Département entier")
