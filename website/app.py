@@ -51,7 +51,13 @@ def update_insee_list(insee) -> dict:
     r = which("osm-cadastre.py")
     if not r:
         return abort(500)
-    child = Popen(["osm-cadastre.py", "stats", "-f", "all", "-i", insee])
+    db_args = "{host}:{port}:{user}:{password}:{db}".format(host=app.config['DB_HOST'],
+                                                        port=app.config['DB_PORT'],
+                                                        user=app.config['DB_USER'],
+                                                        password=app.config['DB_PASSWORD'],
+                                                        db=app.config['DB_NAME'])
+    child = Popen(["osm-cadastre.py", "stats", "-f", "all", "-i", insee,
+                   "--database", db_args])
     child.communicate()
     child.wait()
     if child.returncode != 0:
