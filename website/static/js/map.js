@@ -16,6 +16,9 @@ $(function () {
         }
         new L.Hash(map); // display url with z/x/y params
 
+        L.control.geocoder('mapzen-xxEvJ8R').addTo(map);
+        L.control.locate({locateOptions: {enableHighAccuracy: true}}).addTo(map);
+
         bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
             { attribution: '© Contributeurs OpenStreetMap'}
         ).addTo(map);
