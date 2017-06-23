@@ -40,7 +40,7 @@ $(function () {
         }
 
 
-        var cadastreURL = "http://overpass.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
+        var cadastreURL = "https://overpass.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
         var vectorTileOptions = {
             rendererFactory: L.canvas.tile,
             maxNativeZoom: 20,
@@ -61,7 +61,7 @@ $(function () {
                 return f.properties.color;
             }
         };
-        L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         var pbfLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions)
             .on('click', function(e) {  // The .on method attaches an event handler
                 L.popup()
