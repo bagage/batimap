@@ -206,7 +206,7 @@ def get_municipality_relations(department, insee=None, force_download=False):
             if found:
                 break
 
-        if result is not None:
+        if result:
             log.debug('Use cache file {}'.format(json_path))
             return result
 
@@ -255,8 +255,9 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
 
     txt_content = ''
     department_stats = []
+    connection = None
 
-    if args.database is not None:
+    if args.database:
         (host, port, user, password, database) = args.database.split(":")
         connection = psycopg2.connect(host=host, port=port, user=user, password=password, database=database)
         cursor = connection.cursor()
@@ -311,7 +312,7 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
 
         municipality_border.geometry = get_geometry_for(relation)
 
-        if args.database is not None:
+        if args.database:
             log.debug("Updating database")
             try:
                 req = ("""
@@ -332,9 +333,10 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
         department_stats.append(municipality_border)
         txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
 
-    # commit database changes only after the whole loop to 1. speed up 2. avoid
-    # semi-updated database in case of error in the middle
-    connection.commit()
+    if connection:
+        # commit database changes only after the whole loop to 1. speed up 2. avoid
+        # semi-updated database in case of error in the middle
+        connection.commit()
 
     # write geojson
     log.debug('Write {}.geojson'.format(department))
@@ -670,7 +672,7 @@ def work(args):
         # Hack: look in PATH and .desktop files if JOSM is referenced
         josm_path = get_josm_path()
         # If we found it, start it and try to connect to it (aborting after 1 min)
-        if josm_path is not None:
+        if josm_path:
             subprocess.Popen(josm_path)
             timeout = time.time() + 60
             while True:
