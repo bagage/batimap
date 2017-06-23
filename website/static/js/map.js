@@ -2,6 +2,7 @@
  * Created by cimo on 16/10/2016.
  */
 
+
 $(function () {
     var map, bgLayer;
     var json_req;
@@ -42,7 +43,6 @@ $(function () {
             }
         }
 
-
         var cadastreURL = "https://overpass.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
         var vectorTileOptions = {
             rendererFactory: L.canvas.tile,
@@ -67,8 +67,43 @@ $(function () {
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         var pbfLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions)
             .on('click', function(e) {  // The .on method attaches an event handler
+
+                var container = L.DomUtil.create('div');
+                var text_container = L.DomUtil.create('div','',container);
+                var text = L.DomUtil.create('p', '', text_container );
+                    text.innerHTML = e.layer.properties.insee + " - " + e.layer.properties.name;
+                var button_container = L.DomUtil.create('div','',container);
+                var btn = L.DomUtil.create('button', '', button_container);
+                    btn.setAttribute('type', 'button');
+                    btn.setAttribute('value', e.layer.properties.insee );
+                    btn.innerHTML = "Update this city";
+
+                L.DomEvent.on(btn, 'click', e => {
+                    $.ajax({
+                        type: "POST",
+                        url: "/update/"+ btn.value,
+                        beforeSend: function() {
+                            btn.setAttribute( "style", "visibility:hidden" );
+                        },
+                        complete: function() {
+                        },
+                        success: function(badges) {
+                            var ok = L.DomUtil.create('img', '', btn.parentNode);
+                            ok.setAttribute('src', '/resources/circle-check-6x.png');
+                            ok.setAttribute('height', '24');
+                            ok.setAttribute('width', '24');
+                        },
+                        error: function(badges) {
+                            var nok = L.DomUtil.create('img', '', btn.parentNode);
+                            nok.setAttribute('src', '/resources/circle-x-6x.png');
+                            nok.setAttribute('height', '24');
+                            nok.setAttribute('width', '24');
+                        }
+                    });
+                });
+
                 L.popup()
-                    .setContent(e.layer.properties.insee + " - " + e.layer.properties.name)
+                    .setContent( container )
                     .setLatLng(e.latlng)
                     .openOn(map);
                     L.DomEvent.stop(e);
@@ -112,3 +147,4 @@ $(function () {
         return map;
     };
 });
+

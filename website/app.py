@@ -1,8 +1,11 @@
 import geojson
 
 from db_utils import Postgis
-from flask import Flask, render_template, jsonify
+
+from flask import abort, Flask, jsonify, render_template, send_from_directory
 from flask_cors import CORS, cross_origin
+from shutil import which
+from subprocess import Popen
 
 app = Flask(__name__)
 CORS(app)
@@ -41,6 +44,24 @@ def api_colors_list() -> dict:
 @app.route('/status/<department>', methods=['GET'])
 def api_status(department) -> dict:
     return jsonify(db.get_department_colors(department))
+
+
+@app.route('/update/<int:insee>', methods=['POST'])
+def update_insee_list(insee) -> dict:
+    r = which("osm-cadastre.py")
+    if not r:
+        return abort(500)
+    child = Popen(["osm-cadastre.py", "stats", "-f", "all", "-i", str(insee)])
+    child.communicate()
+    child.wait()
+    if child.returncode != 0:
+        return abort(500)
+    return "Ok"
+
+
+@app.route('/resources/<path:path>', methods=['GET'])
+def send_resources(path):
+    return send_from_directory('resources/', path)
 
 
 if __name__ == '__main__':
