@@ -20,8 +20,10 @@ $(function () {
         L.control.geocoder('mapzen-xxEvJ8R').addTo(map);
         L.control.locate({locateOptions: {enableHighAccuracy: true}}).addTo(map);
 
-        bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
-            { attribution: '© Contributeurs OpenStreetMap'}
+        bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+            attribution: '© Contributeurs OpenStreetMap',
+            maxNativeZoom: 18
+        }
         ).addTo(map);
 
         var stylingFunction = function(properties, zoom, type) {
@@ -46,7 +48,8 @@ $(function () {
         var cadastreURL = "https://overpass.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
         var vectorTileOptions = {
             rendererFactory: L.canvas.tile,
-            maxNativeZoom: 20,
+            maxZoom: 20,
+            maxNativeZoom: 13,
             vectorTileLayerStyles: {
                 'cities-point': function(properties, zoom) {
                     return stylingFunction(properties, zoom, 'point')
@@ -64,10 +67,8 @@ $(function () {
                 return f.properties.color;
             }
         };
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         var pbfLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions)
             .on('click', function(e) {  // The .on method attaches an event handler
-
                 var container = L.DomUtil.create('div');
                 var text_container = L.DomUtil.create('div','',container);
                 var text = L.DomUtil.create('p', '', text_container );
