@@ -35,7 +35,8 @@ import shutil
 
 import math
 
-BASE_PATH = path.normpath(path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
+BASE_PATH = path.normpath(
+    path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 WORKDONE_PATH = path.join(BASE_PATH, '_done')
 STATS_PATH = path.join(BASE_PATH, 'stats')
 DATA_PATH = path.join(STATS_PATH, 'cities')
@@ -91,7 +92,8 @@ def ringArea(coords):
         for i in range(len(coords)-1):
             p1 = coords[i]
             p2 = coords[i + 1]
-            area += math.radians(p2[0] - p1[0]) * (2 + math.sin(math.radians(p1[1])) + math.sin(math.radians(p2[1])))
+            area += math.radians(p2[0] - p1[0]) * (2 + math.sin(
+                math.radians(p1[1])) + math.sin(math.radians(p2[1])))
 
         radius = 6378137
         area = area * radius * radius / 2
@@ -183,7 +185,8 @@ def stats_to_txt(stats):
 
 
 def get_municipality_relations(department, insee=None, force_download=False):
-    log.info('Fetch cities boundary for department {} (via {})'.format(department, API.endpoint))
+    log.info('Fetch cities boundary for department {} (via {})'.format(
+        department, API.endpoint))
 
     json_path = path.join(STATS_PATH, '{}-limits.json'.format(department))
 
@@ -191,7 +194,8 @@ def get_municipality_relations(department, insee=None, force_download=False):
         with open(json_path) as fd:
             result = json.load(fd)
         if insee:
-            result = [x for x in result if x.get('tags').get('ref:INSEE') == insee]
+            result = [x for x in result if x.get(
+                'tags').get('ref:INSEE') == insee]
 
         # sometimes, the geometry of some cities is not set (probably due to an overpass error)
         # in that case, we will requery overpass instead
@@ -199,7 +203,8 @@ def get_municipality_relations(department, insee=None, force_download=False):
             found = False
             for y in x.get('members'):
                 if y.get('type') == 'way' and not y.get('role'):
-                    log.error("Missing role for {} - requerying Overpass".format(x.get('tags').get('name')))
+                    log.error(
+                        "Missing role for {} - requerying Overpass".format(x.get('tags').get('name')))
                     result = None
                     found = True
                     break
@@ -241,14 +246,15 @@ def get_geometry_for(relation):
     borders = lines_to_polygons(outer_ways)
 
     if not borders:
-        log.warning('{} does not have borders'.format(relation.get('tags').get('name')))
+        log.warning('{} does not have borders'.format(
+            relation.get('tags').get('name')))
         exit(1)
         return None
     else:
         return Polygon(borders)
 
 
-def build_municipality_list(department, vectorized, given_insee=None, force_download=None, umap=False):
+def build_municipality_list(department, vectorized, given_insee=None, force_download=None, umap=False, database=None):
     """Build municipality list
     """
     department = department.zfill(2)
@@ -257,13 +263,15 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
     department_stats = []
     connection = None
 
-    if args.database:
-        (host, port, user, password, database) = args.database.split(":")
-        connection = psycopg2.connect(host=host, port=port, user=user, password=password, database=database)
+    if database:
+        (host, port, user, password, database) = database.split(":")
+        connection = psycopg2.connect(
+            host=host, port=port, user=user, password=password, database=database)
         cursor = connection.cursor()
 
     counter = 0
-    relations = get_municipality_relations(department, given_insee, force_download == "all")
+    relations = get_municipality_relations(
+        department, given_insee, force_download == "all")
     for relation in relations:
         counter += 1
 
@@ -275,16 +283,21 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
         if insee in vectorized:
             vector = 'vector'
             try:
-                relation_src = count_sources('relation', insee, force_download in ["all", "relations"])
-                building_src = count_sources('building', insee, force_download in ["all", "buildings"])
+                relation_src = count_sources(
+                    'relation', insee, force_download in ["all", "relations"])
+                building_src = count_sources(
+                    'building', insee, force_download in ["all", "buildings"])
             except overpass.errors.ServerRuntimeError as e:
-                log.error("Fail to query overpass for {}. Consider reporting the bug: {}. Skipping".format(insee, e))
+                log.error(
+                    "Fail to query overpass for {}. Consider reporting the bug: {}. Skipping".format(insee, e))
                 continue
 
-            dates = sorted(building_src.items(), key=lambda t: t[1], reverse=True)
+            dates = sorted(building_src.items(),
+                           key=lambda t: t[1], reverse=True)
             date = dates[0][0] if len(dates) else None
             color = color_by_date(date)
-            description = 'Building:\n{}\nRelation:\n{}'.format(stats_to_txt(building_src), stats_to_txt(relation_src))
+            description = 'Building:\n{}\nRelation:\n{}'.format(
+                stats_to_txt(building_src), stats_to_txt(relation_src))
         else:
             date = 'raster'
             vector = 'raster'
@@ -312,7 +325,7 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
 
         municipality_border.geometry = get_geometry_for(relation)
 
-        if args.database:
+        if database:
             log.debug("Updating database")
             try:
                 req = ("""
@@ -328,7 +341,8 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
                 log.warning("Cannot write in database: " + str(e))
                 pass
 
-        log.info("{:.2f}% Treated {} - {} (last import: {})".format(100 * counter / len(relations), insee, name, date))
+        log.info("{:.2f}% Treated {} - {} (last import: {})".format(100 *
+                                                                    counter / len(relations), insee, name, date))
 
         department_stats.append(municipality_border)
         txt_content += '{},{},{},{}\n'.format(insee, name, postcode, vector)
@@ -348,7 +362,8 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
             if municipality["properties"]["insee"] == given_insee:
                 found = True
                 index = department_geojson["features"].index(municipality)
-                department_geojson["features"] = department_geojson["features"][:index] + department_stats + department_geojson["features"][index + 1:]
+                department_geojson["features"] = department_geojson["features"][
+                    :index] + department_stats + department_geojson["features"][index + 1:]
                 break
         if not found:
             department_geojson["features"] += department_stats
@@ -408,7 +423,8 @@ def get_insee_for(name):
         else:
             user_input = ""
             while user_input not in insee:
-                user_input = input("More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(insee)))
+                user_input = input(
+                    "More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(insee)))
             return user_input
 
 
@@ -423,7 +439,8 @@ def get_vectorized_insee(department):
             return json.load(fd)
 
     vectorized = []
-    response = requests.get('http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(department.zfill(3)))
+    response = requests.get(
+        'http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(department.zfill(3)))
     if response.status_code >= 400:
         log.critical('Unknown department {}'.format(department))
         exit(1)
@@ -442,7 +459,8 @@ def get_vectorized_insee(department):
 
 
 def count_sources(datatype, insee, force_download):
-    log.debug('Count {} sources for {} (via {})'.format(datatype, insee, API.endpoint))
+    log.debug('Count {} sources for {} (via {})'.format(
+        datatype, insee, API.endpoint))
 
     json_path = path.join(DATA_PATH, '{}.{}.json'.format(insee, datatype))
     if not force_download and path.exists(json_path):
@@ -471,7 +489,8 @@ def count_sources(datatype, insee, force_download):
             response = API.Get(request, responseformat='json', build=False)
             break
         except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
-            log.warning("Oops : {} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry))
+            log.warning("Oops : {} occurred. Will retry again {} times in a few seconds".format(
+                type(e).__name__, retry))
             if retry == 0:
                 raise e
             # Sleep for n * 5 seconds before a new attempt
@@ -516,7 +535,8 @@ def init_overpass(args):
     endpoints = {
         'overpass.de': 'https://overpass-api.de/api/interpreter',
         'api.openstreetmap.fr': 'http://api.openstreetmap.fr/oapi/interpreter',
-        'localhost': 'http://localhost:5001/api/interpreter'  # default port/url for docker image
+        # default port/url for docker image
+        'localhost': 'http://localhost:5001/api/interpreter'
     }
     global API
 
@@ -535,7 +555,8 @@ def init_log(args):
     log_level = levels[args.verbose]
     logging.root.setLevel(log_level)
     if sys.stdout.isatty():
-        formatter = ColoredFormatter('%(asctime)s %(log_color)s%(message)s%(reset)s', "%H:%M:%S")
+        formatter = ColoredFormatter(
+            '%(asctime)s %(log_color)s%(message)s%(reset)s', "%H:%M:%S")
         stream = logging.StreamHandler()
         stream.setLevel(log_level)
         stream.setFormatter(formatter)
@@ -543,26 +564,31 @@ def init_log(args):
         log.setLevel(log_level)
         log.addHandler(stream)
     else:
-        logging.basicConfig(format='%(asctime)s %(message)s', datefmt="%H:%M:%S")
+        logging.basicConfig(
+            format='%(asctime)s %(message)s', datefmt="%H:%M:%S")
         log = logging
 
 
 def stats(args):
     if args.country:
         france = []
-        files = [path.join(STATS_PATH, x) for x in os.listdir(STATS_PATH) if x.endswith('.geojson') and x != "france.geojson"]
+        files = [path.join(STATS_PATH, x) for x in os.listdir(
+            STATS_PATH) if x.endswith('.geojson') and x != "france.geojson"]
         files.sort()
         counter = 0
         for json_path in files:
             counter += 1
-            log.info("{:.2f}% Treating {}".format(100 * counter / len(files), json_path))
+            log.info("{:.2f}% Treating {}".format(
+                100 * counter / len(files), json_path))
             with open(json_path) as fd:
                 department = geojson.load(fd)
 
             for city in department.features:
                 if city.geometry:
-                    [x1, x2, y1, y2] = pygeoj.load(data=FeatureCollection([city])).bbox
-                    city.geometry = Polygon([[(x1, y1), (x1, y2), (x2, y2), (x2, y1)]])
+                    [x1, x2, y1, y2] = pygeoj.load(
+                        data=FeatureCollection([city])).bbox
+                    city.geometry = Polygon(
+                        [[(x1, y1), (x1, y2), (x2, y2), (x2, y1)]])
                 france.append(city)
 
         json_path = path.join(STATS_PATH, "france.geojson")
@@ -570,7 +596,8 @@ def stats(args):
             fd.write(geojson.dumps(FeatureCollection(france), indent=1))
     elif args.department:
         vectorized = get_vectorized_insee(args.department)
-        build_municipality_list(args.department.zfill(2), vectorized, force_download=args.force, umap=args.umap)
+        build_municipality_list(args.department.zfill(
+            2), vectorized, force_download=args.force, umap=args.umap, database=args.database)
     elif args.insee:
         vectorized = {}
         for insee in args.insee:
@@ -583,7 +610,8 @@ def stats(args):
                                     vectorized[department],
                                     given_insee=insee,
                                     force_download=args.force,
-                                    umap=args.umap)
+                                    umap=args.umap,
+                                    database=args.database)
     elif args.name:
         # if we got a name, we must find the associated INSEE
         args.insee = []
@@ -604,12 +632,15 @@ def generate(args):
         'force': False
     }
 
-    # First we need to get Cadastre name for the city (which is different from the OSM one)
-    r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}-liste.txt".format(data['dep'], data['dep']))
+    # First we need to get Cadastre name for the city (which is different from
+    # the OSM one)
+    r = requests.get(
+        "http://cadastre.openstreetmap.fr/data/{}/{}-liste.txt".format(data['dep'], data['dep']))
     for line in r.text.split('\n'):
         if '{} "'.format(insee[-3:]) in line:
             linesplit = line.split(' ')
-            data['ville'] = "{}-{}".format(linesplit[1], linesplit[2].replace('"', ''))
+            data[
+                'ville'] = "{}-{}".format(linesplit[1], linesplit[2].replace('"', ''))
             break
 
     if 'ville' not in data:
@@ -631,7 +662,8 @@ def generate(args):
                 log.info(line)
 
     output_archive_path = path.join(BASE_PATH, "{}".format(data['ville']))
-    r = requests.get("http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
+    r = requests.get(
+        "http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
     log.debug('Write archive file {}.tar.bz2'.format(output_archive_path))
     with open(output_archive_path + '.tar.bz2', 'wb') as fd:
         fd.write(r.content)
@@ -650,8 +682,10 @@ def work(args):
         args.name = None
 
     # 1. we should display current state for the city
-    args2 = copy.copy(args)  # must make a copy because stats expect an array of INSEE instead
+    # must make a copy because stats expect an array of INSEE instead
+    args2 = copy.copy(args)
     args2.insee = [args.insee]
+    args2.database = None
     args2.force_download = 'buildings'
     args2.country = False
     args2.department = None
@@ -671,7 +705,8 @@ def work(args):
     except:
         # Hack: look in PATH and .desktop files if JOSM is referenced
         josm_path = get_josm_path()
-        # If we found it, start it and try to connect to it (aborting after 1 min)
+        # If we found it, start it and try to connect to it (aborting after 1
+        # min)
         if josm_path:
             subprocess.Popen(josm_path)
             timeout = time.time() + 60
@@ -683,7 +718,8 @@ def work(args):
                 except:
                     pass
             if time.time() > timeout:
-                log.critical("Cannot connect to JOSM - is it running? Tip: add JOSM to your PATH so that I can run it for you ;)")
+                log.critical(
+                    "Cannot connect to JOSM - is it running? Tip: add JOSM to your PATH so that I can run it for you ;)")
                 return
 
     # b. open Strava and BDOrtho IGN imageries
@@ -692,11 +728,14 @@ def work(args):
         "BDOrtho IGN": "http://proxy-ign.openstreetmap.fr/bdortho/{zoom}/{x}/{y}.jpg"
     }
     for k, v in imageries.items():
-        r = requests.get(base_url + 'imagery?title={}&type=tms&url={}'.format(k, v))
+        r = requests.get(
+            base_url + 'imagery?title={}&type=tms&url={}'.format(k, v))
         if r.status_code != 200:
-            log.critical("Cannot add imagery ({}): {}".format(r.status_code, r.text))
+            log.critical("Cannot add imagery ({}): {}".format(
+                r.status_code, r.text))
 
-    # c. open both houses-simplifie.osm and houses-prediction_segmente.osm files
+    # c. open both houses-simplifie.osm and houses-prediction_segmente.osm
+    # files
     files = [path.join(city_path, x) for x in os.listdir(city_path)
              if x.endswith('-houses-simplifie.osm') or x.endswith('-houses-prediction_segmente.osm')]
     files.sort()
@@ -707,7 +746,8 @@ def work(args):
             if r.status_code == 403:
                 error = "did you enable 'Open local files' in Remote Control Preferences?"
 
-            log.critical("Cannot launch JOSM ({}): {}".format(r.status_code, error))
+            log.critical("Cannot launch JOSM ({}): {}".format(
+                r.status_code, error))
             break
 
     # d. download city data from OSM as well
@@ -716,7 +756,8 @@ def work(args):
     url = url.format(args.insee, bbox[0], bbox[1], bbox[2], bbox[3])
     r = requests.get(url)
     if r.status_code != 200:
-        log.critical("Cannot load OSM data ({}): {}".format(r.status_code, r.text))
+        log.critical("Cannot load OSM data ({}): {}".format(
+            r.status_code, r.text))
 
     resp = input("Is the job done? (yes/No)")
     if resp.lower() == "yes":
@@ -727,33 +768,52 @@ def work(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Inspection de l'état du bâti dans OpenStreetMap en France.")
-    parser.add_argument('--verbose', '-v', choices=['debug', 'info', 'warning', 'error', 'no'], default='info', help="Niveau de verbosité")
-    parser.add_argument('--overpass', choices=['overpass.de', 'api.openstreetmap.fr', 'localhost'], default='overpass.de', help="Adresse du serveur pour les requêtes Overpass")
-    subparsers = parser.add_subparsers(help="Plusieurs commandes sont disponibles")
+    parser = argparse.ArgumentParser(
+        description="Inspection de l'état du bâti dans OpenStreetMap en France.")
+    parser.add_argument('--verbose', '-v', choices=[
+                        'debug', 'info', 'warning', 'error', 'no'], default='info', help="Niveau de verbosité")
+    parser.add_argument('--overpass', choices=['overpass.de', 'api.openstreetmap.fr', 'localhost'],
+                        default='overpass.de', help="Adresse du serveur pour les requêtes Overpass")
+    subparsers = parser.add_subparsers(
+        help="Plusieurs commandes sont disponibles")
     subparsers.required = True
     subparsers.dest = 'command'
-    stats_parser = subparsers.add_parser('stats', help="Récupère la date du dernier import pour une commune ou un département ou la France entière et génère un .geojson pour une utilisation externe")
-    stats_parser.add_argument('--umap', action='store_true', help="À utiliser si le geojson est à destination de UMap")
-    stats_parser.add_argument('--force', '-f', choices=['all', 'buildings', 'relations'], default='', help="De ne pas utiliser les fichiers en cache et forcer la requête Overpass")
-    stats_parser.add_argument('--database', type=str, help="identifiants pour la base de donnée sous la forme host:port:user:password:database (ex: 'localhost:25432:docker:docker:gis')")
+    stats_parser = subparsers.add_parser(
+        'stats', help="Récupère la date du dernier import pour une commune ou un département ou la France entière et génère un .geojson pour une utilisation externe")
+    stats_parser.add_argument('--umap', action='store_true',
+                              help="À utiliser si le geojson est à destination de UMap")
+    stats_parser.add_argument('--force', '-f', choices=['all', 'buildings', 'relations'],
+                              default='', help="De ne pas utiliser les fichiers en cache et forcer la requête Overpass")
+    stats_parser.add_argument(
+        '--database', type=str, help="identifiants pour la base de donnée sous la forme host:port:user:password:database (ex: 'localhost:25432:docker:docker:gis')")
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
-    stats_group.add_argument('--country', '-c', action='store_true', help="France entière")
-    stats_group.add_argument('--department', '-d', type=str, help="Département entier")
-    stats_group.add_argument('--insee', '-i', type=str, nargs='+', help="commune par son numéro INSEE")
-    stats_group.add_argument('--name', '-n', type=str, nargs='+', help="commune par son nom")
+    stats_group.add_argument(
+        '--country', '-c', action='store_true', help="France entière")
+    stats_group.add_argument('--department', '-d',
+                             type=str, help="Département entier")
+    stats_group.add_argument('--insee', '-i', type=str,
+                             nargs='+', help="commune par son numéro INSEE")
+    stats_group.add_argument('--name', '-n', type=str,
+                             nargs='+', help="commune par son nom")
     stats_group.set_defaults(func=stats)
 
-    generate_parser = subparsers.add_parser('generate', help="Génère le bâti depuis le cadastre")
-    generate_group = generate_parser.add_mutually_exclusive_group(required=True)
-    generate_group.add_argument('--insee', '-i', type=str, help="commune par son numéro INSEE")
-    generate_group.add_argument('--name', '-n', type=str, help="commune par son nom")
+    generate_parser = subparsers.add_parser(
+        'generate', help="Génère le bâti depuis le cadastre")
+    generate_group = generate_parser.add_mutually_exclusive_group(
+        required=True)
+    generate_group.add_argument(
+        '--insee', '-i', type=str, help="commune par son numéro INSEE")
+    generate_group.add_argument(
+        '--name', '-n', type=str, help="commune par son nom")
     generate_parser.set_defaults(func=generate)
 
-    work_parser = subparsers.add_parser('work', help="Met en place JOSM pour effectuer le travail de mise à jour du bâti")
+    work_parser = subparsers.add_parser(
+        'work', help="Met en place JOSM pour effectuer le travail de mise à jour du bâti")
     work_group = work_parser.add_mutually_exclusive_group(required=True)
-    work_group.add_argument('--insee', '-i', type=str, help="commune par son numéro INSEE")
-    work_group.add_argument('--name', '-n', type=str, help="commune par son nom")
+    work_group.add_argument('--insee', '-i', type=str,
+                            help="commune par son numéro INSEE")
+    work_group.add_argument('--name', '-n', type=str,
+                            help="commune par son nom")
     work_parser.set_defaults(func=work)
 
     args = parser.parse_args()
