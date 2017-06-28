@@ -1,7 +1,9 @@
 import psycopg2
 
 from geojson import Feature, FeatureCollection, loads
-from math import sqrt
+from math import sqrt, floor, tan, log, cos, pi, radians
+import json
+import grequests
 
 
 class Postgis(object):
@@ -96,3 +98,31 @@ class Postgis(object):
         self.cursor.execute(req)
 
         return sorted([x[0].strip() for x in self.cursor.fetchall()])
+
+    def deg_to_xy(self, lat, lon, zoom):
+        x = floor((lon + 180) / 360 * (1 << zoom))
+        y = floor(
+            (1 - log(tan(radians(lat)) + 1 / cos(radians(lat))) / pi) / 2 * (1 << zoom))
+        return (x, y)
+
+    def clear_tiles(self, insee):
+        req = ((""
+                "        SELECT ST_AsGeoJSON(ST_EXTENT(way))\n"
+                "        FROM planet_osm_polygon\n"
+                "        WHERE tags->'ref:INSEE' = '{}'\n"
+                "").format(insee))
+        self.cursor.execute(req)
+        coords = json.loads(self.cursor.fetchall()[0][0])['coordinates'][0]
+        (y1, x1) = coords[0]
+        (y2, x2) = coords[2]
+        for z in range(3, 14):
+            (x1_url, y1_url) = self.deg_to_xy(x1, y1, z)
+            (x2_url, y2_url) = self.deg_to_xy(x2, y2, z)
+            urls = []
+            for x in range(min(x1, x2), max(x1, x2) + 1):
+                for y in range(min(y1, y2), max(y1, y2) + 1):
+                    url = "https://overpass.damsy.net/tegola/maps/bati/{}/{}/{}.vector.pbf".format(
+                        z, x, y)
+                    urls.append(url)
+            rs = (grequests.request('PURGE', x) for x in urls)
+            grequests.map(rs)

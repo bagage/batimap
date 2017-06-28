@@ -86,6 +86,7 @@ $(function () {
                             btn.setAttribute( "style", "visibility:hidden" );
                         },
                         complete: function() {
+                            pbfLayer.redraw();
                         },
                         success: function(badges) {
                             var ok = L.DomUtil.create('img', '', btn.parentNode);

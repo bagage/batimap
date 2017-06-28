@@ -66,6 +66,12 @@ def update_insee_list(insee) -> dict:
     child.wait()
     if child.returncode != 0:
         return abort(500)
+
+    # TODO: only clear tiles if color was changed // return different status
+    # codes
+
+    # clear tiles for the zone
+    db.clear_tiles(insee)
     return "Ok"
 
 
