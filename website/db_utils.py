@@ -5,8 +5,10 @@ from math import sqrt
 
 
 class Postgis(object):
+
     def __init__(self, db, user, passw, port, host):
-        self.connection = psycopg2.connect(database=db, user=user, password=passw, port=port, host=host)
+        self.connection = psycopg2.connect(
+            database=db, user=user, password=passw, port=port, host=host)
         self.cursor = self.connection.cursor()
 
     def get_insee(self, insee: int) -> FeatureCollection:
@@ -21,10 +23,10 @@ class Postgis(object):
 
         for row in self.cursor.fetchall():
             features.append(Feature(properties={
-                                                'name': "{} - {}".format(row[0], row[1]),
-                                                'color': row[2]
-                                                },
-                                    geometry=loads(row[3])))
+                'name': "{} - {}".format(row[0], row[1]),
+                'color': row[2]
+            },
+                geometry=loads(row[3])))
 
         return FeatureCollection(features)
 
@@ -61,7 +63,8 @@ class Postgis(object):
         if len(colors) > 1 and count > 1500:
             # we should fetch all cities within the view
             maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2)
-            # instead if we zoomed out too much, we limit to maximum 110km radius circle
+            # instead if we zoomed out too much, we limit to maximum 110km
+            # radius circle
             maxDistance = min(1., maxDistance)
 
             req += ((""
@@ -75,10 +78,10 @@ class Postgis(object):
 
         for row in self.cursor.fetchall():
             features.append(Feature(properties={
-                                                'name': "{} - {}".format(row[0], row[1]),
-                                                'color': row[2]
-                                                },
-                                    geometry=loads(row[3])))
+                'name': "{} - {}".format(row[0], row[1]),
+                'color': row[2]
+            },
+                geometry=loads(row[3])))
 
         return FeatureCollection(features)
 

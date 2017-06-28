@@ -32,7 +32,8 @@ def api_insee(insee) -> dict:
 
 @app.route('/colors/<lonNW>/<latNW>/<lonSE>/<latSE>/<colors>', methods=['GET'])
 def api_color(colors, lonNW, latNW, lonSE, latSE) -> dict:
-    color_city = db.get_city_with_colors(colors.split(','), float(lonNW), float(latNW), float(lonSE), float(latSE))
+    color_city = db.get_city_with_colors(colors.split(','), float(
+        lonNW), float(latNW), float(lonSE), float(latSE))
     return geojson.dumps(color_city)
 
 
@@ -52,12 +53,15 @@ def update_insee_list(insee) -> dict:
     if not r:
         return abort(500)
     db_args = "{host}:{port}:{user}:{password}:{db}".format(host=app.config['DB_HOST'],
-                                                        port=app.config['DB_PORT'],
-                                                        user=app.config['DB_USER'],
-                                                        password=app.config['DB_PASSWORD'],
-                                                        db=app.config['DB_NAME'])
-    child = Popen(["osm-cadastre.py", "stats", "-f", "all", "-i", insee,
-                   "--database", db_args])
+                                                            port=app.config[
+                                                                'DB_PORT'],
+                                                            user=app.config[
+                                                                'DB_USER'],
+                                                            password=app.config[
+                                                                'DB_PASSWORD'],
+                                                            db=app.config['DB_NAME'])
+    child = Popen(["osm-cadastre.py", "stats", "-f", "all",
+                   "-i", insee, "--database", db_args])
     child.communicate()
     child.wait()
     if child.returncode != 0:
