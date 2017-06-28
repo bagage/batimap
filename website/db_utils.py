@@ -100,9 +100,9 @@ class Postgis(object):
         return sorted([x[0].strip() for x in self.cursor.fetchall()])
 
     def deg_to_xy(self, lat, lon, zoom):
-        x = floor((lon + 180) / 360 * (1 << zoom))
-        y = floor(
-            (1 - log(tan(radians(lat)) + 1 / cos(radians(lat))) / pi) / 2 * (1 << zoom))
+        x = int(floor((lon + 180) / 360 * (1 << zoom)))
+        y = int(floor(
+            (1 - log(tan(radians(lat)) + 1 / cos(radians(lat))) / pi) / 2 * (1 << zoom)))
         return (x, y)
 
     def clear_tiles(self, insee):
@@ -113,11 +113,11 @@ class Postgis(object):
                 "").format(insee))
         self.cursor.execute(req)
         coords = json.loads(self.cursor.fetchall()[0][0])['coordinates'][0]
-        (y1, x1) = coords[0]
-        (y2, x2) = coords[2]
+        (lon1, lat1) = coords[0]
+        (lon2, lat2) = coords[2]
         for z in range(3, 14):
-            (x1_url, y1_url) = self.deg_to_xy(x1, y1, z)
-            (x2_url, y2_url) = self.deg_to_xy(x2, y2, z)
+            (x1, y1) = self.deg_to_xy(lat1, lon1, z)
+            (x2, y2) = self.deg_to_xy(lat2, lon2, z)
             urls = []
             for x in range(min(x1, x2), max(x1, x2) + 1):
                 for y in range(min(y1, y2), max(y1, y2) + 1):
