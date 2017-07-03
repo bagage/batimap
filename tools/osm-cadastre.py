@@ -413,13 +413,17 @@ def get_insee_for(name):
 
     with open(csv_path, 'r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
-        insee = [x['ref:INSEE'] for x in csv_reader if name == x['name']]
-
+        insee = [x['ref:INSEE']
+                 for x in csv_reader if x['name'].startswith(name)]
         if len(insee) == 0:
             log.critical("Cannot found city with name {}.".format(name))
             exit(1)
         elif len(insee) == 1:
             return insee[0]
+        elif len(insee) > 30:
+            log.critical(
+                "Too many cities with name {} (total: {}). Please check name.".format(name, len(insee)))
+            exit(1)
         else:
             user_input = ""
             while user_input not in insee:
