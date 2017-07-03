@@ -284,9 +284,9 @@ def build_municipality_list(department, vectorized, given_insee=None, force_down
             vector = 'vector'
             try:
                 relation_src = count_sources(
-                    'relation', insee, force_download in ["all", "relations"])
+                    'relation', insee, force_download in ["all", "relations"])['sources']
                 building_src = count_sources(
-                    'building', insee, force_download in ["all", "buildings"])
+                    'building', insee, force_download in ["all", "buildings"])['sources']
             except overpass.errors.ServerRuntimeError as e:
                 log.error(
                     "Fail to query overpass for {}. Consider reporting the bug: {}. Skipping".format(insee, e))
@@ -466,7 +466,9 @@ def count_sources(datatype, insee, force_download):
     if not force_download and path.exists(json_path):
         log.debug('Use cache file {}'.format(json_path))
         with open(json_path) as fd:
-            return json.load(fd)
+            content = json.load(fd)
+            if 'sources' in content and 'authors' in content:
+                return content
 
     if datatype == 'building':
         request = """[out:json];
@@ -475,7 +477,7 @@ def count_sources(datatype, insee, force_download):
               way['building'](area.a);
               relation['building'](area.a);
             );
-            out tags qt;""".format(insee)
+            out tags qt meta;""".format(insee)
     elif datatype == 'relation':
         request = """[out:json];
             area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
@@ -497,19 +499,23 @@ def count_sources(datatype, insee, force_download):
             time.sleep(5 * round((10 - retry) / 3))
 
     sources = {}
+    authors = {}
     for element in response.get('elements'):
         src = element.get('tags').get('source') or 'unknown'
         src = src.lower()
         src = re.sub(CADASTRE_PROG, r'\2', src)
-        if src not in sources:
-            sources[src] = 0
-        sources[src] += 1
+        sources[src] = sources[src] + 1 if src in sources else 1
 
+        author = element.get('user') or 'unknown'
+        authors[author] = authors[author] + 1 if author in authors else 1
+    content = {}
+    content['sources'] = sources
+    content['authors'] = authors
     log.debug('Write cache file {}'.format(json_path))
     with open(json_path, 'w') as fd:
-        fd.write(json.dumps(sources, sort_keys=True, indent=4))
+        fd.write(json.dumps(content, sort_keys=True, indent=4))
 
-    return sources
+    return content
 
 
 def get_josm_path():
