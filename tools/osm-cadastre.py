@@ -39,9 +39,11 @@ import math
 BASE_PATH = path.normpath(
     path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 WORKDONE_PATH = path.join(BASE_PATH, '_done')
+WORKDONETAR_PATH = path.join(WORKDONE_PATH, 'tars')
 STATS_PATH = path.join(BASE_PATH, 'stats')
 DATA_PATH = path.join(STATS_PATH, 'cities')
 os.makedirs(WORKDONE_PATH, exist_ok=True)
+os.makedirs(WORKDONETAR_PATH, exist_ok=True)
 os.makedirs(DATA_PATH, exist_ok=True)
 os.makedirs(STATS_PATH, exist_ok=True)
 
@@ -496,7 +498,7 @@ def count_sources(datatype, insee, force_download):
             response = API.Get(request, responseformat='json', build=False)
             break
         except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
-            log.warning("Oops : {} occurred. Will retry again {} times in a few seconds".format(
+            log.warning("{} occurred. Will retry again {} times in a few seconds".format(
                 type(e).__name__, retry))
             if retry == 0:
                 raise e
@@ -673,16 +675,18 @@ def generate(args):
                 log.info(line)
 
     output_archive_path = path.join(BASE_PATH, "{}".format(data['ville']))
+    tarname = output_archive_path + '.tar.bz2'
     r = requests.get(
         "http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
-    log.debug('Write archive file {}.tar.bz2'.format(output_archive_path))
-    with open(output_archive_path + '.tar.bz2', 'wb') as fd:
+    log.debug('Write archive file {}'.format(tarname))
+    with open(tarname, 'wb') as fd:
         fd.write(r.content)
 
-    # finally decompress it
-    tar = tarfile.open(output_archive_path + '.tar.bz2')
+    # finally decompress it and move to archive
+    tar = tarfile.open(tarname)
     tar.extractall(path=output_archive_path)
     tar.close()
+    shutil.move(tarname, path.join(WORKDONETAR_PATH, tarname))
 
     return output_path
 
