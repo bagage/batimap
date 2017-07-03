@@ -769,12 +769,14 @@ def work(args):
         log.critical("Cannot load OSM data ({}): {}".format(
             r.status_code, r.text))
 
-    resp = input("Is the job done? (yes/No)")
-    if resp.lower() == "yes":
-        log.info("Congratulations! Moving {} to archives".format(city_path))
-        shutil.move(city_path, path.join(WORKDONE_PATH, city_path))
-        # also regenerate stats
-        stats(args2)
+    resp = None
+    while resp not in ["yes", "no"]:
+        resp = input("Is the job done? (yes/No)")
+        if resp.lower() == "yes":
+            log.info("Congratulations! Moving {} to archives".format(city_path))
+            shutil.move(city_path, path.join(WORKDONE_PATH, city_path))
+            # also regenerate stats
+            stats(args2)
 
 
 if __name__ == '__main__':
