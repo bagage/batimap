@@ -705,7 +705,8 @@ def generate(args):
         log.critical('Cannot find city for {}.'.format(insee))
         exit(1)
 
-    output_path = path.join(BASE_PATH, data['ville'])
+    output_path = path.join(
+        BASE_PATH, "{}-{}".format(insee, data['ville']))
     # if data already exists, exit
     if path.exists(output_path):
         log.info("{} has already been downloaded".format(output_path))
@@ -719,9 +720,7 @@ def generate(args):
             if "pdf" in line:
                 log.info(line)
 
-    output_archive_path = path.join(
-        BASE_PATH, "{}-{}".format(insee, data['ville']))
-    tarname = output_archive_path + '.tar.bz2'
+    tarname = output_path + '.tar.bz2'
     r = requests.get(
         "http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
     log.debug('Uncompressing archive file {}'.format(tarname))
@@ -730,7 +729,7 @@ def generate(args):
 
     # finally decompress it and move to archive
     tar = tarfile.open(tarname)
-    tar.extractall(path=output_archive_path)
+    tar.extractall(path=output_path)
     tar.close()
     shutil.move(tarname, path.join(WORKDONETAR_PATH, path.basename(tarname)))
 
