@@ -192,6 +192,16 @@ def color_by_date(date):
         return COLORS[date]
 
 
+def department_for(insee):
+    # Format of INSEE is [0-9]{2}[0-9]{3} OR 97[0-9]{1}[0-9]{2} for overseas
+    # the first part is the department number, the second the city
+    # unique id
+    if insee.startswith('97'):
+        return insee[:-2]
+    else:
+        return insee[:-3]
+
+
 def stats_to_txt(stats):
     out = ''
     dates = sorted(stats.items(), key=lambda t: t[1])
@@ -407,7 +417,7 @@ def get_bbox_for(insee):
     Returns left/right/bottom/top (min and max latitude / longitude) of the
     bounding box around the INSEE code
     """
-    relation = get_municipality_relations(insee[:-3], insee, False)
+    relation = get_municipality_relations(department_for(insee), insee, False)
     city = pygeoj.new()
     city.add_feature(geometry=get_geometry_for(relation[0]))
     city.update_bbox()
@@ -470,7 +480,7 @@ def get_vectorized_insee(department):
         exit(1)
 
     for _, code, _ in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
-        if code.isdigit() and int(code) > 95:
+        if department.startswith('97'):
             vectorized.append('{}{}'.format(department, code[3:]))
         else:
             vectorized.append('{}{}'.format(department, code[2:]))
@@ -631,10 +641,7 @@ def stats(args):
     elif args.insee:
         vectorized = {}
         for insee in args.insee:
-            # Format of INSEE if [0-9]{2-3}[0-9]{3}
-            # the first part is the department number, the second the city unique id
-            # We just need to junk the last 3 caracters
-            department = insee[:-3]
+            department = department_for(insee)
             vectorized[department] = get_vectorized_insee(department)
             build_municipality_list(department,
                                     vectorized[department],
@@ -657,7 +664,7 @@ def generate(args):
 
     url = 'http://cadastre.openstreetmap.fr'
     data = {
-        'dep': insee[:-3].zfill(3),
+        'dep': department_for(insee).zfill(3),
         'type': 'bati',
         'force': False
     }
