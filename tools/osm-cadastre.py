@@ -571,6 +571,27 @@ def get_josm_path():
     return None
 
 
+def start_josm(base_url):
+        # Hack: look in PATH and .desktop files if JOSM is referenced
+    josm_path = get_josm_path()
+    # If we found it, start it and try to connect to it (aborting after 1
+    # min)
+    if josm_path:
+        subprocess.Popen(josm_path)
+        timeout = time.time() + 60
+        while True:
+            try:
+                r = requests.get(base_url + 'version')
+                if r.status_code == 200 or time.time() > timeout:
+                    return True
+            except:
+                pass
+        if time.time() > timeout:
+            log.critical(
+                "Cannot connect to JOSM - is it running? Tip: add JOSM to your PATH so that I can run it for you ;)")
+    return False
+
+
 def init_overpass(args):
     endpoints = {
         'overpass.de': 'https://overpass-api.de/api/interpreter',
@@ -742,24 +763,7 @@ def work(args):
     try:
         r = requests.get(base_url + 'version')
     except:
-        # Hack: look in PATH and .desktop files if JOSM is referenced
-        josm_path = get_josm_path()
-        # If we found it, start it and try to connect to it (aborting after 1
-        # min)
-        if josm_path:
-            subprocess.Popen(josm_path)
-            timeout = time.time() + 60
-            while True:
-                try:
-                    r = requests.get(base_url + 'version')
-                    if r.status_code == 200 or time.time() > timeout:
-                        break
-                except:
-                    pass
-            if time.time() > timeout:
-                log.critical(
-                    "Cannot connect to JOSM - is it running? Tip: add JOSM to your PATH so that I can run it for you ;)")
-                return
+        start_josm(base_url)
 
     # b. open Strava and BDOrtho IGN imageries
     imageries = OrderedDict([
