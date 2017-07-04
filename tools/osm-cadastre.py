@@ -719,11 +719,12 @@ def generate(args):
             if "pdf" in line:
                 log.info(line)
 
-    output_archive_path = path.join(BASE_PATH, "{}".format(data['ville']))
+    output_archive_path = path.join(
+        BASE_PATH, "{}-{}".format(insee, data['ville']))
     tarname = output_archive_path + '.tar.bz2'
     r = requests.get(
         "http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
-    log.debug('Write archive file {}'.format(tarname))
+    log.debug('Uncompressing archive file {}'.format(tarname))
     with open(tarname, 'wb') as fd:
         fd.write(r.content)
 
@@ -731,7 +732,7 @@ def generate(args):
     tar = tarfile.open(tarname)
     tar.extractall(path=output_archive_path)
     tar.close()
-    shutil.move(tarname, path.join(WORKDONETAR_PATH, tarname))
+    shutil.move(tarname, path.join(WORKDONETAR_PATH, path.basename(tarname)))
 
     return output_path
 
