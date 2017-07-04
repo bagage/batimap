@@ -72,6 +72,22 @@ def pseudo_distance(p1, p2):
     return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
 
 
+def overpass_request_with_retries(request, output_format='json'):
+    for retry in range(9, 0, -1):
+        try:
+            response = API.Get(
+                request, responseformat=output_format, build=False)
+            return response
+        except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
+            log.warning("{} occurred. Will retry again {} times in a few seconds".format(
+                type(e).__name__, retry))
+            if retry == 0:
+                raise e
+            # Sleep for n * 5 seconds before a new attempt
+            time.sleep(5 * round((10 - retry) / 3))
+    return None
+
+
 def ringArea(coords):
     """
         This is borrowed from mapbox/geojson-rewind
@@ -225,7 +241,7 @@ def get_municipality_relations(department, insee=None, force_download=False):
           ["ref:INSEE"~"^{}"];
         out geom qt;""".format(insee if insee else department)
 
-    response = API.Get(request, responseformat='json', build=False)
+    response = overpass_request_with_retries(request)
 
     relations = response.get('elements')
     relations.sort(key=lambda x: x.get('tags').get('ref:INSEE'))
@@ -408,7 +424,8 @@ def get_insee_for(name):
             relation[boundary="administrative"][admin_level=8](area.a)
         """
 
-        response = API.Get(request, responseformat='csv("ref:INSEE","name")')
+        response = overpass_request_with_retries(
+            request, responseformat='csv("ref:INSEE","name")')
         with open(csv_path, 'w') as csv_file:
             csv_writer = csv.writer(csv_file)
             for row in response.split("\n"):
@@ -495,7 +512,7 @@ def count_sources(datatype, insee, force_download):
 
     for retry in range(9, 0, -1):
         try:
-            response = API.Get(request, responseformat='json', build=False)
+            response = overpass_request_with_retries(request)
             break
         except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
             log.warning("{} occurred. Will retry again {} times in a few seconds".format(
