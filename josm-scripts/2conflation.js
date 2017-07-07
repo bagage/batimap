@@ -17,7 +17,7 @@ function do_work()  {
     // 2. Cadastre layer: add wall=yes to everything that has not wall=no and select buildings
     var command = require("josm/command");
     var ds1 = housesLayer.data
-    var walls = ds1.query('-wall=no');
+    var walls = ds1.query('-wall=no -child');
     command.change(walls, {
        tags: {"wall": "yes"}
     }).applyTo(housesLayer);
