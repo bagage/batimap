@@ -866,4 +866,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     init_log(args)
     init_overpass(args)
-    args.func(args)
+    try:
+        args.func(args)
+    except KeyboardInterrupt as e:
+        pass
+
