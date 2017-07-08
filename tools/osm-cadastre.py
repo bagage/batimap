@@ -741,17 +741,17 @@ def work(args):
         args.insee = get_insee_for(args.name)
         args.name = None
 
-    # 1. we should display current state for the city
-    # must make a copy because stats expect an array of INSEE instead
-    args2 = copy.copy(args)
-    args2.insee = [args.insee]
-    args2.database = None
-    args2.force_download = 'buildings'
-    args2.country = False
-    args2.department = None
-    args2.force = 'buildings'
-    args2.umap = ''
-    stats(args2)
+
+    # 1. retrieve current state, and if already up-to-date skip work
+    building_src = count_sources('building', args.insee, True)['sources']
+    dates = sorted(building_src.items(),
+                   key=lambda t: t[1], reverse=True)
+    date = dates[0][0] if len(dates) else "None"
+    if date == str(datetime.now().year):
+        log.info("Already up-to-date, skipping")
+        return
+    else:
+        log.info("Latest import was from " + date)
 
     # 2. we must generate data from the Cadastre
     city_path = generate(args)
@@ -810,8 +810,6 @@ def work(args):
         if resp.lower() == "yes":
             log.info("Congratulations! Moving {} to archives".format(city_path))
             shutil.move(city_path, path.join(WORKDONE_PATH, city_path))
-            # also regenerate stats
-            stats(args2)
 
 
 if __name__ == '__main__':
