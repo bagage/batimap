@@ -768,13 +768,13 @@ def work(args):
     # b. open Strava and BDOrtho IGN imageries
     imageries = OrderedDict([
         ("BDOrtho IGN",
-         "http://proxy-ign.openstreetmap.fr/bdortho/{zoom}/{x}/{y}.jpg"),
+         "url=http://proxy-ign.openstreetmap.fr/bdortho/{zoom}/{x}/{y}.jpg"),
         ("Strava",
-         "http://globalheat.strava.com/tiles/both/color2/{zoom}/{x}/{y}.png"),
+         "min_zoom=3&max_zoom=17&url=http://globalheat.strava.com/tiles/both/color2/{zoom}/{x}/{y}.png"),
     ])
     for k, v in imageries.items():
         r = requests.get(
-            base_url + 'imagery?title={}&type=tms&url={}'.format(k, v))
+            base_url + 'imagery?title={}&type=tms&{}'.format(k, v))
         if r.status_code != 200:
             log.critical("Cannot add imagery ({}): {}".format(
                 r.status_code, r.text))
