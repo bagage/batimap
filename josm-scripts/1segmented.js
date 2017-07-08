@@ -5,12 +5,15 @@ var segmentedLayer = null;
 var housesLayer = null;
 for (var i = 0; i < josm.layers.length; i++) {
     var layer = josm.layers.get(i);
-    if (layer.name.endsWith("-houses-prediction_segmente.osm")) {
+    if (!segmentedLayer && layer.name.endsWith("-houses-prediction_segmente.osm")) {
         segmentedLayer = layer;
-    } else if (layer.name.endsWith("-houses-simplifie.osm")) {
+    } else if (!housesLayer && layer.name.endsWith("-houses-simplifie.osm")) {
         housesLayer = layer;
     }
 }
+// check that insee match
+if (segmentedLayer != null && segmentedLayer.name.split('-')[0] != housesLayer.name.split('-')[0])
+    segmentedLayer = null;
 
 function do_work() {
     // 2. We select segmented items and add them in the todo list plugin.
