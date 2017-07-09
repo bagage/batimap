@@ -842,7 +842,8 @@ def work(args):
         resp = input("Is the job done? (yes/No)")
         if resp.lower() == "yes":
             log.info("Congratulations! Moving {} to archives".format(city_path))
-            shutil.move(city_path, path.join(WORKDONE_PATH, city_path))
+            shutil.move(city_path, path.join(
+                WORKDONE_PATH, path.basename(city_path)))
 
 
 if __name__ == '__main__':
