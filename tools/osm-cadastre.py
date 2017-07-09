@@ -424,6 +424,38 @@ def get_bbox_for(insee):
     return city.bbox
 
 
+def get_name_for(insee):
+    log.info("Fetch name for {}".format(insee))
+
+    csv_path = path.join(STATS_PATH, 'france-cities.csv')
+    if not path.exists(csv_path):
+        request = """
+            area[boundary='administrative'][admin_level='2']['name'='France']->.a;
+            relation[boundary="administrative"][admin_level=8](area.a)
+        """
+
+        response = overpass_request_with_retries(
+            request, responseformat='csv("ref:INSEE","name")')
+        with open(csv_path, 'w') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            for row in response.split("\n"):
+                csv_writer.writerow(row.split("\t"))
+
+    with open(csv_path, 'r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        results = [x['name']
+                   for x in csv_reader if x['ref:INSEE'] == insee]
+        if len(results) == 0:
+            log.critical("Cannot found city with INSEE {}.".format(insee))
+            exit(1)
+        elif len(results) == 1:
+            return results[0]
+        else:
+            log.critical(
+                "Too many cities with insee {} (total: {}). Please check insee.".format(insee, len(results)))
+            exit(1)
+
+
 def get_insee_for(name):
     log.info("Fetch INSEE for {}".format(name))
 
@@ -798,8 +830,9 @@ def work(args):
 
     # d. download city data from OSM as well
     bbox = get_bbox_for(args.insee)
-    url = base_url + 'load_and_zoom?new_layer=true&layer_name=Données OSM pour {}&left={}&right={}&bottom={}&top={}'
-    url = url.format(args.insee, bbox[0], bbox[1], bbox[2], bbox[3])
+    url = base_url + 'load_and_zoom?new_layer=true&layer_name=Données OSM pour {} - {}&left={}&right={}&bottom={}&top={}'
+    url = url.format(args.insee, get_name_for(args.insee),
+                     bbox[0], bbox[1], bbox[2], bbox[3])
     r = requests.get(url)
     if r.status_code != 200:
         log.critical("Cannot load OSM data ({}): {}".format(
