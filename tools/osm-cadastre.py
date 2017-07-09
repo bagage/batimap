@@ -774,7 +774,6 @@ def work(args):
         args.insee = get_insee_for(args.name)
         args.name = None
 
-
     # 1. retrieve current state, and if already up-to-date skip work
     building_src = count_sources('building', args.insee, True)['sources']
     dates = sorted(building_src.items(),
@@ -853,18 +852,20 @@ if __name__ == '__main__':
                         'debug', 'info', 'warning', 'error', 'no'], default='info', help="Niveau de verbosité")
     parser.add_argument('--overpass', choices=['overpass.de', 'api.openstreetmap.fr', 'localhost'],
                         default='overpass.de', help="Adresse du serveur pour les requêtes Overpass")
+    parser.add_argument(
+        '--database', type=str, help="identifiants pour la base de donnée sous la forme host:port:user:password:database (ex: 'localhost:25432:docker:docker:gis')")
+
     subparsers = parser.add_subparsers(
         help="Plusieurs commandes sont disponibles")
     subparsers.required = True
     subparsers.dest = 'command'
+
     stats_parser = subparsers.add_parser(
         'stats', help="Récupère la date du dernier import pour une commune ou un département ou la France entière et génère un .geojson pour une utilisation externe")
     stats_parser.add_argument('--umap', action='store_true',
                               help="À utiliser si le geojson est à destination de UMap")
     stats_parser.add_argument('--force', '-f', choices=['all', 'buildings', 'relations'],
                               default='', help="De ne pas utiliser les fichiers en cache et forcer la requête Overpass")
-    stats_parser.add_argument(
-        '--database', type=str, help="identifiants pour la base de donnée sous la forme host:port:user:password:database (ex: 'localhost:25432:docker:docker:gis')")
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
     stats_group.add_argument(
         '--country', '-c', action='store_true', help="France entière")
@@ -902,4 +903,3 @@ if __name__ == '__main__':
         args.func(args)
     except KeyboardInterrupt as e:
         pass
-
