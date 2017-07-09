@@ -577,7 +577,8 @@ def start_josm(base_url):
     # If we found it, start it and try to connect to it (aborting after 1
     # min)
     if josm_path:
-        subprocess.Popen(josm_path)
+        stdouterr = None if log.getEffectiveLevel() == logging.DEBUG else subprocess.PIPE
+        subprocess.Popen(josm_path, stdout=stdouterr, stderr=stdouterr)
         timeout = time.time() + 60
         while True:
             try:
