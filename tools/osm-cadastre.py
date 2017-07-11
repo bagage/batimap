@@ -629,6 +629,7 @@ def init_overpass(args):
     endpoints = {
         'overpass.de': 'https://overpass-api.de/api/interpreter',
         'api.openstreetmap.fr': 'http://api.openstreetmap.fr/oapi/interpreter',
+        'dev.api.openstreetmap.fr': 'http://dev.api.openstreetmap.fr/api/interpreter',
         # default port/url for docker image
         'localhost': 'http://localhost:5001/api/interpreter'
     }
@@ -851,7 +852,7 @@ if __name__ == '__main__':
         description="Inspection de l'état du bâti dans OpenStreetMap en France.")
     parser.add_argument('--verbose', '-v', choices=[
                         'debug', 'info', 'warning', 'error', 'no'], default='info', help="Niveau de verbosité")
-    parser.add_argument('--overpass', choices=['overpass.de', 'api.openstreetmap.fr', 'localhost'],
+    parser.add_argument('--overpass', choices=['overpass.de', 'api.openstreetmap.fr', 'dev.api.openstreetmap.fr', 'localhost'],
                         default='overpass.de', help="Adresse du serveur pour les requêtes Overpass")
     parser.add_argument(
         '--database', type=str, help="identifiants pour la base de donnée sous la forme host:port:user:password:database (ex: 'localhost:25432:docker:docker:gis')")
