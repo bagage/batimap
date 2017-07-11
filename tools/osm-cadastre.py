@@ -584,6 +584,22 @@ def count_sources(datatype, insee, force_download):
     return content
 
 
+def cadastre_name_for(insee, dep):
+    r = requests.get(
+        "http://cadastre.openstreetmap.fr/data/{}/{}-liste.txt".format(dep, dep))
+    city = None
+    for line in r.text.split('\n'):
+        if '{} "'.format(insee[-3:]) in line:
+            linesplit = line.split(' ')
+            city = "{}-{}".format(linesplit[1], linesplit[2].replace('"', ''))
+            break
+
+    if city is None:
+        log.critical('Cannot find city for {}.'.format(insee))
+        exit(1)
+    return city
+
+
 def get_josm_path():
     for p in os.environ['PATH']:
         if p.lower().endswith("josm"):
@@ -726,18 +742,7 @@ def generate(args):
 
     # First we need to get Cadastre name for the city (which is different from
     # the OSM one)
-    r = requests.get(
-        "http://cadastre.openstreetmap.fr/data/{}/{}-liste.txt".format(data['dep'], data['dep']))
-    for line in r.text.split('\n'):
-        if '{} "'.format(insee[-3:]) in line:
-            linesplit = line.split(' ')
-            data[
-                'ville'] = "{}-{}".format(linesplit[1], linesplit[2].replace('"', ''))
-            break
-
-    if 'ville' not in data:
-        log.critical('Cannot find city for {}.'.format(insee))
-        exit(1)
+    data['ville'] = cadastre_name_for(insee, data['dep'])
 
     output_path = path.join(
         BASE_PATH, "{}-{}".format(insee, data['ville']))
@@ -782,6 +787,11 @@ def work(args):
     date = dates[0][0] if len(dates) else "None"
     if date == str(datetime.now().year):
         log.info("Already up-to-date, skipping")
+        city_path = path.join(
+            BASE_PATH, "{}-{}".format(args.insee, cadastre_name_for(args.insee, department_for(args.insee).zfill(3))))
+        if path.exists(city_path):
+            shutil.move(city_path, path.join(
+                WORKDONE_PATH, path.basename(city_path)))
         return
     else:
         log.info("Latest import was from " + date)
