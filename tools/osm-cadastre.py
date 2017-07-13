@@ -788,13 +788,14 @@ def work(args):
                    key=lambda t: t[1], reverse=True)
     date = dates[0][0] if len(dates) else "None"
     if date == str(datetime.now().year):
-        log.info("Already up-to-date, skipping")
-        city_path = path.join(
-            BASE_PATH, "{}-{}".format(args.insee, cadastre_name_for(args.insee, department_for(args.insee).zfill(3))))
-        if path.exists(city_path):
-            shutil.move(city_path, path.join(
-                WORKDONE_PATH, path.basename(city_path)))
-        return
+        still_work = input("Already up-to-date, continuing? (yes/No)")
+        if still_work != "yes":
+            city_path = path.join(
+                BASE_PATH, "{}-{}".format(args.insee, cadastre_name_for(args.insee, department_for(args.insee).zfill(3))))
+            if path.exists(city_path):
+                shutil.move(city_path, path.join(
+                    WORKDONE_PATH, path.basename(city_path)))
+            return
     else:
         log.info("Latest import was from " + date)
 
