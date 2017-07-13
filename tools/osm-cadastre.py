@@ -591,7 +591,8 @@ def cadastre_name_for(insee, dep):
     for line in r.text.split('\n'):
         if '{} "'.format(insee[-3:]) in line:
             linesplit = line.split(' ')
-            city = "{}-{}".format(linesplit[1], linesplit[2].replace('"', ''))
+            city = "{}-{}".format(linesplit[1],
+                                  " ".join(linesplit[2:]).replace('"', ''))
             break
 
     if city is None:
