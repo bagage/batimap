@@ -100,3 +100,21 @@ Supposons que l'on souhaite mettre à jour le cadastre de [Upie, code insee 2635
 7. Finalement valider les erreurs (`Shift+U`) et envoyer les changements.
 
 Voir le [guide complet](https://wiki.openstreetmap.org/wiki/WikiProject_France/Cadastre/Import_semi-automatique_des_b%C3%A2timents#Utilisation_du_plugin_.C2.ABConflation.C2.BB_dans_JOSM) pour plus d'informations ou le [guide vidéo](https://www.youtube.com/watch?v=8n34tYJXnEI)… ⚠ La démarche a évolué depuis la vidéo.
+
+# Complétion (bash, zsh…)
+
+Ce projet utilise [argcomplete](https://github.com/kislyuk/argcomplete). Pour faire fonctionner la complétion :
+
+## Pour Bash
+
+```sh
+eval "$(register-python-argcomplete osm-cadastre)"
+```
+
+## Pour Zsh
+
+```sh
+autoload bashcompinit
+bashcompinit
+eval "$(register-python-argcomplete osm-cadastre)"
+```

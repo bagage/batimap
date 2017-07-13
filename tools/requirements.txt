@@ -5,3 +5,4 @@ overpass
 psycopg2
 pygeoj
 requests
+argcomplete

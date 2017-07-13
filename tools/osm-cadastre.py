@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import argcomplete
 from datetime import datetime
 import json
 import logging
@@ -909,6 +910,7 @@ if __name__ == '__main__':
                             help="commune par son nom")
     work_parser.set_defaults(func=work)
 
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     init_log(args)
     init_overpass(args)
