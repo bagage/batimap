@@ -1,3 +1,4 @@
 data
 josm.desktop
 .vscode
+__pycache__/
