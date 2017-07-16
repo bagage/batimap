@@ -647,7 +647,7 @@ def init_overpass(args):
     endpoints = {
         'overpass.de': 'https://overpass-api.de/api/interpreter',
         'api.openstreetmap.fr': 'http://api.openstreetmap.fr/oapi/interpreter',
-        'dev.api.openstreetmap.fr': 'http://dev.api.openstreetmap.fr/api/interpreter',
+        'dev.api.openstreetmap.fr': 'http://dev.api.openstreetmap.fr/overpass',
         # default port/url for docker image
         'localhost': 'http://localhost:5001/api/interpreter'
     }
