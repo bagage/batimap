@@ -121,7 +121,7 @@ class Postgis(object):
             urls = []
             for x in range(min(x1, x2), max(x1, x2) + 1):
                 for y in range(min(y1, y2), max(y1, y2) + 1):
-                    url = "https://overpass.damsy.net/tegola/maps/bati/{}/{}/{}.vector.pbf".format(
+                    url = "https://cadastre.damsy.net/tegola/maps/bati/{}/{}/{}.vector.pbf".format(
                         z, x, y)
                     urls.append(url)
             rs = (grequests.request('PURGE', x) for x in urls)

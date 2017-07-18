@@ -45,7 +45,7 @@ $(function () {
             }
         }
 
-        var cadastreURL = "https://overpass.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
+        var cadastreURL = "https://cadastre.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
         var vectorTileOptions = {
             rendererFactory: L.canvas.tile,
             maxZoom: 20,

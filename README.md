@@ -1,6 +1,6 @@
 Ce projet contient plusieurs outils pour simplifier l'import / la mise à jour du bâti sur [OpenStreetMap](https://openstreetmap.org) via l'éditeur [JOSM](https://josm.openstreetmap.de/) et le plugin [Conflation](http://wiki.openstreetmap.org/wiki/JOSM/Plugins/Conflation).
 
-L'état actuel des données peut être visualisé sur http://overpass.damsy.net (beta).
+L'état actuel des données peut être visualisé sur http://cadastre.damsy.net (beta).
 
 ![Visualisation de l'état du cadastre](https://user-images.githubusercontent.com/1451988/26934158-d6e63858-4c68-11e7-8cd8-534718e6b3f6.png)
 
@@ -16,7 +16,7 @@ L'état actuel des données peut être visualisé sur http://overpass.damsy.net 
  * [plugins](./plugins): plugins patchés
    * [conflation.jar](./plugins/conflation.jar): zoom automatique en cas de problème
    * [todo.jar](./plugins/todo.jar): ajout d'un bouton "Mark as selected" et gestion du support multicouches
- * [website](./website): code du site https://overpass.damsy.net
+ * [website](./website): code du site https://cadastre.damsy.net
  * [tools](./tools)
    * [osm-cadastre.py](./tools/osm-cadastre.py): script principal (voir plus bas)
  * [josm-scripts](./josm-scripts): scripts à utiliser dans JOSM via le plugin [Scripting](http://wiki.openstreetmap.org/wiki/JOSM/Plugins/Scripting)
