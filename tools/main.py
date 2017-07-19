@@ -13,6 +13,8 @@ from city import City
 from josm import Josm
 from postgis_db import PostgisDb
 
+import tqdm
+
 
 def stats(args):
     if args.department:
@@ -22,58 +24,30 @@ def stats(args):
     else:
         cities = args.cities
 
-    cadastre_source_regex = re.compile(
-        r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
-    for city in cities:
-        c = City(my_db, city)
+    pbar = tqdm.tqdm(cities)
+    for city in pbar:
+        c = City(my_log.log, my_db, city)
 
-        date = c.get_last_import_date()
-        author = c.get_last_import_author()
+        (date, author) = c.fetch_osm_data(my_overpass, args.force)
 
-        if date is None or args.force:
-            if not c.is_vectorized:
-                date = 'raster'
-            elif args.force:
-                request = """[out:json];
-                    area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
-                    ( node['building'](area.a);
-                      way['building'](area.a);
-                      relation['building'](area.a);
-                    );
-                    out tags qt meta;""".format(c.insee)
-                response = my_overpass.request_with_retries(request)
-                sources_date = []
-                authors = []
-                for element in response.get('elements'):
-                    src = element.get('tags').get('source') or 'unknown'
-                    src = re.sub(cadastre_source_regex, r'\2', src.lower())
-                    sources_date.append(src)
-
-                    a = element.get('user') or 'unknown'
-                    authors.append(a)
-
-                author = mode(authors) if len(authors) else None
-                date = mode(sources_date) if len(sources_date) else 'never'
-
-        # only update date if we did not use cache files for buildings
-        my_db.update_stats_for_insee(
-            c.insee, c.date_color_dict().get(date, 'gray'), c.department, author, update_time=args.force)
-
-        my_log.log.info(
-            "Dernier import pour {} : {} par {}".format(c, date, author or 'personne'))
+        pbar.set_description(
+            "{} : {} par {}".format(c, date, author or 'personne'))
 
 
 def generate(args):
-    for city in args.cities:
-        c = City(my_db, city)
+    pbar = tqdm.tqdm(args.cities)
+    for city in pbar:
+        c = City(my_log.log, my_db, city)
         city_path = city.get_work_path()
         if city_path and not path.exists(city_path):
             c.fetch_cadastre_data()
+        pbar.set_description(repr(c))
 
 
 def work(args):
-    for city in args.cities:
-        c = City(my_db, city)
+    pbar = tqdm.tqdm(args.cities)
+    for city in pbar:
+        c = City(my_log.log, my_db, city)
         date = c.get_last_import_date()
         city_path = c.get_work_path()
         if date == str(datetime.datetime.now().year):
