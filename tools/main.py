@@ -22,14 +22,45 @@ def stats(args):
     else:
         cities = args.cities
 
+    cadastre_source_regex = re.compile(
+        r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
     for city in cities:
         c = City(my_db, city)
 
-        if args.force in ["all", "relations"]:
-            print("refresh_stats()")
+        date = c.get_last_import_date()
+        author = c.get_last_import_author()
 
-        my_log.log.info("Dernier import pour {} : {}".format(
-            c, c.get_last_import_date()))
+        if date is None or args.force:
+            if not c.is_vectorized:
+                date = 'raster'
+            elif args.force:
+                request = """[out:json];
+                    area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
+                    ( node['building'](area.a);
+                      way['building'](area.a);
+                      relation['building'](area.a);
+                    );
+                    out tags qt meta;""".format(c.insee)
+                response = my_overpass.request_with_retries(request)
+                sources_date = []
+                authors = []
+                for element in response.get('elements'):
+                    src = element.get('tags').get('source') or 'unknown'
+                    src = re.sub(cadastre_source_regex, r'\2', src.lower())
+                    sources_date.append(src)
+
+                    a = element.get('user') or 'unknown'
+                    authors.append(a)
+
+                author = mode(authors) if len(authors) else None
+                date = mode(sources_date) if len(sources_date) else 'never'
+
+        # only update date if we did not use cache files for buildings
+        my_db.update_stats_for_insee(
+            c.insee, c.date_color_dict().get(date, 'gray'), c.department, author, update_time=args.force)
+
+        my_log.log.info(
+            "Dernier import pour {} : {} par {}".format(c, date, author or 'personne'))
 
 
 def generate(args):
@@ -86,8 +117,8 @@ if __name__ == '__main__':
 
     stats_parser = subparsers.add_parser(
         'stats', help="Récupère la date du dernier import du bâti pour une commune ou département")
-    stats_parser.add_argument('--force', '-f', choices=['all', 'buildings', 'relations'],
-                              default='', help="De ne pas utiliser les fichiers en cache et forcer la requête Overpass")
+    stats_parser.add_argument('--force', '-f', action='store_true',
+                              help="De ne pas utiliser la valeur en base de donnée et forcer l'execution de la requête Overpass")
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
     stats_group.add_argument('--department', '-d', type=str,
                              nargs='+', help="département par son numéro")

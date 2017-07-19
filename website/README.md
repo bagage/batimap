@@ -19,7 +19,7 @@ osmconvert -v --out-pbf boundaries.o5m > boundaries.pbf
 osm2pgsql -H localhost -U docker -P 25432 --verbose --proj 4326 --hstore-all -W --database gis boundaries.pbf
 
 # finally create the only custom table we need
-/usr/lib/postgresql/9.6/bin/psql -h localhost -U docker -p 25432 -d gis -c 'create table if not exists color_city(insee TEXT PRIMARY KEY NOT NULL, department NOT NULL, color CHAR(20), last_update TIMESTAMP)'
+/usr/lib/postgresql/9.6/bin/psql -h localhost -U docker -p 25432 -d gis -c 'create table if not exists color_city(insee TEXT PRIMARY KEY NOT NULL, department NOT NULL, color CHAR(20), last_update TIMESTAMP, last_author TEXT)'
 
 # fill color information by running something like (may take few hours)
 for i in `seq 1 1 19` 2A 2B `seq 21 1 95` `seq 971 1 976`; do
