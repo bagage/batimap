@@ -75,10 +75,13 @@ class City(object):
         this_year = datetime.datetime.now().year
         colors = list(Color('red').range_to(Color('orange'), this_year - 2009))
         colors.append(Color('green'))
-        d = dict(zip(range(2009, this_year + 1), [c.hex for c in colors]))
+
+        d = {}
         d['raster'] = 'black'
         d['unknown'] = 'gray'
         d['never'] = 'pink'
+        for i in range(len(colors)):
+            d[str(2009 + i)] = colors[i].hex
         return d
 
     def get_last_import_date(self):
