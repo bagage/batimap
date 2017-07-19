@@ -5,9 +5,6 @@ from os import path
 import subprocess
 import time
 
-import logging
-import logging as log
-
 
 class Josm(object):
 
@@ -35,8 +32,8 @@ class Josm(object):
         # If we found it, start it and try to connect to it (aborting after 1
         # min)
         if josm_path:
-            stdouterr = subprocess.PIPE
-            # stdouterr = None if log.getEffectiveLevel() == logging.DEBUG else subprocess.PIPE
+            stdouterr = None if Josm.log.getEffectiveLevel(
+            ) == logging.DEBUG else subprocess.PIPE
             subprocess.Popen(josm_path, stdout=stdouterr, stderr=stdouterr)
             timeout = time.time() + 60
             while True:
@@ -47,7 +44,7 @@ class Josm(object):
                 except:
                     pass
             if time.time() > timeout:
-                log.critical(
+                Josm.log.critical(
                     "Impossible de se connecter à JOSM - est-il lancé ?")
         return False
 
@@ -83,7 +80,7 @@ class Josm(object):
                 if r.status_code == 403:
                     error = "did you enable 'Open local files' in Remote Control Preferences?"
 
-                log.critical("Impossible de lancer JOSM ({}): {}".format(
+                Josm.log.critical("Impossible de lancer JOSM ({}): {}".format(
                     r.status_code, error))
                 break
 
@@ -92,10 +89,9 @@ class Josm(object):
         url = base_url + 'load_and_zoom?new_layer=true&layer_name=Données OSM pour {} - {}&left={}&right={}&bottom={}&top={}'
         url = url.format(city.insee, city.name,
                          bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax)
-        print(url)
         r = requests.get(url)
         if r.status_code != 200:
-            log.critical("Impossible de charger les données OSM ({}): {}".format(
+            Josm.log.critical("Impossible de charger les données OSM ({}): {}".format(
                 r.status_code, r.text))
 
         resp = None
