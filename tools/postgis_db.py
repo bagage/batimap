@@ -83,6 +83,7 @@ class PostgisDb(object):
                 "        SELECT insee\n"
                 "        FROM color_city\n"
                 "        WHERE department = '{}'\n"
+                "        ORDER BY insee\n"
                 "").format(department))
         self.cursor.execute(req)
 
