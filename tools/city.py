@@ -25,6 +25,7 @@ class City(object):
     __insee_regex = re.compile("[a-zA-Z0-9]{3}[0-9]{2}")
     __cadastre_src2date_regex = re.compile(
         r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
+    __cadastre_csv = 'code_cadastre.csv'
 
     def __init__(self, db, identifier):
         self.db = db
@@ -44,16 +45,22 @@ class City(object):
             self.department = self.insee[:-3]
 
         # get cadastre name and code
-        self.name_cadastre = None
-        self.is_vectorized = False
-        response = requests.get(
-            'http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(self.department.zfill(3)))
-        idx = 3 if self.department.startswith('97') else 2
-        for _, code, cname in [line.split(maxsplit=2) for line in response.text.strip().split('\n')]:
-            if code[idx:] == self.insee[idx:]:
-                self.name_cadastre = "{}-{}".format(code, cname.split('"')[1])
-                self.is_vectorized = True
-                break
+        with open(self.__cadastre_csv, 'r') as fd:
+            self.name_cadastre = None
+            self.is_vectorized = False
+            idx = 3 if self.department.startswith('97') else 2
+            # response = requests.get(
+            #     'http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(self.department.zfill(3)))
+            # for _, code, cname in [line.split(maxsplit=2) for line in
+            # response.text.strip().split('\n')]:
+            for line in fd:
+                (d, _, cadastre_name, _, code_cadastre,
+                 bati_type) = line.strip().split(',')
+                if d == self.department and code_cadastre[idx:] == self.insee[idx:]:
+                    self.name_cadastre = "{}-{}".format(
+                        code_cadastre, cadastre_name)
+                    self.is_vectorized = (bati_type == 'VECT')
+                    break
 
     def __repr__(self):
         return '{} - {}'.format(self.insee, self.name)
