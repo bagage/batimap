@@ -6,11 +6,9 @@ import tarfile
 from colour import Color
 import datetime
 from contextlib import closing
-
-import logging as log
-
-
+from statistics import mode
 import os
+
 BASE_PATH = path.normpath(
     path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
 WORKDONE_PATH = path.join(BASE_PATH, '_done')
@@ -25,6 +23,8 @@ os.makedirs(STATS_PATH, exist_ok=True)
 
 class City(object):
     __insee_regex = re.compile("[a-zA-Z0-9]{3}[0-9]{2}")
+    __cadastre_src2date_regex = re.compile(
+        r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
 
     def __init__(self, db, identifier):
         self.db = db
@@ -79,6 +79,9 @@ class City(object):
         date = [d for (d, c) in date2color.items() if c == color]
         return date[0] if len(date) else 'unknown'
 
+    def get_last_import_author(self):
+        return self.db.last_import_author(self.insee)
+
     def get_work_path(self):
         if self.name_cadastre is None:
             return None
@@ -121,3 +124,38 @@ class City(object):
         shutil.move(tarname, path.join(
             WORKDONETAR_PATH, path.basename(tarname)))
         return True
+
+    def fetch_osm_data(self, overpass, force):
+        date = self.get_last_import_date()
+        author = self.get_last_import_author()
+        if force or date is None or author is None:
+            if not self.is_vectorized:
+                date = 'raster'
+            elif force:
+                request = """[out:json];
+                    area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
+                    ( node['building'](area.a);
+                      way['building'](area.a);
+                      relation['building'](area.a);
+                    );
+                    out tags qt meta;""".format(self.insee)
+                response = overpass.request_with_retries(request)
+                sources_date = []
+                authors = []
+                for element in response.get('elements'):
+                    src = element.get('tags').get('source') or 'unknown'
+                    src = re.sub(self.__cadastre_src2date_regex,
+                                 r'\2', src.lower())
+                    sources_date.append(src)
+
+                    a = element.get('user') or 'unknown'
+                    authors.append(a)
+
+                author = mode(authors) if len(authors) else None
+                date = mode(sources_date) if len(sources_date) else 'never'
+
+        # only update date if we did not use cache files for buildings
+        self.db.update_stats_for_insee(
+            self.insee, self.date_color_dict().get(date, 'gray'), self.department, author, update_time=force)
+
+        return (date, author)

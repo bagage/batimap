@@ -30,7 +30,7 @@ class PostgisDb(object):
         req = ((""
                 "        SELECT tags->'ref:INSEE'\n"
                 "        FROM planet_osm_polygon\n"
-                "        WHERE name LIKE '{}%'\n"
+                "        WHERE name ILIKE '{}%'\n"
                 "        AND admin_level = '8'\n"
                 "        AND boundary = 'administrative'\n"
                 "").format(name))
@@ -66,6 +66,18 @@ class PostgisDb(object):
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
 
+    def last_import_author(self, insee):
+        req = ((""
+                "        SELECT last_author\n"
+                "        FROM color_city\n"
+                "        WHERE insee = '{}'\n"
+                "").format(insee))
+        self.cursor.execute(req)
+
+        results = self.cursor.fetchall()
+        assert(len(results) <= 1)
+        return results[0][0] if len(results) else None
+
     def within_department(self, department):
         req = ((""
                 "        SELECT insee\n"
@@ -90,3 +102,19 @@ class PostgisDb(object):
         assert(len(results) <= 1)
 
         return Bbox(results[0][0]) if len(results) else None
+
+    def update_stats_for_insee(self, insee, color, department, author, update_time=False):
+        req = (("""
+                        INSERT INTO color_city
+                        VALUES ('{insee}', '{color}',
+                                '{department}', now(), '{author}')
+                        ON CONFLICT (insee) DO UPDATE SET color = excluded.color, department = excluded.department
+                """.format(insee=insee, color=color, department=department, author=author)))
+        if update_time:
+            req += ", last_update = excluded.last_update, last_author = excluded.last_author"
+        try:
+            self.cursor.execute(req)
+            self.connection.commit()
+        except Exception as e:
+            log.warning("Cannot write in database: " + str(e))
+            pass
