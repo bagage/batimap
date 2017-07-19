@@ -27,7 +27,8 @@ class City(object):
         r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
     __cadastre_csv = 'code_cadastre.csv'
 
-    def __init__(self, db, identifier):
+    def __init__(self, log, db, identifier):
+        self.log = log
         self.db = db
         if self.__insee_regex.match(identifier) is not None:
             self.insee = identifier
@@ -115,12 +116,12 @@ class City(object):
                 # only display progression
                 # TODO: improve this…
                 if "pdf" in line:
-                    log.info(line)
+                    self.log.info(line)
 
         tarname = self.get_work_path() + '.tar.bz2'
         r = requests.get(
             "http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
-        log.debug('Décompression du fichier {}'.format(tarname))
+        self.log.debug('Décompression du fichier {}'.format(tarname))
         with open(tarname, 'wb') as fd:
             fd.write(r.content)
 

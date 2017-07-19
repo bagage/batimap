@@ -1,8 +1,6 @@
 import overpass as o
 import time
 
-import log
-
 
 class Overpassw(object):
     __api = None
@@ -15,20 +13,20 @@ class Overpassw(object):
         'localhost': 'http://localhost:5001/api/interpreter'
     }
 
-    def __init__(self, e):
+    def __init__(self, log, e):
         default = 'overpass.de'
         default = self.endpoints[
             e] if e in self.endpoints else self.endpoints[default]
         self.__api = o.API(endpoint=default, timeout=300)
+        self.log = log
 
     def request_with_retries(self, request, output_format='json'):
         for retry in range(9, 0, -1):
             try:
-                response = self.__api.Get(
+                return self.__api.Get(
                     request, responseformat=output_format, build=False)
-                return response
             except (o.errors.MultipleRequestsError, o.errors.ServerLoadError) as e:
-                log.warning("{} occurred. Will retry again {} times in a few seconds".format(
+                self.log.warning("{} occurred. Will retry again {} times in a few seconds".format(
                     type(e).__name__, retry))
                 if retry == 0:
                     raise e

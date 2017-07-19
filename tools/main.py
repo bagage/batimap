@@ -80,8 +80,6 @@ def work(args):
             need_work = input(
                 "{} déjà à jour, continuer quand même ? (oui/Non) ".format(c)).lower() == "oui"
         else:
-            my_log.log.info(
-                "{} a été importé la dernière fois en {}".format(c, date))
             need_work = city_path is not None
 
         if need_work:
@@ -92,10 +90,12 @@ def work(args):
                 return
 
         if path.exists(city_path):
-            my_log.log.info(
+            my_log.log.debug(
                 "Déplacement de {} vers les archives".format(city_path))
             shutil.move(city_path, path.join(
                 City.WORKDONE_PATH, path.basename(city_path)))
+
+        pbar.set_description(repr(c))
 
 
 if __name__ == '__main__':
@@ -149,10 +149,10 @@ if __name__ == '__main__':
 
     global my_log, my_overpass, my_db
     my_log = Log(args.verbose)
-    my_overpass = Overpassw(args.overpass)
+    my_overpass = Overpassw(my_log.log, args.overpass)
     (host, port, user, password, database) = args.database.split(":")
-    my_db = PostgisDb(host, port, user, password, database)
-
+    my_db = PostgisDb(my_log.log, host, port, user, password, database)
+    Josm.log = my_log.log
     try:
         args.func(args)
     except KeyboardInterrupt as e:
