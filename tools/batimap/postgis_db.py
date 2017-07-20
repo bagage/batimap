@@ -30,9 +30,9 @@ class PostgisDb(object):
         req = (("""
                         SELECT tags->'ref:INSEE'
                         FROM planet_osm_polygon
-                        WHERE name ILIKE '{}%'
-                        AND admin_level = '8'
+                        WHERE admin_level = '8'
                         AND boundary = 'administrative'
+                        AND name ILIKE '{}%'
                 """).format(name))
         self.cursor.execute(req)
 

@@ -169,8 +169,8 @@ class City(object):
                 date = max(
                     sources_date, key=sources_date.count) if sources_date.count else 'never'
 
-        # only update date if we did not use cache files for buildings
-        self.db.update_stats_for_insee(
-            self.insee, self.date_color_dict().get(date, 'gray'), self.department, author, update_time=force)
+            # only update date if we did not use cache files for buildings
+            self.db.update_stats_for_insee(
+                self.insee, self.date_color_dict().get(date, 'gray'), self.department, author, update_time=force)
 
         return (date, author)
