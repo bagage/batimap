@@ -20,7 +20,7 @@ def stats(args):
     if args.department:
         cities = []
         for d in args.department:
-            cities += my_db.within_department(d)
+            cities += my_db.within_department(d.zfill(2))
     else:
         cities = args.cities
 
@@ -72,7 +72,7 @@ def work(args):
         pbar.set_description(repr(c))
 
 
-if __name__ == '__main__':
+def batimap():
     parser = argparse.ArgumentParser(
         description="Inspection de l'état du bâti dans OpenStreetMap en France.")
     parser.add_argument("-c", "--config", dest='config_file',
@@ -131,3 +131,7 @@ if __name__ == '__main__':
         args.func(args)
     except KeyboardInterrupt as e:
         pass
+
+
+if __name__ == '__main__':
+    batimap()

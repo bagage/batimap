@@ -13,13 +13,13 @@ class PostgisDb(object):
         self.cursor = self.connection.cursor()
 
     def name_for_insee(self, insee):
-        req = ((""
-                "        SELECT name\n"
-                "        FROM planet_osm_polygon\n"
-                "        WHERE tags->'ref:INSEE' = '{}'\n"
-                "        AND admin_level = '8'\n"
-                "        AND boundary = 'administrative'\n"
-                "").format(insee))
+        req = (("""
+                        SELECT DISTINCT name
+                        FROM planet_osm_polygon
+                        WHERE tags->'ref:INSEE' = '{}'
+                        AND admin_level = '8'
+                        AND boundary = 'administrative'
+                """).format(insee))
         self.cursor.execute(req)
 
         results = self.cursor.fetchall()
@@ -27,13 +27,13 @@ class PostgisDb(object):
         return results[0][0] if len(results) else None
 
     def insee_for_name(self, name, interactive=True):
-        req = ((""
-                "        SELECT tags->'ref:INSEE'\n"
-                "        FROM planet_osm_polygon\n"
-                "        WHERE name ILIKE '{}%'\n"
-                "        AND admin_level = '8'\n"
-                "        AND boundary = 'administrative'\n"
-                "").format(name))
+        req = (("""
+                        SELECT tags->'ref:INSEE'
+                        FROM planet_osm_polygon
+                        WHERE name ILIKE '{}%'
+                        AND admin_level = '8'
+                        AND boundary = 'administrative'
+                """).format(name))
         self.cursor.execute(req)
 
         results = [x[0] for x in self.cursor.fetchall()]
@@ -48,18 +48,18 @@ class PostgisDb(object):
                 "Too many cities with name {} (total: {}). Please check name.".format(name, len(results)))
             exit(1)
         elif interactive:
-            user_input = ""
+            user_input = ''
             while user_input not in results:
                 user_input = input(
                     "More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(results)))
             return user_input
 
     def last_import_color(self, insee):
-        req = ((""
-                "        SELECT TRIM(color)\n"
-                "        FROM color_city\n"
-                "        WHERE insee = '{}'\n"
-                "").format(insee))
+        req = (("""
+                        SELECT TRIM(color)
+                        FROM color_city
+                        WHERE insee = '{}'
+                """).format(insee))
         self.cursor.execute(req)
 
         results = self.cursor.fetchall()
@@ -67,11 +67,11 @@ class PostgisDb(object):
         return results[0][0] if len(results) else None
 
     def last_import_author(self, insee):
-        req = ((""
-                "        SELECT last_author\n"
-                "        FROM color_city\n"
-                "        WHERE insee = '{}'\n"
-                "").format(insee))
+        req = (("""
+                        SELECT last_author
+                        FROM color_city
+                        WHERE insee = '{}'
+                """).format(insee))
         self.cursor.execute(req)
 
         results = self.cursor.fetchall()
@@ -79,24 +79,24 @@ class PostgisDb(object):
         return results[0][0] if len(results) else None
 
     def within_department(self, department):
-        req = ((""
-                "        SELECT insee\n"
-                "        FROM color_city\n"
-                "        WHERE department = '{}'\n"
-                "        ORDER BY insee\n"
-                "").format(department))
+        req = (("""
+                        SELECT insee
+                        FROM color_city
+                        WHERE department = '{}'
+                        ORDER BY insee
+                """).format(department))
         self.cursor.execute(req)
 
         return [x[0] for x in self.cursor.fetchall()]
 
     def bbox_for_insee(self, insee):
-        req = ((""
-                "        SELECT Box2D(way)\n"
-                "        FROM planet_osm_polygon\n"
-                "        WHERE tags->'ref:INSEE' = '{}'\n"
-                "        AND admin_level = '8'\n"
-                "        AND boundary = 'administrative'\n"
-                "").format(insee))
+        req = (("""
+                        SELECT Box2D(way)
+                        FROM planet_osm_polygon
+                        WHERE tags->'ref:INSEE' = '{}'
+                        AND admin_level = '8'
+                        AND boundary = 'administrative'
+                """).format(insee))
         self.cursor.execute(req)
 
         results = self.cursor.fetchall()

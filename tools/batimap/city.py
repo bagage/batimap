@@ -6,11 +6,10 @@ import tarfile
 from colour import Color
 import datetime
 from contextlib import closing
-from statistics import mode
 import os
+from pkg_resources import resource_stream
 
-BASE_PATH = path.normpath(
-    path.join(path.dirname(path.realpath(__file__)), '..', 'data'))
+BASE_PATH = "/tmp/batimap_data"  # fixme
 WORKDONE_PATH = path.join(BASE_PATH, '_done')
 WORKDONETAR_PATH = path.join(WORKDONE_PATH, 'tars')
 STATS_PATH = path.join(BASE_PATH, 'stats')
@@ -46,15 +45,15 @@ class City(object):
             self.department = self.insee[:-3]
 
         # get cadastre name and code
-        with open(self.__cadastre_csv, 'r') as fd:
-            self.name_cadastre = None
-            self.is_vectorized = False
-            idx = 3 if self.department.startswith('97') else 2
-            # response = requests.get(
-            #     'http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(self.department.zfill(3)))
-            # for _, code, cname in [line.split(maxsplit=2) for line in
-            # response.text.strip().split('\n')]:
-            for line in fd:
+        self.name_cadastre = None
+        self.is_vectorized = False
+        idx = 3 if self.department.startswith('97') else 2
+        # response = requests.get(
+        #     'http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(self.department.zfill(3)))
+        # for _, code, cname in [line.split(maxsplit=2) for line in
+        # response.text.strip().split('\n')]:
+        for line in resource_stream(__name__, self.__cadastre_csv).read().decode().split('\n'):
+            try:
                 (d, _, cadastre_name, _, code_cadastre,
                  bati_type) = line.strip().split(',')
                 if d == self.department and code_cadastre[idx:] == self.insee[idx:]:
@@ -62,6 +61,8 @@ class City(object):
                         code_cadastre, cadastre_name)
                     self.is_vectorized = (bati_type == 'VECT')
                     break
+            except Exception as e:
+                pass
 
     def __repr__(self):
         return '{} - {}'.format(self.insee, self.name)
@@ -142,7 +143,7 @@ class City(object):
         if force or date is None or author is None:
             if not self.is_vectorized:
                 date = 'raster'
-            elif force:
+            else:
                 request = """[out:json];
                     area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
                     ( node['building'](area.a);
@@ -162,8 +163,10 @@ class City(object):
                     a = element.get('user') or 'unknown'
                     authors.append(a)
 
-                author = mode(authors) if len(authors) else None
-                date = mode(sources_date) if len(sources_date) else 'never'
+                author = max(
+                    authors, key=authors.count) if authors.count else None
+                date = max(
+                    sources_date, key=sources_date.count) if sources_date.count else 'never'
 
         # only update date if we did not use cache files for buildings
         self.db.update_stats_for_insee(
