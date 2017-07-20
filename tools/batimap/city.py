@@ -165,9 +165,9 @@ class City(object):
                     authors.append(a)
 
                 author = max(
-                    authors, key=authors.count) if authors.count else None
+                    authors, key=authors.count) if len(authors) else None
                 date = max(
-                    sources_date, key=sources_date.count) if sources_date.count else 'never'
+                    sources_date, key=sources_date.count) if len(sources_date) else 'never'
 
             # only update date if we did not use cache files for buildings
             self.db.update_stats_for_insee(
