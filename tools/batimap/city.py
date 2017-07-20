@@ -171,6 +171,6 @@ class City(object):
 
             # only update date if we did not use cache files for buildings
             self.db.update_stats_for_insee(
-                self.insee, self.date_color_dict().get(date, 'gray'), self.department, author, update_time=force)
+                self.insee, self.date_color_dict().get(date, 'gray'), self.department, author, update_time=True)
 
         return (date, author)
