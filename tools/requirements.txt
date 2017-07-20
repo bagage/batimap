@@ -1,9 +1,0 @@
-colorlog
-colour
-geojson
-overpass
-psycopg2
-pygeoj
-requests
-argcomplete
-tqdm
