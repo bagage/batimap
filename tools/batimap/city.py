@@ -24,7 +24,8 @@ class City(object):
     __insee_regex = re.compile("[a-zA-Z0-9]{3}[0-9]{2}")
     __cadastre_src2date_regex = re.compile(
         r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
-    __cadastre_csv = 'code_cadastre.csv'
+    __cadastre_code = resource_stream(
+        __name__, 'code_cadastre.csv').read().decode().split('\n')
 
     def __init__(self, log, db, identifier):
         self.log = log
@@ -52,7 +53,7 @@ class City(object):
         #     'http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(self.department.zfill(3)))
         # for _, code, cname in [line.split(maxsplit=2) for line in
         # response.text.strip().split('\n')]:
-        for line in resource_stream(__name__, self.__cadastre_csv).read().decode().split('\n'):
+        for line in self.__cadastre_code:
             try:
                 (d, _, cadastre_name, _, code_cadastre,
                  bati_type) = line.strip().split(',')
