@@ -13,28 +13,28 @@ class PostgisDb(object):
         self.cursor = self.connection.cursor()
 
     def name_for_insee(self, insee):
-        req = (("""
+        req = """
                         SELECT DISTINCT name
                         FROM planet_osm_polygon
-                        WHERE tags->'ref:INSEE' = '{}'
+                        WHERE tags->'ref:INSEE' = %s
                         AND admin_level = '8'
                         AND boundary = 'administrative'
-                """).format(insee))
-        self.cursor.execute(req)
+              """
+        self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
 
     def insee_for_name(self, name, interactive=True):
-        req = (("""
+        req = """
                         SELECT tags->'ref:INSEE'
                         FROM planet_osm_polygon
                         WHERE admin_level = '8'
                         AND boundary = 'administrative'
-                        AND name ILIKE '{}%'
-                """).format(name))
-        self.cursor.execute(req)
+                        AND name ILIKE %s%
+              """
+        self.cursor.execute(req, [name])
 
         results = [x[0] for x in self.cursor.fetchall()]
 
@@ -55,49 +55,49 @@ class PostgisDb(object):
             return user_input
 
     def last_import_color(self, insee):
-        req = (("""
+        req = """
                         SELECT TRIM(color)
                         FROM color_city
-                        WHERE insee = '{}'
-                """).format(insee))
-        self.cursor.execute(req)
+                        WHERE insee = %s
+              """
+        self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
 
     def last_import_author(self, insee):
-        req = (("""
+        req = """
                         SELECT last_author
                         FROM color_city
-                        WHERE insee = '{}'
-                """).format(insee))
-        self.cursor.execute(req)
+                        WHERE insee = %s
+                """
+        self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
 
     def within_department(self, department):
-        req = (("""
+        req = """
                         SELECT insee
                         FROM color_city
-                        WHERE department = '{}'
+                        WHERE department = %s
                         ORDER BY insee
-                """).format(department))
-        self.cursor.execute(req)
+                """
+        self.cursor.execute(req, [department])
 
         return [x[0] for x in self.cursor.fetchall()]
 
     def bbox_for_insee(self, insee):
-        req = (("""
+        req = """
                         SELECT Box2D(way)
                         FROM planet_osm_polygon
-                        WHERE tags->'ref:INSEE' = '{}'
+                        WHERE tags->'ref:INSEE' = %s
                         AND admin_level = '8'
                         AND boundary = 'administrative'
-                """).format(insee))
-        self.cursor.execute(req)
+                """
+        self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
         assert(len(results) <= 1)
@@ -105,16 +105,16 @@ class PostgisDb(object):
         return Bbox(results[0][0]) if len(results) else None
 
     def update_stats_for_insee(self, insee, color, department, author, update_time=False):
-        req = (("""
+        req = """
                         INSERT INTO color_city
-                        VALUES ('{insee}', '{color}',
-                                '{department}', now(), '{author}')
+                        VALUES (%s, %s,
+                                %s, now(), %s)
                         ON CONFLICT (insee) DO UPDATE SET color = excluded.color, department = excluded.department
-                """.format(insee=insee, color=color, department=department, author=author)))
+                """
         if update_time:
             req += ", last_update = excluded.last_update, last_author = excluded.last_author"
         try:
-            self.cursor.execute(req)
+            self.cursor.execute(req, [insee, color, department, author])
             self.connection.commit()
         except Exception as e:
             self.log.warning("Cannot write in database: " + str(e))
