@@ -32,7 +32,7 @@ class PostgisDb(object):
                         FROM planet_osm_polygon
                         WHERE admin_level = '8'
                         AND boundary = 'administrative'
-                        AND name ILIKE %s%
+                        AND name ILIKE %s'%%'
               """
         self.cursor.execute(req, [name])
 
@@ -78,14 +78,14 @@ class PostgisDb(object):
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
 
-    def within_department(self, department):
+    def within_departments(self, departments):
         req = """
                         SELECT insee
                         FROM color_city
-                        WHERE department = %s
+                        WHERE department = ANY(%s)
                         ORDER BY insee
                 """
-        self.cursor.execute(req, [department])
+        self.cursor.execute(req, [departments])
 
         return [x[0] for x in self.cursor.fetchall()]
 

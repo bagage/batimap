@@ -18,9 +18,8 @@ import tqdm
 
 def stats(args):
     if args.department:
-        cities = []
-        for d in args.department:
-            cities += my_db.within_department(d.zfill(2))
+        cities = my_db.within_departments(
+            [d.zfill(2) for d in args.department])
     else:
         cities = args.cities
 
