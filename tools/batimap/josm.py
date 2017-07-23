@@ -4,6 +4,7 @@ from collections import OrderedDict
 from os import path
 import subprocess
 import time
+import logging
 
 
 class Josm(object):
