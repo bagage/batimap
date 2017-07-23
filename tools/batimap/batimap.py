@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 
 import argparse
-import argcomplete
-from os import path
 import configparser
 import datetime
 import shutil
+from os import path
 
-from log import Log
-from overpassw import Overpassw
+import argcomplete
+import tqdm
+
 from city import City
 from josm import Josm
+from log import Log
+from overpassw import Overpassw
 from postgis_db import PostgisDb
-
-import tqdm
 
 
 def stats(args):

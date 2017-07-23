@@ -1,6 +1,7 @@
 import logging
-from colorlog import ColoredFormatter
 import sys
+
+from colorlog import ColoredFormatter
 
 
 class Log(object):

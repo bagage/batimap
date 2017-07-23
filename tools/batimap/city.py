@@ -1,12 +1,13 @@
+import datetime
+import os
 import re
-import requests
-from os import path
 import shutil
 import tarfile
-from colour import Color
-import datetime
 from contextlib import closing
-import os
+from os import path
+
+import requests
+from colour import Color
 from pkg_resources import resource_stream
 
 BASE_PATH = "/tmp/batimap_data"  # fixme
