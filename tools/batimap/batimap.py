@@ -37,7 +37,7 @@ def generate(args):
     pbar = tqdm.tqdm(args.cities)
     for city in pbar:
         c = City(my_log.log, my_db, city)
-        city_path = city.get_work_path()
+        city_path = c.get_work_path()
         if city_path and not path.exists(city_path):
             c.fetch_cadastre_data()
         pbar.set_description(repr(c))
