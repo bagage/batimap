@@ -1,5 +1,6 @@
-import overpass as o
 import time
+
+import overpass as o
 
 
 class Overpassw(object):
