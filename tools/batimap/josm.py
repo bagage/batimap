@@ -1,10 +1,11 @@
+import logging
 import os
-import requests
-from collections import OrderedDict
-from os import path
 import subprocess
 import time
-import logging
+from collections import OrderedDict
+from os import path
+
+import requests
 
 
 class Josm(object):
