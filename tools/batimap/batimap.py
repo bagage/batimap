@@ -73,51 +73,98 @@ def work(args):
 
 def batimap():
     parser = argparse.ArgumentParser(
-        description="Inspection de l'état du bâti dans OpenStreetMap en France.")
-    parser.add_argument("-c", "--config", dest='config_file',
-                        default='config.ini', type=str, help="Fichier de configuration")
-    parser.add_argument('--verbose', '-v',
-                        choices=Log.levels.keys(), help="Niveau de verbosité")
-    parser.add_argument('--overpass', choices=Overpassw.endpoints.keys(),
-                        help="Adresse du serveur pour les requêtes Overpass")
+        description="Inspection de l'état du bâti dans OpenStreetMap en France."
+    )
     parser.add_argument(
-        '--database', type=str, help="identifiants pour la base de donnée sous la forme host:port:user:password:database (ex: 'localhost:25432:docker:docker:gis')", required=True)
+        "-c", "--config",
+        dest='config_file',
+        default='config.ini',
+        type=str,
+        help="Fichier de configuration",
+    )
+    parser.add_argument(
+        '-v', '--verbose',
+        choices=Log.levels.keys(),
+        help="Niveau de verbosité",
+    )
+    parser.add_argument(
+        '--overpass',
+        choices=Overpassw.endpoints.keys(),
+        help="Adresse du serveur pour les requêtes Overpass",
+    )
+    parser.add_argument(
+        '--database',
+        type=str,
+        help="Identifiants pour la base de donnée (host:port:user:password:database)",
+        required=True,
+    )
 
     subparsers = parser.add_subparsers(
-        help="Plusieurs commandes sont disponibles")
+        help="Plusieurs commandes sont disponibles"
+    )
     subparsers.required = True
     subparsers.dest = 'command'
 
     stats_parser = subparsers.add_parser(
-        'stats', help="Récupère la date du dernier import du bâti pour une commune ou département")
-    stats_parser.add_argument('--force', '-f', action='store_true',
-                              help="De ne pas utiliser la valeur en base de donnée et forcer l'execution de la requête Overpass")
+        'stats',
+        help="Récupère la date du dernier import du bâti pour une commune ou département",
+    )
+    stats_parser.add_argument(
+        '-f', '--force',
+        action='store_true',
+        help="Ne pas utiliser la valeur en base de donnée",
+    )
     stats_group = stats_parser.add_mutually_exclusive_group(required=True)
-    stats_group.add_argument('--department', '-d', type=str,
-                             nargs='+', help="département par son numéro")
-    stats_group.add_argument('--cities', '-c', type=str,
-                             nargs='+', help="communes par numéro INSEE ou nom")
+    stats_group.add_argument(
+        '-d', '--department',
+        type=str,
+        nargs='+',
+        help="département par son numéro",
+    )
+    stats_group.add_argument(
+        '-c', '--cities',
+        type=str,
+        nargs='+',
+        help="communes par numéro INSEE ou nom",
+    )
     stats_group.set_defaults(func=stats)
 
     generate_parser = subparsers.add_parser(
-        'generate', help="Génère le bâti depuis le cadastre")
+        'generate',
+        help="Génère le bâti depuis le cadastre",
+    )
     generate_group = generate_parser.add_mutually_exclusive_group(
-        required=True)
-    generate_group.add_argument('--cities', '-c', type=str,
-                                nargs='+', help="communes par numéro INSEE ou nom")
+        required=True,
+    )
+    generate_group.add_argument(
+        '-c', '--cities',
+        type=str,
+        nargs='+',
+        help="communes par numéro INSEE ou nom",
+    )
     generate_parser.set_defaults(func=generate)
 
     work_parser = subparsers.add_parser(
-        'work', help="Met en place JOSM pour effectuer le travail de mise à jour du bâti")
-    work_parser.add_argument('--cities', '-c', type=str,
-                             nargs='+', help="communes par numéro INSEE ou nom", required=True)
+        'work',
+        help="Met en place JOSM pour effectuer le travail de mise à jour du bâti",
+    )
+    work_parser.add_argument(
+        '-c', '--cities',
+        type=str,
+        nargs='+',
+        help="communes par numéro INSEE ou nom",
+        required=True,
+    )
     work_parser.set_defaults(func=work)
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     config = configparser.ConfigParser(
-        defaults={'here': path.realpath('.')})
+        defaults={
+            'here': path.realpath('.'),
+        }
+    )
     config.read(args.config_file)
 
     global my_log, my_overpass, my_db
