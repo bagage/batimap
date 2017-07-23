@@ -28,7 +28,7 @@ class PostgisDb(object):
 
     def insee_for_name(self, name, interactive=True):
         req = """
-                        SELECT tags->'ref:INSEE'
+                        SELECT tags->'ref:INSEE', name
                         FROM planet_osm_polygon
                         WHERE admin_level = '8'
                         AND boundary = 'administrative'
@@ -36,22 +36,22 @@ class PostgisDb(object):
               """
         self.cursor.execute(req, [name])
 
-        results = [x[0] for x in self.cursor.fetchall()]
+        results = [x for x in self.cursor.fetchall()]
 
         if len(results) == 0:
             self.log.critical("Cannot found city with name {}.".format(name))
             exit(1)
         elif len(results) == 1:
-            return results[0]
+            return results[0][0]
         elif len(results) > 30:
             self.log.critical(
                 "Too many cities with name {} (total: {}). Please check name.".format(name, len(results)))
             exit(1)
         elif interactive:
             user_input = ''
-            while user_input not in results:
+            while user_input not in [x[0] for x in results]:
                 user_input = input(
-                    "More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(results)))
+                    "More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(['{} - {}'.format(x[0], x[1]) for x in results])))
             return user_input
 
     def last_import_color(self, insee):
