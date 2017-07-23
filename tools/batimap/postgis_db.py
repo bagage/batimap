@@ -45,7 +45,7 @@ class PostgisDb(object):
             return results[0][0]
         elif len(results) > 30:
             self.log.critical(
-                "Too many cities with name {} (total: {}). Please check name.".format(name, len(results)))
+                "Too many cities name starting with {} (total: {}). Please check name.".format(name, len(results)))
             exit(1)
         elif interactive:
             user_input = ''
