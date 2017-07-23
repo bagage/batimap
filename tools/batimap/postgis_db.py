@@ -32,7 +32,7 @@ class PostgisDb(object):
                         FROM planet_osm_polygon
                         WHERE admin_level = '8'
                         AND boundary = 'administrative'
-                        AND name ILIKE %s'%%'
+                        AND name ILIKE %s || '%%'
               """
         self.cursor.execute(req, [name])
 
