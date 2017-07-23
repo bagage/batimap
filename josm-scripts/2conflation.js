@@ -26,7 +26,7 @@ function do_work()  {
     ds1.selection.add(buildings);
 
     // 3. OSM layer: select all elements within relation by first selecting city, then all inside, then filter buildings
-    insee = osmLayer.name.split(" ").splice(-1);
+    insee = osmLayer.name.split(" ").splice(-3)[0];
     var ds2 = osmLayer.data;
     var city = ds2.query('"ref:INSEE"=' + insee);
     ds2.selection.clearAll();
