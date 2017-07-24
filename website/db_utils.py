@@ -1,8 +1,9 @@
-import psycopg2
-
-from geojson import Feature, FeatureCollection, loads
-from math import sqrt, floor, tan, log, cos, pi, radians
 import json
+from math import cos, floor, log, pi, radians, sqrt, tan
+
+import psycopg2
+from geojson import Feature, FeatureCollection, loads
+
 import grequests
 
 
