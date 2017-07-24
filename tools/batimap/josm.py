@@ -99,4 +99,4 @@ class Josm(object):
         resp = None
         while resp not in ["oui", "non"]:
             resp = input("Avez-vous terminé ? (oui/Non) ").lower()
-        return resp
+        return resp == "oui"
