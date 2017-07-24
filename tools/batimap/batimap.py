@@ -1,19 +1,29 @@
 #!/usr/bin/env python3
-
 import argparse
 import configparser
 import datetime
+import logging
 import shutil
+import sys
 from os import path
 
 import argcomplete
 import tqdm
+from colorlog import ColoredFormatter
 
 from city import City
 from josm import Josm
-from log import Log
 from overpassw import Overpassw
 from postgis_db import PostgisDb
+
+LEVELS = {
+    'no': logging.CRITICAL,
+    'error': logging.ERROR,
+    'warning': logging.WARNING,
+    'info': logging.INFO,
+    'debug': logging.DEBUG,
+}
+LOG = logging.getLogger('batimap')
 
 
 def stats(args):
@@ -25,7 +35,7 @@ def stats(args):
 
     pbar = tqdm.tqdm(cities)
     for city in pbar:
-        c = City(my_log.log, my_db, city)
+        c = City(my_db, city)
 
         (date, author) = c.fetch_osm_data(my_overpass, args.force)
 
@@ -36,7 +46,7 @@ def stats(args):
 def generate(args):
     pbar = tqdm.tqdm(args.cities)
     for city in pbar:
-        c = City(my_log.log, my_db, city)
+        c = City(my_db, city)
         city_path = c.get_work_path()
         if city_path and not path.exists(city_path):
             c.fetch_cadastre_data()
@@ -46,7 +56,7 @@ def generate(args):
 def work(args):
     pbar = tqdm.tqdm(args.cities)
     for city in pbar:
-        c = City(my_log.log, my_db, city)
+        c = City(my_db, city)
         date = c.get_last_import_date()
         city_path = c.get_work_path()
         if date == str(datetime.datetime.now().year):
@@ -63,12 +73,26 @@ def work(args):
                 return
 
         if path.exists(city_path):
-            my_log.log.debug(
+            LOG.debug(
                 "Déplacement de {} vers les archives".format(city_path))
             shutil.move(city_path, path.join(
                 City.WORKDONE_PATH, path.basename(city_path)))
 
         pbar.set_description(repr(c))
+
+
+def configure_logging(verbosity):
+    log_level = LEVELS[verbosity] if verbosity in LEVELS else logging.WARNING
+
+    if sys.stdout.isatty():
+        formatter = ColoredFormatter(
+            '%(asctime)s %(log_color)s%(message)s%(reset)s', "%H:%M:%S")
+        stream = logging.StreamHandler()
+        stream.setFormatter(formatter)
+        LOG.addHandler(stream)
+    else:
+        LOG.basicConfig(format='%(asctime)s %(message)s', datefmt="%H:%M:%S")
+    LOG.setLevel(log_level)
 
 
 def batimap():
@@ -84,7 +108,7 @@ def batimap():
     )
     parser.add_argument(
         '-v', '--verbose',
-        choices=Log.levels.keys(),
+        choices=LEVELS.keys(),
         help="Niveau de verbosité",
     )
     parser.add_argument(
@@ -167,12 +191,14 @@ def batimap():
     )
     config.read(args.config_file)
 
-    global my_log, my_overpass, my_db
-    my_log = Log(args.verbose)
-    my_overpass = Overpassw(my_log.log, args.overpass)
+    global my_overpass, my_db
+
+    configure_logging(args.verbose)
+
+    my_overpass = Overpassw(args.overpass)
     (host, port, user, password, database) = args.database.split(":")
-    my_db = PostgisDb(my_log.log, host, port, user, password, database)
-    Josm.log = my_log.log
+    my_db = PostgisDb(host, port, user, password, database)
+
     try:
         args.func(args)
     except KeyboardInterrupt as e:

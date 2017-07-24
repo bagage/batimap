@@ -1,12 +1,15 @@
+import logging
+
 import psycopg2
 
 from bbox import Bbox
 
+LOG = logging.getLogger('batimap')
+
 
 class PostgisDb(object):
 
-    def __init__(self, log, host, port, user, passw, db):
-        self.log = log
+    def __init__(self, host, port, user, passw, db):
         self.connection = psycopg2.connect(
             database=db, user=user, password=passw, port=port, host=host)
         self.cursor = self.connection.cursor()
@@ -42,12 +45,12 @@ class PostgisDb(object):
         results = [x for x in self.cursor.fetchall()]
 
         if len(results) == 0:
-            self.log.critical("Cannot found city with name {}.".format(name))
+            LOG.critical("Cannot found city with name {}.".format(name))
             exit(1)
         elif len(results) == 1:
             return results[0][0]
         elif len(results) > 30:
-            self.log.critical(
+            LOG.critical(
                 "Too many cities name starting with {} (total: {}). Please check name.".format(name, len(results)))
             exit(1)
         elif interactive:
@@ -122,5 +125,5 @@ class PostgisDb(object):
             self.cursor.execute(req, [insee, department, color, author])
             self.connection.commit()
         except Exception as e:
-            self.log.warning("Cannot write in database: " + str(e))
+            LOG.warning("Cannot write in database: " + str(e))
             pass

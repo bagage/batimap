@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import re
 import shutil
@@ -9,6 +10,8 @@ from os import path
 import requests
 from colour import Color
 from pkg_resources import resource_stream
+
+LOG = logging.getlogger('batimap')
 
 
 class City(object):
@@ -28,8 +31,7 @@ class City(object):
     os.makedirs(DATA_PATH, exist_ok=True)
     os.makedirs(STATS_PATH, exist_ok=True)
 
-    def __init__(self, log, db, identifier):
-        self.log = log
+    def __init__(self, db, identifier):
         self.db = db
         if self.__insee_regex.match(identifier) is not None:
             self.insee = identifier
@@ -122,12 +124,12 @@ class City(object):
                 # only display progression
                 # TODO: improve this…
                 if "pdf" in line:
-                    self.log.info(line)
+                    LOG.info(line)
 
         tarname = self.get_work_path() + '.tar.bz2'
         r = requests.get(
             "http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
-        self.log.debug('Décompression du fichier {}'.format(tarname))
+        LOG.debug('Décompression du fichier {}'.format(tarname))
         with open(tarname, 'wb') as fd:
             fd.write(r.content)
 
