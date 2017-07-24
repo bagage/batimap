@@ -1,6 +1,9 @@
+import logging
 import time
 
 import overpass as o
+
+LOG = logging.getLogger('batimap')
 
 
 class Overpassw(object):
@@ -14,12 +17,11 @@ class Overpassw(object):
         'localhost': 'http://localhost:5001/api/interpreter'
     }
 
-    def __init__(self, log, e):
+    def __init__(self, e):
         default = 'overpass.de'
         default = self.endpoints[
             e] if e in self.endpoints else self.endpoints[default]
         self.__api = o.API(endpoint=default, timeout=300)
-        self.log = log
 
     def request_with_retries(self, request, output_format='json'):
         for retry in range(9, 0, -1):
@@ -27,7 +29,7 @@ class Overpassw(object):
                 return self.__api.Get(
                     request, responseformat=output_format, build=False)
             except (o.errors.MultipleRequestsError, o.errors.ServerLoadError) as e:
-                self.log.warning("{} occurred. Will retry again {} times in a few seconds".format(
+                LOG.warning("{} occurred. Will retry again {} times in a few seconds".format(
                     type(e).__name__, retry))
                 if retry == 0:
                     raise e
