@@ -22,7 +22,11 @@ class PostgisDb(object):
         self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
-        assert(len(results) <= 1)
+
+        if len(results) == 0:
+            self.log.critical("Cannot found city with INSEE {}.".format(insee))
+            exit(1)
+
         return results[0][0] if len(results) else None
 
     def insee_for_name(self, name, interactive=True):
