@@ -10,23 +10,23 @@ import requests
 from colour import Color
 from pkg_resources import resource_stream
 
-BASE_PATH = "/tmp/batimap_data"  # fixme
-WORKDONE_PATH = path.join(BASE_PATH, '_done')
-WORKDONETAR_PATH = path.join(WORKDONE_PATH, 'tars')
-STATS_PATH = path.join(BASE_PATH, 'stats')
-DATA_PATH = path.join(STATS_PATH, 'cities')
-os.makedirs(WORKDONE_PATH, exist_ok=True)
-os.makedirs(WORKDONETAR_PATH, exist_ok=True)
-os.makedirs(DATA_PATH, exist_ok=True)
-os.makedirs(STATS_PATH, exist_ok=True)
-
 
 class City(object):
-    __insee_regex = re.compile("[a-zA-Z0-9]{3}[0-9]{2}")
+    __insee_regex = re.compile("^[a-zA-Z0-9]{3}[0-9]{2}$")
     __cadastre_src2date_regex = re.compile(
         r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
     __cadastre_code = resource_stream(
         __name__, 'code_cadastre.csv').read().decode().split('\n')
+
+    BASE_PATH = "/tmp/batimap_data"  # fixme
+    WORKDONE_PATH = path.join(BASE_PATH, '_done')
+    WORKDONETAR_PATH = path.join(WORKDONE_PATH, 'tars')
+    STATS_PATH = path.join(BASE_PATH, 'stats')
+    DATA_PATH = path.join(STATS_PATH, 'cities')
+    os.makedirs(WORKDONE_PATH, exist_ok=True)
+    os.makedirs(WORKDONETAR_PATH, exist_ok=True)
+    os.makedirs(DATA_PATH, exist_ok=True)
+    os.makedirs(STATS_PATH, exist_ok=True)
 
     def __init__(self, log, db, identifier):
         self.log = log
@@ -99,7 +99,7 @@ class City(object):
     def get_work_path(self):
         if self.name_cadastre is None:
             return None
-        return path.join(BASE_PATH, "{}-{}".format(self.insee, self.name_cadastre))
+        return path.join(City.BASE_PATH, "{}-{}".format(self.insee, self.name_cadastre))
 
     def get_bbox(self):
         return self.db.bbox_for_insee(self.insee)
@@ -136,7 +136,7 @@ class City(object):
         tar.extractall(path=self.get_work_path())
         tar.close()
         shutil.move(tarname, path.join(
-            WORKDONETAR_PATH, path.basename(tarname)))
+            City.WORKDONETAR_PATH, path.basename(tarname)))
         return True
 
     def fetch_osm_data(self, overpass, force):
