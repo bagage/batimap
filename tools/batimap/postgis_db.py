@@ -119,7 +119,7 @@ class PostgisDb(object):
         if update_time:
             req += ", last_update = excluded.last_update, last_author = excluded.last_author"
         try:
-            self.cursor.execute(req, [insee, color, department, author])
+            self.cursor.execute(req, [insee, department, color, author])
             self.connection.commit()
         except Exception as e:
             self.log.warning("Cannot write in database: " + str(e))
