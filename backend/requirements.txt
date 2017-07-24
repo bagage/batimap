@@ -7,3 +7,12 @@ flask
 psycopg2
 gunicorn
 flask-cors
+colorlog
+colour
+geojson
+overpass
+psycopg2
+pygeoj
+requests
+argcomplete
+tqdm
