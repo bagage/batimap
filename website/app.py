@@ -1,11 +1,11 @@
+from shutil import which
+from subprocess import Popen
+
 import geojson
 
 from db_utils import Postgis
-
-from flask import abort, Flask, jsonify, render_template, send_from_directory
+from flask import Flask, abort, jsonify, render_template, send_from_directory
 from flask_cors import CORS
-from shutil import which
-from subprocess import Popen
 
 app = Flask(__name__)
 CORS(app)

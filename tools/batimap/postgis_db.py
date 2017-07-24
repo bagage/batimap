@@ -57,7 +57,12 @@ class PostgisDb(object):
             user_input = ''
             while user_input not in [x[0] for x in results]:
                 user_input = input(
-                    "More than one city found. Please enter your desired one from the following list:\n\t{}\n".format('\n\t'.join(['{} - {}'.format(x[0], x[1]) for x in results])))
+                    "More than one city found. Please enter your desired one from the following list:\n\t{}\n".format(
+                        '\n\t'.join(
+                            ['{} - {}'.format(x[0], x[1]) for x in results]
+                        )
+                    )
+                )
             return user_input
 
     def last_import_color(self, insee):

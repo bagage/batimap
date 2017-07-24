@@ -17,7 +17,11 @@ class Josm(object):
             if p.lower().endswith("josm"):
                 return p
 
-        for d in [os.environ['HOME'] + "/.local/share/applications/", "/usr/share/applications", "/usr/local/share/applications"]:
+        for d in [
+                os.environ['HOME'] + "/.local/share/applications/",
+                "/usr/share/applications",
+                "/usr/local/share/applications"
+        ]:
             desktop = path.join(d, "josm.desktop")
             if os.path.exists(desktop):
                 with open(desktop, 'r') as fd:
@@ -90,7 +94,9 @@ class Josm(object):
 
         # d. download city data from OSM as well
         bbox = city.get_bbox()
-        url = base_url + 'load_and_zoom?new_layer=true&layer_name=Données OSM pour {} - {}&left={}&right={}&bottom={}&top={}'
+        url = \
+            base_url + \
+            'load_and_zoom?new_layer=true&layer_name=Données OSM pour {} - {}&left={}&right={}&bottom={}&top={}'
         url = url.format(city.insee, city.name,
                          bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax)
         r = requests.get(url)
