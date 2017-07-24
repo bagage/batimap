@@ -4,7 +4,7 @@ from subprocess import Popen
 import geojson
 
 from db_utils import Postgis
-from flask import Flask, abort, jsonify, render_template, send_from_directory
+from flask import Flask, abort, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -17,11 +17,6 @@ db = Postgis(app.config['DB_NAME'],
              app.config['DB_PASSWORD'],
              app.config['DB_PORT'],
              app.config['DB_HOST'])
-
-
-@app.route('/')
-def index() -> object:
-    return render_template('index.html')
 
 
 @app.route('/insee/<int:insee>', methods=['GET'])
@@ -73,11 +68,6 @@ def update_insee_list(insee) -> dict:
     # clear tiles for the zone
     db.clear_tiles(insee)
     return "Ok"
-
-
-@app.route('/static/<path:path>', methods=['GET'])
-def send_resources(path):
-    return send_from_directory('static/', path)
 
 
 if __name__ == '__main__':
