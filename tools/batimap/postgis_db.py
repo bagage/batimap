@@ -83,12 +83,14 @@ class PostgisDb(object):
 
     def within_departments(self, departments):
         req = """
-                        SELECT insee
-                        FROM color_city
-                        WHERE department = ANY(%s)
+                        SELECT DISTINCT tags->'ref:INSEE' AS insee
+                        FROM planet_osm_polygon
+                        WHERE admin_level='8'
+                        AND boundary='administrative'
+                        AND tags->'ref:INSEE' LIKE ANY(%s)
                         ORDER BY insee
                 """
-        self.cursor.execute(req, [departments])
+        self.cursor.execute(req, ([x + "%" for x in departments], ))
 
         return [x[0] for x in self.cursor.fetchall()]
 
