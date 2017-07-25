@@ -10,10 +10,9 @@ from os import path
 import argcomplete
 from colorlog import ColoredFormatter
 
-from city import City
-from josm import Josm
-from overpassw import Overpassw
-from postgis_db import PostgisDb
+from .city import City
+from .josm import Josm
+
 
 LEVELS = {
     'no': logging.CRITICAL,
@@ -25,31 +24,28 @@ LEVELS = {
 LOG = logging.getLogger('batimap')
 
 
-def stats(args):
-    if args.department:
-        cities = my_db.within_departments(
-            [d.zfill(2) for d in args.department])
-    else:
-        cities = args.cities
+def stats(db, overpass, department=None, cities=[], force=False):
+    if department:
+        cities = db.within_departments(
+            [d.zfill(2) for d in department])
 
     for city in cities:
-        c = City(my_db, city)
-        (date, author) = c.fetch_osm_data(my_overpass, args.force)
+        c = City(db, city)
+        print(c)
+        (date, author) = c.fetch_osm_data(overpass, force)
 
 
-def generate(args):
-    cities = args.cities
+def generate(db, cities):
     for city in cities:
-        c = City(my_db, city)
+        c = City(db, city)
         city_path = c.get_work_path()
         if city_path and not path.exists(city_path):
             c.fetch_cadastre_data()
 
 
-def work(args):
-    cities = args.cities
+def work(db, cities):
     for city in cities:
-        c = City(my_db, city)
+        c = City(db, city)
         date = c.get_last_import_date()
         city_path = c.get_work_path()
         if date == str(datetime.datetime.now().year):
@@ -102,11 +98,6 @@ def batimap():
         '-v', '--verbose',
         choices=LEVELS.keys(),
         help="Niveau de verbosité",
-    )
-    parser.add_argument(
-        '--overpass',
-        choices=Overpassw.endpoints.keys(),
-        help="Adresse du serveur pour les requêtes Overpass",
     )
     parser.add_argument(
         '--database',
@@ -183,13 +174,7 @@ def batimap():
     )
     config.read(args.config_file)
 
-    global my_overpass, my_db
-
     configure_logging(args.verbose)
-
-    my_overpass = Overpassw(args.overpass)
-    (host, port, user, password, database) = args.database.split(":")
-    my_db = PostgisDb(host, port, user, password, database)
 
     try:
         args.func(args)

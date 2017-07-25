@@ -1,11 +1,10 @@
-from shutil import which
-from subprocess import Popen
-
 import geojson
-
-from db_utils import Postgis
-from flask import Flask, abort, jsonify
+from flask import Flask, jsonify
 from flask_cors import CORS
+
+from batimap import batimap
+from db_utils import Postgis
+from batimap.overpassw import Overpass
 
 app = Flask(__name__)
 CORS(app)
@@ -17,6 +16,8 @@ db = Postgis(app.config['DB_NAME'],
              app.config['DB_PASSWORD'],
              app.config['DB_PORT'],
              app.config['DB_HOST'])
+
+op = Overpass(app.config['OVERPASS_URI'])
 
 
 @app.route('/insee/<int:insee>', methods=['GET'])
@@ -44,24 +45,7 @@ def api_status(department) -> dict:
 
 @app.route('/update/<insee>', methods=['POST'])
 def update_insee_list(insee) -> dict:
-    r = which("osm-cadastre.py")
-    if not r:
-        return abort(500)
-    db_args = "{host}:{port}:{user}:{password}:{db}".format(host=app.config['DB_HOST'],
-                                                            port=app.config[
-                                                                'DB_PORT'],
-                                                            user=app.config[
-                                                                'DB_USER'],
-                                                            password=app.config[
-                                                                'DB_PASSWORD'],
-                                                            db=app.config['DB_NAME'])
-    child = Popen(["osm-cadastre.py", "stats", "-f", "all",
-                   "-i", insee, "--database", db_args])
-    child.communicate()
-    child.wait()
-    if child.returncode != 0:
-        return abort(500)
-
+    batimap.stats(db, op, cities=[insee])
     # TODO: only clear tiles if color was changed // return different status
     # codes
 
