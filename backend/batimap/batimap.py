@@ -8,7 +8,6 @@ import sys
 from os import path
 
 import argcomplete
-import tqdm
 from colorlog import ColoredFormatter
 
 from city import City
@@ -33,29 +32,23 @@ def stats(args):
     else:
         cities = args.cities
 
-    pbar = tqdm.tqdm(cities)
-    for city in pbar:
+    for city in cities:
         c = City(my_db, city)
-
         (date, author) = c.fetch_osm_data(my_overpass, args.force)
-
-        pbar.set_description(
-            "{} : {} par {}".format(c, date, author or 'personne'))
 
 
 def generate(args):
-    pbar = tqdm.tqdm(args.cities)
-    for city in pbar:
+    cities = args.cities
+    for city in cities:
         c = City(my_db, city)
         city_path = c.get_work_path()
         if city_path and not path.exists(city_path):
             c.fetch_cadastre_data()
-        pbar.set_description(repr(c))
 
 
 def work(args):
-    pbar = tqdm.tqdm(args.cities)
-    for city in pbar:
+    cities = args.cities
+    for city in cities:
         c = City(my_db, city)
         date = c.get_last_import_date()
         city_path = c.get_work_path()
@@ -77,8 +70,6 @@ def work(args):
                 "Déplacement de {} vers les archives".format(city_path))
             shutil.move(city_path, path.join(
                 City.WORKDONE_PATH, path.basename(city_path)))
-
-        pbar.set_description(repr(c))
 
 
 def configure_logging(verbosity):
