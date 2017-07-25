@@ -15,4 +15,3 @@ psycopg2
 pygeoj
 requests
 argcomplete
-tqdm
