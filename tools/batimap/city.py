@@ -11,7 +11,7 @@ import requests
 from colour import Color
 from pkg_resources import resource_stream
 
-LOG = logging.getlogger('batimap')
+LOG = logging.getLogger('batimap')
 
 
 class City(object):
