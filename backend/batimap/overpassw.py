@@ -6,22 +6,10 @@ import overpass as o
 LOG = logging.getLogger('batimap')
 
 
-class Overpassw(object):
-    __api = None
+class Overpass(object):
 
-    endpoints = {
-        'overpass.de': 'https://overpass-api.de/api/interpreter',
-        'api.openstreetmap.fr': 'http://api.openstreetmap.fr/oapi/interpreter',
-        'dev.api.openstreetmap.fr': 'http://dev.api.openstreetmap.fr/overpass',
-        # default port/url for docker image
-        'localhost': 'http://localhost:5001/api/interpreter'
-    }
-
-    def __init__(self, e):
-        default = 'overpass.de'
-        default = self.endpoints[
-            e] if e in self.endpoints else self.endpoints[default]
-        self.__api = o.API(endpoint=default, timeout=300)
+    def __init__(self, uri='https://overpass-api.de/api/interpreter'):
+        self.__api = o.API(endpoint=uri, timeout=300)
 
     def request_with_retries(self, request, output_format='json'):
         for retry in range(9, 0, -1):
