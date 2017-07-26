@@ -11,7 +11,7 @@ import requests
 from colour import Color
 from pkg_resources import resource_stream
 
-LOG = logging.getLogger('batimap')
+LOG = logging.getLogger(__name__)
 
 
 class City(object):
@@ -69,7 +69,7 @@ class City(object):
                 pass
 
     def __repr__(self):
-        return '{} - {}'.format(self.insee, self.name)
+        return '{}({})'.format(self.name, self.insee)
 
     def date_color_dict(self):
         # Retrieve the last cadastre import for the given insee municipality.
@@ -142,11 +142,13 @@ class City(object):
         return True
 
     def fetch_osm_data(self, overpass, force):
+        print('Fetch OSM data for {}:'.format(self), end=' ')
         date = self.get_last_import_date()
         author = self.get_last_import_author()
         if force or date is None or author is None:
             if not self.is_vectorized:
                 date = 'raster'
+                print('raster')
             else:
                 request = """[out:json];
                     area[boundary='administrative'][admin_level='8']['ref:INSEE'='{}']->.a;
@@ -172,13 +174,19 @@ class City(object):
                     a = element.get('user') or 'unknown'
                     authors.append(a)
 
-                author = max(
-                    authors, key=authors.count) if len(authors) else None
-                date = max(
-                    sources_date, key=sources_date.count) if len(sources_date) else 'never'
-
+                author = max(authors, key=authors.count) if len(
+                    authors) else None
+                date = max(sources_date, key=sources_date.count) if len(
+                    sources_date) else 'never'
+                print('done')
             # only update date if we did not use cache files for buildings
             self.db.update_stats_for_insee(
-                self.insee, self.date_color_dict().get(date, 'gray'), self.department, author, update_time=True)
-
+                self.insee,
+                self.date_color_dict().get(date, 'gray'),
+                self.department,
+                author,
+                update_time=True
+            )
+        else:
+            print('ignored')
         return (date, author)

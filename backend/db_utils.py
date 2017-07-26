@@ -205,16 +205,17 @@ class Postgis(object):
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
 
-    def within_departments(self, departments):
+    def within_department(self, department: str):
+        department = '{:0>2}%'.format(department)
         req = """
                         SELECT DISTINCT tags->'ref:INSEE' AS insee
                         FROM planet_osm_polygon
                         WHERE admin_level='8'
                         AND boundary='administrative'
-                        AND tags->'ref:INSEE' LIKE ANY(%s)
+                        AND tags->'ref:INSEE' LIKE %s
                         ORDER BY insee
                 """
-        self.cursor.execute(req, ([x + "%" for x in departments], ))
+        self.cursor.execute(req, [department])
 
         return [x[0] for x in self.cursor.fetchall()]
 
