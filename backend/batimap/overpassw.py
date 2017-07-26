@@ -3,7 +3,7 @@ import time
 
 import overpass as o
 
-LOG = logging.getLogger('batimap')
+LOG = logging.getLogger(__name__)
 
 
 class Overpass(object):
