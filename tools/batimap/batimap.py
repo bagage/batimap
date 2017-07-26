@@ -91,7 +91,8 @@ def configure_logging(verbosity):
         stream.setFormatter(formatter)
         LOG.addHandler(stream)
     else:
-        LOG.basicConfig(format='%(asctime)s %(message)s', datefmt="%H:%M:%S")
+        logging.basicConfig(
+            format='%(asctime)s %(message)s', datefmt="%H:%M:%S")
     LOG.setLevel(log_level)
 
 
