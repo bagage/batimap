@@ -155,7 +155,12 @@ class City(object):
                       relation['building'](area.a);
                     );
                     out tags qt meta;""".format(self.insee)
-                response = overpass.request_with_retries(request)
+                try:
+                    response = overpass.request_with_retries(request)
+                except Exception as e:
+                    LOG.error(
+                        "Failed to count buildings for {}: {}".format(self, e))
+                    return (None, None)
                 sources_date = []
                 authors = []
                 for element in response.get('elements'):
