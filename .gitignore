@@ -2,3 +2,4 @@ data
 josm.desktop
 .vscode
 __pycache__/
+frontend/node_modules
