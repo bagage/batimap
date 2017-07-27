@@ -1,13 +1,31 @@
+import L from 'leaflet';
+import 'leaflet.restoreview';
+import 'leaflet-hash';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-geocoder-mapzen';
+import 'leaflet.locatecontrol';
+import 'leaflet.vectorgrid';
+
+import './css/style.css';
+import 'materialize-css/dist/css/materialize.css';
+import 'leaflet-geocoder-mapzen/dist/leaflet-geocoder-mapzen.css';
+import 'leaflet.locatecontrol/dist/L.Control.Locate.css';
+import '../node_modules/github-fork-ribbon-css/gh-fork-ribbon.css';
+import '../node_modules/font-awesome/css/font-awesome.css';
+
+import circleX from './assets/circle-x-6x.png';
+import circleCheck from './assets/circle-check-6x.png';
+
+let APIURL = 'http://localhost:5000';
+
 /**
  * Created by cimo on 16/10/2016.
  */
-
-
 $(function () {
     var map, bgLayer;
     var json_req;
     var initPosition = [47.651, 2.791];
-    initMap = function () {
+    var initMap = function () {
         // console.log('Map is ready.');
         map = L.map('map-view', {
             zoom: 11
@@ -27,8 +45,8 @@ $(function () {
         ).addTo(map);
 
         var stylingFunction = function(properties, zoom, type) {
-            color = properties.color
-            color_input = $('input[type=checkbox]#color-' + color.replace('#', ''));
+            var color = properties.color
+            var color_input = $('input[type=checkbox]#color-' + color.replace('#', ''));
             if (color_input.length == 1 && color_input[0].checked !== true) {
                 // console.log(color, "is unchecked, do not render");
                 return []; //do not render it
@@ -80,7 +98,7 @@ $(function () {
                 L.DomEvent.on(btn, 'click', e => {
                     $.ajax({
                         type: "POST",
-                        url: "/update/"+ btn.value,
+                        url: APIURL + "/update/"+ btn.value,
                         beforeSend: function() {
                             btn.setAttribute( "style", "visibility:hidden" );
                         },
@@ -89,13 +107,13 @@ $(function () {
                         },
                         success: function(badges) {
                             var ok = L.DomUtil.create('img', '', btn.parentNode);
-                            ok.setAttribute('src', '/static/images/circle-check-6x.png');
+                            ok.setAttribute('src', circleCheck);
                             ok.setAttribute('height', '24');
                             ok.setAttribute('width', '24');
                         },
                         error: function(badges) {
                             var nok = L.DomUtil.create('img', '', btn.parentNode);
-                            nok.setAttribute('src', '/static/images/circle-x-6x.png');
+                            nok.setAttribute('src', circleX);
                             nok.setAttribute('height', '24');
                             nok.setAttribute('width', '24');
                         }
@@ -111,9 +129,9 @@ $(function () {
             .addTo(map);
 
         // load available colors
-        $.getJSON('/colors', function (colors) {
-            total = 0
-            for (c in colors) {
+        $.getJSON('http://localhost:5000/colors', function (colors) {
+            var total = 0
+            for (var c in colors) {
                 total += colors[c][1];
             }
             var filterGroup = document.getElementById('filter-group');
@@ -146,5 +164,6 @@ $(function () {
 
         return map;
     };
-});
 
+    initMap();
+});
