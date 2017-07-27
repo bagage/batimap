@@ -7,6 +7,8 @@ from os import path
 
 import requests
 
+LOG = logging.getLogger('batimap')
+
 
 class Josm(object):
 
@@ -34,7 +36,7 @@ class Josm(object):
         # If we found it, start it and try to connect to it (aborting after 1
         # min)
         if josm_path:
-            stdouterr = None if Josm.log.getEffectiveLevel(
+            stdouterr = None if LOG.getEffectiveLevel(
             ) == logging.DEBUG else subprocess.PIPE
             subprocess.Popen(josm_path, stdout=stdouterr, stderr=stdouterr)
             timeout = time.time() + 60
@@ -46,7 +48,7 @@ class Josm(object):
                 except:
                     pass
             if time.time() > timeout:
-                Josm.log.critical(
+                LOG.critical(
                     "Impossible de se connecter à JOSM - est-il lancé ?")
         return False
 
@@ -82,7 +84,7 @@ class Josm(object):
                 if r.status_code == 403:
                     error = "did you enable 'Open local files' in Remote Control Preferences?"
 
-                Josm.log.critical("Impossible de lancer JOSM ({}): {}".format(
+                LOG.critical("Impossible de lancer JOSM ({}): {}".format(
                     r.status_code, error))
                 break
 
@@ -93,7 +95,7 @@ class Josm(object):
                          bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax)
         r = requests.get(url)
         if r.status_code != 200:
-            Josm.log.critical("Impossible de charger les données OSM ({}): {}".format(
+            LOG.critical("Impossible de charger les données OSM ({}): {}".format(
                 r.status_code, r.text))
 
         resp = None
