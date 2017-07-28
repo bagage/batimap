@@ -16,7 +16,7 @@ import '../node_modules/font-awesome/css/font-awesome.css';
 import circleX from './assets/circle-x-6x.png';
 import circleCheck from './assets/circle-check-6x.png';
 
-let APIURL = 'http://localhost:5000';
+import {APISERVER, RASTERTILESERVER, VECTORTILESERVER} from '../config.json';
 
 /**
  * Created by cimo on 16/10/2016.
@@ -38,7 +38,7 @@ $(function () {
         L.control.geocoder('mapzen-xxEvJ8R').addTo(map);
         L.control.locate({locateOptions: {enableHighAccuracy: true}}).addTo(map);
 
-        bgLayer = L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+        bgLayer = L.tileLayer(RASTERTILESERVER + '/{z}/{x}/{y}.png', {
             attribution: '© Contributeurs OpenStreetMap',
             maxNativeZoom: 18
         }
@@ -61,7 +61,7 @@ $(function () {
             }
         }
 
-        var cadastreURL = "https://cadastre.damsy.net/tegola/maps/bati/{z}/{x}/{y}.vector.pbf";
+        var cadastreURL = VECTORTILESERVER + "/{z}/{x}/{y}.vector.pbf";
         var vectorTileOptions = {
             rendererFactory: L.canvas.tile,
             maxZoom: 20,
@@ -98,7 +98,7 @@ $(function () {
                 L.DomEvent.on(btn, 'click', e => {
                     $.ajax({
                         type: "POST",
-                        url: APIURL + "/update/"+ btn.value,
+                        url: APISERVER + "/update/" + btn.value,
                         beforeSend: function() {
                             btn.setAttribute( "style", "visibility:hidden" );
                         },
@@ -129,7 +129,7 @@ $(function () {
             .addTo(map);
 
         // load available colors
-        $.getJSON('http://localhost:5000/colors', function (colors) {
+        $.getJSON(APISERVER + '/colors', function (colors) {
             var total = 0
             for (var c in colors) {
                 total += colors[c][1];
