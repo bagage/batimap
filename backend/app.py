@@ -62,32 +62,32 @@ def initdb_command():
     db.create_tables()
 
 
-@app.cli.command()
+@app.cli.command('update-city-stats')
 @click.argument('city')
 def update_city_stats(city):
     batimap.stats(db, op, cities=[city])
 
 
-@app.cli.command()
+@app.cli.command('update-department-stats')
 @click.argument('department')
 def update_department_stats(department):
     batimap.stats(db, op, department=department)
 
 
-@app.cli.command()
+@app.cli.command('update-france-stats')
 def update_france_stats():
     for r in (range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977)):
         for d in r:
             batimap.stats(db, op, department=str(d))
 
 
-@app.cli.command()
+@app.cli.command('generate-city-building')
 @click.argument('city')
 def generate_city_building(city):
     batimap.generate(db, cities=[city])
 
 
-@app.cli.command()
+@app.cli.command('load-city-josm')
 @click.argument('city')
 def load_city_josm(city):
     batimap.work(db, cities=[city])
