@@ -1,10 +1,9 @@
 import json
 from math import cos, floor, log, pi, radians, sqrt, tan
 
+import grequests
 import psycopg2
 from geojson import Feature, FeatureCollection, loads
-
-import grequests
 
 from batimap.bbox import Bbox
 
@@ -15,6 +14,19 @@ class Postgis(object):
         self.connection = psycopg2.connect(
             database=db, user=user, password=passw, port=port, host=host)
         self.cursor = self.connection.cursor()
+
+    def create_tables(self):
+        req = ((""
+                "       CREATE TABLE IF NOT EXISTS color_city("
+                "           insee TEXT PRIMARY KEY NOT NULL,"
+                "           department CHAR(3) NOT NULL,"
+                "           color CHAR(20),"
+                "           last_update TIMESTAMP,"
+                "           last_author TEXT"
+                "       );"
+                "       CREATE INDEX insee_idx ON planet_osm_polygon ((tags->'ref:INSEE'));"
+                ""))
+        self.cursor.execute(req)
 
     def get_insee(self, insee: int) -> FeatureCollection:
         req = ((""

@@ -57,6 +57,11 @@ def update_insee_list(insee) -> dict:
 
 
 # CLI
+@app.cli.command('initdb', help='Create tables')
+def initdb_command():
+    db.create_tables()
+
+
 @app.cli.command()
 @click.argument('city')
 def update_city_stats(city):
