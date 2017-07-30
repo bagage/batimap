@@ -17,21 +17,26 @@ class Postgis(object):
 
     def create_tables(self):
         req = """
-                CREATE TABLE IF NOT EXISTS color_city(
-                    insee TEXT PRIMARY KEY NOT NULL,
-                    department CHAR(3) NOT NULL,
-                    color CHAR(20),
-                    last_update TIMESTAMP,
-                    last_author TEXT
-                );
+                CREATE TABLE IF NOT EXISTS
+                    color_city(
+                        insee TEXT PRIMARY KEY NOT NULL,
+                        department CHAR(3) NOT NULL,
+                        color CHAR(20),
+                        last_update TIMESTAMP,
+                        last_author TEXT
+                    )
         """
         self.cursor.execute(req)
         print('color_city table created')
         req = """
-                CREATE INDEX insee_idx ON planet_osm_polygon ((tags->'ref:INSEE'));
+                CREATE INDEX IF NOT EXISTS
+                    insee_idx
+                ON
+                    planet_osm_polygon ((tags->'ref:INSEE'));
         """
         self.cursor.execute(req)
         print('insee_idx index created')
+        self.connection.commit()
 
     def get_insee(self, insee: int) -> FeatureCollection:
         req = """
