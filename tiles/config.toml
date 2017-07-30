@@ -1,15 +1,15 @@
 [webserver]
-port = ":8080"
+port = ":9999"
 
 # register data providers
 [[providers]]
-name = "cadastre"           # provider name is referenced from map layers
+name = "cadastre"       # provider name is referenced from map layers
 type = "postgis"        # the type of data provider. currently only supports postgis
-host = "localhost"      # postgis database host
-port = 25432             # postgis database port
-database = "gis"       # postgis database name
-user = "docker"         # postgis database user
-password = "docker"           # postgis database password
+host = "postgis"        # postgis database host
+port = 5432             # postgis database port
+database = "gis"        # postgis database name
+user = "postgres"       # postgis database user
+password = "batimap"    # postgis database password
 srid = 4326             # The default srid for this provider. If not provided it will be WebMercator (3857)
 
 [[providers.layers]]
