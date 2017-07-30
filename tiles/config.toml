@@ -13,90 +13,90 @@ password = "docker"           # postgis database password
 srid = 4326             # The default srid for this provider. If not provided it will be WebMercator (3857)
 
 [[providers.layers]]
-  name = "cities"
-  geometry_fieldname = "way"
-  id_fieldname = "osm_id"
-  sql = """
-    SELECT
-      ST_AsBinary(way) AS way,
-      name,
-      insee,
-      TRIM(color) as color,
-      osm_id
-    FROM
-      planet_osm_polygon, color_city
-    WHERE
-      tags->'admin_level' = '8'
-      AND tags->'ref:INSEE' = insee
-      AND way && !BBOX!
-  """
+name = "cities"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+  SELECT
+    ST_AsBinary(way) AS way,
+    name,
+    insee,
+    TRIM(color) as color,
+    osm_id
+  FROM
+    planet_osm_polygon, color_city
+  WHERE
+    tags->'admin_level' = '8'
+    AND tags->'ref:INSEE' = insee
+    AND way && !BBOX!
+"""
 
 [[providers.layers]]
-  name = "cities-point"
-  geometry_fieldname = "way"
-  id_fieldname = "osm_id"
-  sql = """
-    SELECT
-      ST_AsBinary(ST_Centroid(way)) AS way,
-      name,
-      insee,
-      TRIM(color) as color,
-      osm_id
+name = "cities-point"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+  SELECT
+    ST_AsBinary(ST_Centroid(way)) AS way,
+    name,
+    insee,
+    TRIM(color) as color,
+    osm_id
+  FROM
+    planet_osm_polygon,
+    color_city
+  WHERE
+    tags->'admin_level' = '8'
+    AND tags->'ref:INSEE' = insee
+    AND way && !BBOX!
+"""
+
+[[providers.layers]]
+name = "departments"
+geometry_fieldname = "way"
+id_fieldname = "osm_id"
+sql = """
+  WITH x AS (
+    SELECT DISTINCT ON
+      (department) department,
+      color
     FROM
-      planet_osm_polygon,
       color_city
-    WHERE
-      tags->'admin_level' = '8'
-      AND tags->'ref:INSEE' = insee
-      AND way && !BBOX!
-  """
-
-[[providers.layers]]
-  name = "departments"
-  geometry_fieldname = "way"
-  id_fieldname = "osm_id"
-  sql = """
-    WITH x AS (
-      SELECT DISTINCT ON
-        (department) department,
-        color
-      FROM
-        color_city
-      GROUP BY
-        department,
-        color
-      ORDER BY
-        department,
-        COUNT(color) DESC
-    )
-    SELECT
-      ST_AsBinary(way) AS way,
-      TRIM(color) AS color,
-      name,
-      tags->'ref:INSEE' AS insee,
-      osm_id
-    FROM
-      planet_osm_polygon,
-      x
-    WHERE
-      tags->'admin_level' = '6'
-      AND tags->'ref:INSEE' LIKE department || '%'
-      AND way && !BBOX!
-  """
+    GROUP BY
+      department,
+      color
+    ORDER BY
+      department,
+      COUNT(color) DESC
+  )
+  SELECT
+    ST_AsBinary(way) AS way,
+    TRIM(color) AS color,
+    name,
+    tags->'ref:INSEE' AS insee,
+    osm_id
+  FROM
+    planet_osm_polygon,
+    x
+  WHERE
+    tags->'admin_level' = '6'
+    AND tags->'ref:INSEE' LIKE department || '%'
+    AND way && !BBOX!
+"""
 
 [[maps]]
-name = "bati"
-  [[maps.layers]]
-  provider_layer = "cadastre.cities"
-  min_zoom = 9
-  max_zoom = 13
+name = "batimap"
+[[maps.layers]]
+provider_layer = "cadastre.cities"
+min_zoom = 9
+max_zoom = 13
 
-  [[maps.layers]]
-  provider_layer = "cadastre.cities-point"
-  min_zoom = 8
-  max_zoom = 8
+[[maps.layers]]
+provider_layer = "cadastre.cities-point"
+min_zoom = 8
+max_zoom = 8
 
-  [[maps.layers]]
-  provider_layer = "cadastre.departments"
-  min_zoom = 0
-  max_zoom = 7
+[[maps.layers]]
+provider_layer = "cadastre.departments"
+min_zoom = 0
+max_zoom = 7
