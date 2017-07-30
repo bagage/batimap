@@ -10,10 +10,11 @@ from batimap.bbox import Bbox
 
 class Postgis(object):
 
-    def __init__(self, db, user, passw, port, host):
+    def __init__(self, db, user, passw, port, host, tileserver):
         self.connection = psycopg2.connect(
             database=db, user=user, password=passw, port=port, host=host)
         self.cursor = self.connection.cursor()
+        self.tileserver = tileserver
 
     def create_tables(self):
         req = """
@@ -190,8 +191,7 @@ class Postgis(object):
             urls = []
             for x in range(min(x1, x2), max(x1, x2) + 1):
                 for y in range(min(y1, y2), max(y1, y2) + 1):
-                    url = "https://cadastre.damsy.net/tegola/maps/bati/{}/{}/{}.vector.pbf".format(
-                        z, x, y)
+                    url = "/{}/{}/{}.vector.pbf".format(self.tileserver, z, x, y)
                     urls.append(url)
             rs = (grequests.request('PURGE', x) for x in urls)
             grequests.map(rs)
