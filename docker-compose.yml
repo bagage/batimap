@@ -1,0 +1,39 @@
+version: '3'
+services:
+  postgis:
+    build: postgis
+    environment:
+    - POSTGRES_PASSWORD=batimap
+    - POSTGRES_DB=gis
+    ports:
+    - "5432:5432"
+  tiles:
+    build: tiles
+    command: tegola -config /root/config.toml
+    ports:
+    - "9999:9999"
+    volumes:
+    - ./tiles/:/root
+    depends_on:
+    - postgis
+  backend:
+    build: backend
+    environment:
+    - FLASK_APP=app.py
+    command: flask run -h 0.0.0.0
+    ports:
+    - "5000:5000"
+    volumes:
+    - ./backend/:/code
+    depends_on:
+    - postgis
+  frontend:
+    build: frontend
+    command: node_modules/webpack-dev-server/bin/webpack-dev-server.js --hotOnly --host 0.0.0.0
+    ports:
+    - "8080:8080"
+    volumes:
+    - ./frontend/:/usr/src/app
+    depends_on:
+    - tiles
+    - backend
