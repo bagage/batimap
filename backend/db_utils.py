@@ -16,26 +16,39 @@ class Postgis(object):
         self.cursor = self.connection.cursor()
 
     def create_tables(self):
-        req = ((""
-                "       CREATE TABLE IF NOT EXISTS color_city("
-                "           insee TEXT PRIMARY KEY NOT NULL,"
-                "           department CHAR(3) NOT NULL,"
-                "           color CHAR(20),"
-                "           last_update TIMESTAMP,"
-                "           last_author TEXT"
-                "       );"
-                "       CREATE INDEX insee_idx ON planet_osm_polygon ((tags->'ref:INSEE'));"
-                ""))
+        req = """
+                CREATE TABLE IF NOT EXISTS color_city(
+                    insee TEXT PRIMARY KEY NOT NULL,
+                    department CHAR(3) NOT NULL,
+                    color CHAR(20),
+                    last_update TIMESTAMP,
+                    last_author TEXT
+                );
+        """
         self.cursor.execute(req)
+        print('color_city table created')
+        req = """
+                CREATE INDEX insee_idx ON planet_osm_polygon ((tags->'ref:INSEE'));
+        """
+        self.cursor.execute(req)
+        print('insee_idx index created')
 
     def get_insee(self, insee: int) -> FeatureCollection:
-        req = ((""
-                "        SELECT p.name, c.insee, c.color, ST_AsGeoJSON(p.way) AS geometry\n"
-                "        FROM planet_osm_polygon p, color_city c\n"
-                "        WHERE p.tags->'ref:INSEE' = '{}'\n"
-                "        AND p.tags->'ref:INSEE' = c.insee\n"
-                "").format(insee))
-        self.cursor.execute(req)
+        req = """
+                SELECT
+                    p.name,
+                    c.insee,
+                    c.color,
+                    ST_AsGeoJSON(p.way) AS geometry
+                FROM
+                    planet_osm_polygon p,
+                    color_city c
+                WHERE
+                    p.tags->'ref:INSEE' = '%s'
+                AND
+                    p.tags->'ref:INSEE' = c.insee
+        """
+        self.cursor.execute(req, [insee])
         features = []
 
         for row in self.cursor.fetchall():
@@ -48,33 +61,53 @@ class Postgis(object):
         return FeatureCollection(features)
 
     def get_colors(self):
-        req = ((""
-                "        SELECT color, count(*)\n"
-                "        FROM color_city\n"
-                "        GROUP BY color\n"
-                ""))
+        req = """
+                SELECT
+                    color,
+                    count(*)
+                FROM
+                    color_city
+                GROUP BY
+                    color
+        """
         self.cursor.execute(req)
 
         return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
     def get_city_with_colors(self, colors, lonNW: float, latNW: float, lonSE: float, latSE: float) -> FeatureCollection:
-        req = ((""
-                "        SELECT count(p.name)\n"
-                "        FROM planet_osm_polygon p, color_city c\n"
-                "        WHERE p.tags->'admin_level' = '8'\n"
-                "        AND c.insee = p.tags->'ref:INSEE'\n"
-                "        AND c.color in ('{colors}')\n"
-                "").format(colors="','".join(colors)))
-        self.cursor.execute(req)
+        req = """
+                SELECT
+                    count(p.name)
+                FROM
+                    planet_osm_polygon p,
+                    color_city c
+                WHERE
+                    p.tags->'admin_level' = '8'
+                AND
+                    c.insee = p.tags->'ref:INSEE'
+                AND
+                    c.color in ('%s')
+                """
+        self.cursor.execute(req, ["','".join(colors)])
         count = self.cursor.fetchall()[0][0]
 
-        req = (""
-               "        SELECT p.name, c.insee, c.color, ST_AsGeoJSON(p.way, 6) AS geometry\n"
-               "        FROM planet_osm_polygon p, color_city c\n"
-               "        WHERE p.tags->'admin_level' = '8'\n"
-               "        AND c.insee = p.tags->'ref:INSEE'\n"
-               "        AND c.color in ('{colors}')\n"
-               "").format(colors="','".join(colors))
+        req = """
+                SELECT
+                    p.name,
+                    c.insee,
+                    c.color,
+                    ST_AsGeoJSON(p.way, 6) AS geometry
+                FROM
+                    planet_osm_polygon p,
+                    color_city c
+                WHERE
+                    p.tags->'admin_level' = '8'
+                AND
+                    c.insee = p.tags->'ref:INSEE'
+                AND
+                    c.color in ('%(color)s')
+               """
+        args = {'color': "','".join(colors)}
 
         # if there are too much cities, filter by distance
         if len(colors) > 1 and count > 1500:
@@ -84,12 +117,20 @@ class Postgis(object):
             # radius circle
             maxDistance = min(1., maxDistance)
 
-            req += ((""
-                     "        AND ST_DWithin(way, ST_SetSRID(ST_MakePoint({lon}, {lat}),4326), {distance})\n"
-                     "        ORDER BY ST_Distance(ST_SetSRID(ST_MakePoint({lon}, {lat}),4326), p.way)\n"
-                     "").format(lon=(lonNW + lonSE) / 2., lat=(latNW + latSE) / 2., distance=maxDistance))
+            req += """
+                AND
+                    ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326),
+                    %(distance)s)
+                ORDER BY
+                    ST_Distance(ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), p.way)
+            """
+            args.update({
+                'lon': (lonNW + lonSE) / 2.,
+                'lat': (latNW + latSE) / 2.,
+                'distance': maxDistance,
+            })
 
-        self.cursor.execute(req)
+        self.cursor.execute(req, args)
 
         features = []
 
@@ -103,14 +144,19 @@ class Postgis(object):
         return FeatureCollection(features)
 
     def get_department_colors(self, department):
-        req = ((""
-                "        SELECT color\n"
-                "        FROM color_city\n"
-                "        WHERE department = '{}'\n"
-                "        GROUP BY color\n"
-                "        ORDER BY count(*) DESC\n"
-                "").format(department))
-        self.cursor.execute(req)
+        req = """
+            SELECT
+                color
+            FROM
+                color_city
+            WHERE
+                department = '%s'
+            GROUP BY
+                color
+            ORDER BY
+                count(*) DESC
+        """
+        self.cursor.execute(req, [department])
 
         return sorted([x[0].strip() for x in self.cursor.fetchall()])
 
@@ -121,12 +167,15 @@ class Postgis(object):
         return (x, y)
 
     def clear_tiles(self, insee):
-        req = ((""
-                "        SELECT ST_AsGeoJSON(ST_EXTENT(way))\n"
-                "        FROM planet_osm_polygon\n"
-                "        WHERE tags->'ref:INSEE' = '{}'\n"
-                "").format(insee))
-        self.cursor.execute(req)
+        req = """
+            SELECT
+                ST_AsGeoJSON(ST_EXTENT(way))
+            FROM
+                planet_osm_polygon
+            WHERE
+                tags->'ref:INSEE' = '%s'
+        """
+        self.cursor.execute(req, [insee])
         coords = json.loads(self.cursor.fetchall()[0][0])['coordinates'][0]
         (lon1, lat1) = coords[0]
         (lon2, lat2) = coords[2]
@@ -144,12 +193,17 @@ class Postgis(object):
 
     def name_for_insee(self, insee):
         req = """
-                        SELECT DISTINCT name
-                        FROM planet_osm_polygon
-                        WHERE tags->'ref:INSEE' = %s
-                        AND admin_level = '8'
-                        AND boundary = 'administrative'
-              """
+                SELECT DISTINCT
+                    name
+                FROM
+                    planet_osm_polygon
+                WHERE
+                    tags->'ref:INSEE' = %s
+                AND
+                    admin_level = '8'
+                AND
+                    boundary = 'administrative'
+        """
         self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
@@ -162,12 +216,18 @@ class Postgis(object):
 
     def insee_for_name(self, name, interactive=True):
         req = """
-                        SELECT tags->'ref:INSEE', name
-                        FROM planet_osm_polygon
-                        WHERE admin_level = '8'
-                        AND boundary = 'administrative'
-                        AND name ILIKE %s || '%%'
-              """
+                SELECT
+                    tags->'ref:INSEE',
+                    name
+                FROM
+                    planet_osm_polygon
+                WHERE
+                    admin_level = '8'
+                AND
+                    boundary = 'administrative'
+                AND
+                    name ILIKE %s || '%%'
+        """
         self.cursor.execute(req, [name])
 
         results = [x for x in self.cursor.fetchall()]
@@ -195,10 +255,13 @@ class Postgis(object):
 
     def last_import_color(self, insee):
         req = """
-                        SELECT TRIM(color)
-                        FROM color_city
-                        WHERE insee = %s
-              """
+                SELECT
+                    TRIM(color)
+                FROM
+                    color_city
+                WHERE
+                    insee = %s
+        """
         self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
@@ -207,10 +270,13 @@ class Postgis(object):
 
     def last_import_author(self, insee):
         req = """
-                        SELECT last_author
-                        FROM color_city
-                        WHERE insee = %s
-                """
+                SELECT
+                    last_author
+                FROM
+                    color_city
+                WHERE
+                    insee = %s
+        """
         self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
@@ -220,25 +286,36 @@ class Postgis(object):
     def within_department(self, department: str):
         department = '{:0>2}%'.format(department)
         req = """
-                        SELECT DISTINCT tags->'ref:INSEE' AS insee
-                        FROM planet_osm_polygon
-                        WHERE admin_level='8'
-                        AND boundary='administrative'
-                        AND tags->'ref:INSEE' LIKE %s
-                        ORDER BY insee
-                """
+                SELECT DISTINCT
+                    tags->'ref:INSEE' AS insee
+                FROM
+                    planet_osm_polygon
+                WHERE
+                    admin_level='8'
+                AND
+                    boundary='administrative'
+                AND
+                    tags->'ref:INSEE' LIKE %s
+                ORDER BY
+                    insee
+        """
         self.cursor.execute(req, [department])
 
         return [x[0] for x in self.cursor.fetchall()]
 
     def bbox_for_insee(self, insee):
         req = """
-                        SELECT Box2D(way)
-                        FROM planet_osm_polygon
-                        WHERE tags->'ref:INSEE' = %s
-                        AND admin_level = '8'
-                        AND boundary = 'administrative'
-                """
+                SELECT
+                    Box2D(way)
+                FROM
+                    planet_osm_polygon
+                WHERE
+                    tags->'ref:INSEE' = %s
+                AND
+                    admin_level = '8'
+                AND
+                    boundary = 'administrative'
+        """
         self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
@@ -247,12 +324,18 @@ class Postgis(object):
         return Bbox(results[0][0]) if len(results) else None
 
     def update_stats_for_insee(self, insee, color, department, author, update_time=False):
+
         req = """
-                        INSERT INTO color_city
-                        VALUES (%s, %s,
-                                %s, now(), %s)
-                        ON CONFLICT (insee) DO UPDATE SET color = excluded.color, department = excluded.department
-                """
+                INSERT INTO
+                    color_city
+                VALUES
+                    (%s, %s, %s, now(), %s)
+                ON CONFLICT (insee)
+                DO
+                UPDATE SET
+                    color = excluded.color,
+                    department = excluded.department
+        """
         if update_time:
             req += ", last_update = excluded.last_update, last_author = excluded.last_author"
         try:
@@ -260,4 +343,3 @@ class Postgis(object):
             self.connection.commit()
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
-            pass
