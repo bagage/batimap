@@ -7,6 +7,8 @@ from batimap import batimap
 from batimap.overpassw import Overpass
 from db_utils import Postgis
 
+import itertools
+
 app = Flask(__name__)
 CORS(app)
 
@@ -50,7 +52,7 @@ def api_status(department) -> dict:
 
 @app.route('/update/<insee>', methods=['POST'])
 def update_insee_list(insee) -> dict:
-    batimap.stats(db, op, cities=[insee])
+    batimap.stats(db, op, cities=[insee], force=True)
     # TODO: only clear tiles if color was changed // return different status
     # codes
 
@@ -68,20 +70,22 @@ def initdb_command():
 @app.cli.command('update-city-stats')
 @click.argument('city')
 def update_city_stats(city):
-    batimap.stats(db, op, cities=[city])
+    for (city, date, author) in batimap.stats(db, op, cities=[city], force=True):
+        click.echo('{}: date={} author={}'.format(city, date, author))
 
 
 @app.cli.command('update-department-stats')
 @click.argument('department')
 def update_department_stats(department):
-    batimap.stats(db, op, department=department)
+    for (city, date, author) in batimap.stats(db, op, department=department, force=True):
+        click.echo('{}: date={} author={}'.format(city, date, author))
 
 
 @app.cli.command('update-france-stats')
 def update_france_stats():
-    for r in (range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977)):
-        for d in r:
-            batimap.stats(db, op, department=str(d))
+    for department in itertools.chain(range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977)):
+        for (city, date, author) in batimap.stats(db, op, department=department, force=True):
+            click.echo('{}: date={} author={}'.format(city, date, author))
 
 
 @app.cli.command('generate-city-building')
