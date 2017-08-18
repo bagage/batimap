@@ -7,7 +7,7 @@ from os import path
 
 import requests
 
-LOG = logging.getLogger('batimap')
+LOG = logging.getLogger(__name__)
 
 
 class Josm(object):

@@ -8,11 +8,18 @@ from batimap.overpassw import Overpass
 from db_utils import Postgis
 
 import itertools
+import logging
 
 app = Flask(__name__)
+app.config.from_pyfile(app.root_path + '/app.conf')
 CORS(app)
 
-app.config.from_pyfile(app.root_path + '/app.conf')
+logging.basicConfig(
+    format='%(asctime)s %(message)s',
+    datefmt="%H:%M:%S",
+    level=logging.DEBUG if app.config[
+        'DEBUG'] else logging.CRITICAL
+)
 
 db = Postgis(
     app.config['DB_NAME'],
