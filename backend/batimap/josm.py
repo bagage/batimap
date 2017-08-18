@@ -104,7 +104,8 @@ class Josm(object):
             LOG.critical("Impossible de charger les données OSM ({}): {}".format(
                 r.status_code, r.text))
 
-        resp = None
-        while resp not in ["oui", "non"]:
-            resp = input("Avez-vous terminé ? (oui/Non) ").lower()
-        return resp == "oui"
+        # resp = None
+        # while resp not in ["oui", "non"]:
+        #     resp = input("Avez-vous terminé ? (oui/Non) ").lower()
+        # return resp == "oui"
+        return False

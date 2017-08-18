@@ -37,8 +37,8 @@ def work(db, cities):
         date = c.get_last_import_date()
         city_path = c.get_work_path()
         if date == str(datetime.datetime.now().year):
-            need_work = input(
-                "{} déjà à jour, continuer quand même ? (oui/Non) ".format(c)).lower() == "oui"
+            need_work = False
+            #input("{} déjà à jour, continuer quand même ? (oui/Non) ".format(c)).lower() == "oui"
         else:
             need_work = city_path is not None
 
