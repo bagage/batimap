@@ -7,6 +7,8 @@ from geojson import Feature, FeatureCollection, loads
 
 from batimap.bbox import Bbox
 
+LOG = logging.getLogger(__name__)
+
 
 class Postgis(object):
 
@@ -28,7 +30,7 @@ class Postgis(object):
                     )
         """
         self.cursor.execute(req)
-        print('color_city table created')
+        LOG.debug('color_city table created')
         req = """
                 CREATE INDEX IF NOT EXISTS
                     insee_idx
@@ -36,7 +38,7 @@ class Postgis(object):
                     planet_osm_polygon ((tags->'ref:INSEE'));
         """
         self.cursor.execute(req)
-        print('insee_idx index created')
+        LOG.debug('insee_idx index created')
         self.connection.commit()
 
     def get_insee(self, insee: int) -> FeatureCollection:
@@ -191,7 +193,8 @@ class Postgis(object):
             urls = []
             for x in range(min(x1, x2), max(x1, x2) + 1):
                 for y in range(min(y1, y2), max(y1, y2) + 1):
-                    url = "/{}/{}/{}.vector.pbf".format(self.tileserver, z, x, y)
+                    url = "/{}/{}/{}.vector.pbf".format(
+                        self.tileserver, z, x, y)
                     urls.append(url)
             rs = (grequests.request('PURGE', x) for x in urls)
             grequests.map(rs)
@@ -257,6 +260,9 @@ class Postgis(object):
                     )
                 )
             return user_input
+        else:
+            LOG.critical("More than one city with name {}.".format(name))
+            exit(1)
 
     def last_import_color(self, insee):
         req = """

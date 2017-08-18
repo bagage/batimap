@@ -27,6 +27,8 @@ def generate(db, cities):
         city_path = c.get_work_path()
         if city_path and not path.exists(city_path):
             c.fetch_cadastre_data()
+        else:
+            LOG.debug("{} est déjà prêt".format(c))
 
 
 def work(db, cities):
