@@ -32,9 +32,13 @@ db = Postgis(
 
 op = Overpass(app.config['OVERPASS_URI'])
 
+all_departments = itertools.chain(
+    range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977))
 
 # ROUTES
-@app.route('/insee/<int:insee>', methods=['GET'])
+
+
+@app.route('/insee/<insee>', methods=['GET'])
 def api_insee(insee) -> dict:
     color_city = db.get_insee(insee)
     return geojson.dumps(color_city)
@@ -69,39 +73,64 @@ def update_insee_list(insee) -> dict:
 
 
 # CLI
-@app.cli.command('initdb', help='Create tables')
+@app.cli.command('initdb')
 def initdb_command():
+    """
+    Creates required tables in PostgreSQL server.
+    """
     db.create_tables()
 
 
-@app.cli.command('update-city-stats')
-@click.argument('city')
-def update_city_stats(city):
-    for (city, date, author) in batimap.stats(db, op, cities=[city], force=True):
+@app.cli.command('get-city-stats')
+@click.argument('cities', nargs=-1)
+@click.option('--fast', is_flag=True)
+def get_city_stats(fast, cities):
+    """
+    Returns cadastral status of given cities.
+    If status is unknown, it is computed first.
+    """
+    for (city, date, author) in batimap.stats(db, op, cities=cities, force=not fast):
         click.echo('{}: date={} author={}'.format(city, date, author))
 
 
-@app.cli.command('update-department-stats')
-@click.argument('department')
-def update_department_stats(department):
-    for (city, date, author) in batimap.stats(db, op, department=department, force=True):
-        click.echo('{}: date={} author={}'.format(city, date, author))
+@app.cli.command('get-department-stats')
+@click.argument('departments', nargs=-1)
+@click.option('--fast', is_flag=True)
+def get_department_stats(fast, departments):
+    """
+    Returns cadastral status of given departments cities.
+    If status is unknown, it is computed first.
+    """
+    for department in departments:
+        for (city, date, author) in batimap.stats(db, op, department=department, force=not fast):
+            click.echo('{}: date={} author={}'.format(city, date, author))
 
 
-@app.cli.command('update-france-stats')
-def update_france_stats():
-    for department in itertools.chain(range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977)):
-        for (city, date, author) in batimap.stats(db, op, department=department, force=True):
+@app.cli.command('get-france-stats')
+@click.option('--fast', is_flag=True)
+def get_france_stats(fast):
+    """
+    Returns cadastral status of French cities.
+    If status is unknown, it is computed first.
+    """
+    for department in all_departments:
+        for (city, date, author) in batimap.stats(db, op, department=department, force=not fast):
             click.echo('{}: date={} author={}'.format(city, date, author))
 
 
 @app.cli.command('generate-city-building')
-@click.argument('city')
-def generate_city_building(city):
-    batimap.generate(db, cities=[city])
+@click.argument('cities', nargs=-1)
+def generate_city_building(cities):
+    """
+    Download buildings for given cities. IMPROVE_ME
+    """
+    batimap.generate(db, cities=cities)
 
 
 @app.cli.command('load-city-josm')
-@click.argument('city')
-def load_city_josm(city):
-    batimap.work(db, cities=[city])
+@click.argument('cities', nargs=-1)
+def load_city_josm(cities):
+    """
+    Create and open JOSM project for given cities.
+    """
+    batimap.work(db, cities=cities)
