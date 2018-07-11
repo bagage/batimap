@@ -11,9 +11,6 @@ for (var i = 0; i < josm.layers.length; i++) {
         housesLayer = layer;
     }
 }
-// check that insee match
-if (segmentedLayer != null && segmentedLayer.name.split('-')[0] != housesLayer.name.split('-')[0])
-    segmentedLayer = null;
 
 function do_work() {
     // 2. We select segmented items and add them in the todo list plugin.
@@ -45,6 +42,9 @@ if (housesLayer == null && segmentedLayer == null) {
     josm.alert("Impossible de trouver le calque de travail (XXX-houses-simplifie.osm)")
 } else if (segmentedLayer == null) {
     josm.alert("Impossible de trouver le calque de travail (XXX-houses-prediction_segmente.osm)")
+// check that insee match
+} else if (segmentedLayer.name.split('-')[0] != housesLayer.name.split('-')[0]) {
+    josm.alert("Les calques de travail ne correspondent pas à la même commune INSEE")
 } else {
     do_work();
 }
