@@ -53,7 +53,7 @@ class Postgis(object):
                     planet_osm_polygon p,
                     color_city c
                 WHERE
-                    p.tags->'ref:INSEE' = '%s'
+                    p.tags->'ref:INSEE' = %s
                 AND
                     p.tags->'ref:INSEE' = c.insee
         """
@@ -159,7 +159,7 @@ class Postgis(object):
             FROM
                 color_city
             WHERE
-                department = '%s'
+                department = %s
             GROUP BY
                 color
             ORDER BY
