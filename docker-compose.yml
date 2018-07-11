@@ -4,6 +4,7 @@ services:
     build: postgis
     environment:
     - POSTGRES_PASSWORD=batimap
+    - POSTGRES_USER=docker
     - POSTGRES_DB=gis
     ports:
     - "5432:5432"
@@ -29,7 +30,6 @@ services:
     - postgis
   frontend:
     build: frontend
-    command: node_modules/webpack-dev-server/bin/webpack-dev-server.js --hotOnly --host 0.0.0.0
     ports:
     - "8080:8080"
     volumes:

@@ -5,4 +5,4 @@ RUN apt update && \
     mv tegola_linux_amd64 /usr/bin/tegola && \
     chmod +x /usr/bin/tegola
 ADD config.toml /root
-# CMD sleep 30 && tegola_linux_amd64 -config /root/config.toml
+CMD sleep 30 && tegola_linux_amd64 -config /root/config.toml
