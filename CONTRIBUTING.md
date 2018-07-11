@@ -35,6 +35,7 @@ vf new -p python3 batimap
 pip install -r requirements.txt
 set -x FLASK_APP app.py
 flask initdb
+flask get-france-stats --fast
 ```
 
 ### Frontend setup
