@@ -3,6 +3,7 @@ from math import cos, floor, log, pi, radians, sqrt, tan
 
 import grequests
 import psycopg2
+import logging
 from geojson import Feature, FeatureCollection, loads
 
 from batimap.bbox import Bbox
@@ -217,7 +218,7 @@ class Postgis(object):
         results = self.cursor.fetchall()
 
         if len(results) == 0:
-            self.log.critical("Cannot found city with INSEE {}.".format(insee))
+            LOG.critical("Cannot found city with INSEE {}.".format(insee))
             exit(1)
 
         return results[0][0] if len(results) else None
