@@ -35,7 +35,16 @@ vf new -p python3 batimap
 pip install -r requirements.txt
 set -x FLASK_APP app.py
 flask initdb
-flask get-france-stats --fast
+```
+
+Finally import buildings stats:
+
+```sh
+osmfilter --keep="building" -v my-region.o5m -o=buildings.o5m
+osmconvert france-latest.osm.pbf -o=france-latest.osm
+perl boundaries.pl -in=france-latest.osm -adminlevel=8 -poly -polybase=cities/city -ignoremissing -html=cities/cities.htm -csv=cities/cities.csv
+osmconvert buildings.o5m -B=cities/city.3366520.poly -o=cities/buildings.3366520.o5m
+osmfilter cities/buildings.3366520.o5m --keep=building
 ```
 
 ### Frontend setup
