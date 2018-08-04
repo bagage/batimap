@@ -22,6 +22,8 @@ class City(object):
         r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
     __cadastre_code = resource_stream(
         __name__, 'code_cadastre.csv').read().decode().split('\n')
+    __total_pdfs_regex = re.compile(
+        ".*coupe la bbox en \d+ \* \d+ \[(\d+) pdfs\]$")
 
     BASE_PATH = "/tmp/batimap_data"  # fixme
     WORKDONE_PATH = path.join(BASE_PATH, '_done')
@@ -122,11 +124,20 @@ class City(object):
 
         # otherwise we invoke Cadastre generation
         with closing(requests.post(url, data=data, stream=True)) as r:
+            total = 0
+            current = 0
             for line in r.iter_lines(decode_unicode=True):
                 # only display progression
                 # TODO: improve this…
-                if line.endswith(".pdf") or "coupe la bbox en" in line:
-                    LOG.info(line)
+                if "coupe la bbox en" in line:
+                    match = self.__total_pdfs_regex.match(line)
+                    if match:
+                        total = int(match.groups()[0])
+
+                if line.endswith(".pdf"):
+                    current += 1
+                    msg = f"{current}/{total} ({current * 100.0 / total}%)" if total > 0 else f"{current}"
+                    LOG.info(msg)
                 elif "ERROR:" in line or "ERREUR:" in line:
                     LOG.error(line)
                     return False
