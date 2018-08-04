@@ -34,7 +34,7 @@ logging.basicConfig(
     format='%(asctime)s %(message)s',
     datefmt="%H:%M:%S",
     level=logging.DEBUG if app.config[
-        'DEBUG'] else logging.CRITICAL
+        'DEBUG'] else logging.ERROR
 )
 
 db = Postgis(
