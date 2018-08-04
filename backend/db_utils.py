@@ -350,7 +350,9 @@ class Postgis(object):
         self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
-        assert(len(results) <= 1)
+        if len(results) > 1:
+            # fixme: this may happen for multi polygons cities (76218 - Doudeauville for instance)
+            LOG.critical(f"Expected a single result at most but found {len(results)}")
 
         return Bbox(results[0][0]) if len(results) else None
 
