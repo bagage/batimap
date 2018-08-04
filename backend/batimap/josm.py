@@ -70,9 +70,7 @@ class Josm(object):
         # b. open Strava and BDOrtho IGN imageries
         imageries = OrderedDict([
             ("BDOrtho IGN",
-             "url=http://proxy-ign.openstreetmap.fr/bdortho/{zoom}/{x}/{y}.jpg"),
-            ("Strava",
-             "min_zoom=3&max_zoom=17&url=http://globalheat.strava.com/tiles/both/color2/{zoom}/{x}/{y}.png"),
+             "url=http://proxy-ign.openstreetmap.fr/bdortho/{zoom}/{x}/{y}.jpg")
         ])
         for k, v in imageries.items():
             r = requests.get(
