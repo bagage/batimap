@@ -15,7 +15,7 @@ for (var i = 0; i < josm.layers.length; i++) {
 
 function do_work()  {
     // 2. OSM layer: select all elements within relation by first selecting city, then all inside, then filter buildings
-    insee = osmLayer.name.split(" ").splice(-3)[0];
+    insee = osmLayer.name.split(" ")[3];
     var ds2 = osmLayer.data;
     var city = ds2.query('"ref:INSEE"=' + insee);
     ds2.selection.clearAll();
@@ -34,7 +34,6 @@ function do_work()  {
     var buildings = ds2.query('selected building=* -type:relation');
     ds2.selection.clearAll();
     ds2.selection.add(buildings);
-
     if (ds2.selectionEmpty()) {
         josm.alert("Il ne semble y avoir aucun bâtiment actuellement dans cette ville. Aucune conflation à réaliser, il suffit d'importer les bâtiments du calque " + housesLayer.name);
         return;
