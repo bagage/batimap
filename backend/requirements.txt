@@ -5,15 +5,11 @@ flask
 flask-cors
 flask_restful
 geojson
-geojson
 grequests
 gunicorn
-lxml
 mypy-lang
 overpass
 psycopg2
-psycopg2
 pygeoj
-requests
 requests
 ujson
