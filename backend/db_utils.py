@@ -71,6 +71,24 @@ class Postgis(object):
 
         return FeatureCollection(features)
 
+    def get_cities_for_date(self, date):
+        req = """
+                SELECT
+                    p.name, c.insee
+                FROM
+                    planet_osm_polygon p,
+                    color_city c
+                WHERE
+                    p.tags->'admin_level' = '8'
+                AND
+                    c.insee = p.tags->'ref:INSEE'
+                AND
+                    c.color = %s
+                """
+        self.cursor.execute(req, [date])
+
+        return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
+
     def get_colors(self):
         req = """
                 SELECT
@@ -97,7 +115,7 @@ class Postgis(object):
                 AND
                     c.insee = p.tags->'ref:INSEE'
                 AND
-                    c.color in ('%s')
+                    c.color in (%s)
                 """
         self.cursor.execute(req, ["','".join(colors)])
         count = self.cursor.fetchall()[0][0]
@@ -116,7 +134,7 @@ class Postgis(object):
                 AND
                     c.insee = p.tags->'ref:INSEE'
                 AND
-                    c.color in ('%(color)s')
+                    c.color in (%(color)s)
                """
         args = {'color': "','".join(colors)}
 
@@ -184,7 +202,7 @@ class Postgis(object):
             FROM
                 planet_osm_polygon
             WHERE
-                tags->'ref:INSEE' = '%s'
+                tags->'ref:INSEE' = %s
         """
         self.cursor.execute(req, [insee])
         coords = json.loads(self.cursor.fetchall()[0][0])['coordinates'][0]
