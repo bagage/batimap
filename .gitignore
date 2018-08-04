@@ -3,3 +3,4 @@ josm.desktop
 .vscode
 __pycache__/
 frontend/node_modules
+./postgis/data

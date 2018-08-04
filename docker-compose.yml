@@ -8,6 +8,8 @@ services:
     - POSTGRES_DB=gis
     ports:
     - "5432:5432"
+    volumes:
+    - ./postgis/data:/var/lib/postgresql/data
   tiles:
     build: tiles
     command: tegola -config /root/config.toml
