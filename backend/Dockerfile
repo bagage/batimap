@@ -1,4 +1,4 @@
-FROM python:3-alpine
+FROM python:3.6-alpine
 RUN apk --update add build-base postgresql-dev
 ADD . /code
 WORKDIR /code
