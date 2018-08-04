@@ -11,8 +11,9 @@ LOG = logging.getLogger(__name__)
 
 
 class Josm(object):
+    base_url = 'http://0.0.0.0:8111/'
 
-    def get_executable_path():
+    def get_executable_path(self):
         for p in os.environ['PATH']:
             if p.lower().endswith("josm"):
                 return p
@@ -34,9 +35,16 @@ class Josm(object):
 
         return None
 
-    def start(base_url):
+    def is_started(self):
+        try:
+            r = requests.get(self.base_url + 'version')
+            return r.status_code == 200
+        except Exception:
+            return False
+
+    def start(self):
         # Hack: look in PATH and .desktop files if JOSM is referenced
-        josm_path = Josm.get_executable_path()
+        josm_path = self.get_executable_path()
         # If we found it, start it and try to connect to it (aborting after 1
         # min)
         if josm_path:
@@ -45,27 +53,22 @@ class Josm(object):
             subprocess.Popen(josm_path, stdout=stdouterr, stderr=stdouterr)
             timeout = time.time() + 60
             while True:
-                try:
-                    r = requests.get(base_url + 'version')
-                    if r.status_code == 200 or time.time() > timeout:
-                        return True
-                except Exception:
-                    pass
-                if time.time() > timeout:
+                if self.is_started() or time.time() > timeout:
+                    return True
+                elif time.time() > timeout:
                     LOG.critical(
                         "Impossible de se connecter à JOSM - est-il lancé ?")
                 time.sleep(1)
         return False
 
-    def do_work(city):
+    def do_work(self, city):
 
         # a. ensure JOSM is running
-        base_url = 'http://0.0.0.0:8111/'
         try:
-            r = requests.get(base_url + 'version')
+            r = requests.get(self.base_url + 'version')
         except Exception:
             LOG.info("JOSM ne semble pas démarré, en attente de lancement…")
-            Josm.start(base_url)
+            self.start()
 
         # b. open Strava and BDOrtho IGN imageries
         imageries = OrderedDict([
@@ -74,7 +77,7 @@ class Josm(object):
         ])
         for k, v in imageries.items():
             r = requests.get(
-                base_url + 'imagery?title={}&type=tms&{}'.format(k, v))
+                self.base_url + 'imagery?title={}&type=tms&{}'.format(k, v))
 
         # c. open both houses-simplifie.osm and houses-prediction_segmente.osm
         # files
@@ -83,7 +86,7 @@ class Josm(object):
                  if x.endswith('-houses-simplifie.osm') or x.endswith('-houses-prediction_segmente.osm')]
         files.sort()
         for x in files:
-            r = requests.get(base_url + 'open_file?filename={}'.format(x))
+            r = requests.get(self.base_url + 'open_file?filename={}'.format(x))
             if r.status_code != 200:
                 error = r.text
                 if r.status_code == 403:
@@ -96,7 +99,7 @@ class Josm(object):
         # d. download city data from OSM as well
         bbox = city.get_bbox()
         url = \
-            base_url + \
+            self.base_url + \
             'load_and_zoom?new_layer=true&layer_name=Données OSM pour {} - {}&left={}&right={}&bottom={}&top={}'
         url = url.format(city.insee, city.name,
                          bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax)
@@ -105,8 +108,6 @@ class Josm(object):
             LOG.critical("Impossible de charger les données OSM ({}): {}".format(
                 r.status_code, r.text))
 
-        # resp = None
-        # while resp not in ["oui", "non"]:
-        #     resp = input("Avez-vous terminé ? (oui/Non) ").lower()
-        # return resp == "oui"
-        return False
+        while self.is_started():
+            time.sleep(5)
+        return True

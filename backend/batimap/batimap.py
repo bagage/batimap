@@ -53,7 +53,7 @@ def work(db, cities):
                     return
 
             LOG.debug("Configuration de JOSM…")
-            if not Josm.do_work(c):
+            if not Josm().do_work(c):
                 return
 
         if path.exists(city_path):
