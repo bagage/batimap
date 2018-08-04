@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import json
 from math import cos, floor, log, pi, radians, sqrt, tan
 
@@ -240,7 +242,6 @@ class Postgis(object):
         self.cursor.execute(req, [name])
 
         results = [x for x in self.cursor.fetchall()]
-
         if len(results) == 0:
             LOG.critical("Cannot found city with name {}.".format(name))
             exit(1)
