@@ -49,7 +49,7 @@ class Josm(object):
                     r = requests.get(base_url + 'version')
                     if r.status_code == 200 or time.time() > timeout:
                         return True
-                except:
+                except Exception:
                     pass
                 if time.time() > timeout:
                     LOG.critical(
@@ -63,7 +63,7 @@ class Josm(object):
         base_url = 'http://0.0.0.0:8111/'
         try:
             r = requests.get(base_url + 'version')
-        except:
+        except Exception:
             LOG.info("JOSM ne semble pas démarré, en attente de lancement…")
             Josm.start(base_url)
 
