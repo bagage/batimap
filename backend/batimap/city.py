@@ -123,8 +123,11 @@ class City(object):
             for line in r.iter_lines(decode_unicode=True):
                 # only display progression
                 # TODO: improve this…
-                if "pdf" in line:
+                if line.endswith(".pdf"):
                     LOG.info(line)
+                elif "ERROR:" in line or "ERREUR:" in line:
+                    LOG.error(line)
+                    return False
 
         tarname = self.get_work_path() + '.tar.bz2'
         r = requests.get(

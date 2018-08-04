@@ -34,18 +34,24 @@ def generate(db, cities):
 def work(db, cities):
     for city in cities:
         c = City(db, city)
+        LOG.debug("Récupération de la date du dernier import…")
         date = c.get_last_import_date()
         city_path = c.get_work_path()
         if date == str(datetime.datetime.now().year):
             need_work = False
-            #input("{} déjà à jour, continuer quand même ? (oui/Non) ".format(c)).lower() == "oui"
+            LOG.debug("{} déjà à jour".format(c))
         else:
             need_work = city_path is not None
 
         if need_work:
             if not path.exists(city_path):
-                c.fetch_cadastre_data()
+                LOG.debug("Téléchargement des données depuis le cadastre…")
+                if not c.fetch_cadastre_data():
+                    LOG.error(
+                        "Échec de téléchargement des données du cadastre.")
+                    return
 
+            LOG.debug("Configuration de JOSM…")
             if not Josm.do_work(c):
                 return
 
