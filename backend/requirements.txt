@@ -1,3 +1,4 @@
+bs4
 click
 colour
 flask
@@ -7,6 +8,7 @@ geojson
 geojson
 grequests
 gunicorn
+lxml
 mypy-lang
 overpass
 psycopg2
