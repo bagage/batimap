@@ -110,7 +110,7 @@ class City(object):
     def get_bbox(self):
         return self.db.bbox_for_insee(self.insee)
 
-    def fetch_cadastre_data(self):
+    def fetch_cadastre_data(self, force=False):
         if self.name_cadastre is None:
             return False
 
@@ -118,7 +118,7 @@ class City(object):
         data = {
             'dep': self.department.zfill(3),
             'type': 'bati',
-            'force': False,
+            'force': force,
             'ville': self.name_cadastre,
         }
 
@@ -145,6 +145,12 @@ class City(object):
         tarname = self.get_work_path() + '.tar.bz2'
         r = requests.get(
             "http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
+        if r.status_code != 200:
+            # try to regenerate cadastre data
+            if not force:
+                return self.fetch_cadastre_data(True)
+            return False
+
         LOG.debug('Décompression du fichier {}'.format(tarname))
         with open(tarname, 'wb') as fd:
             fd.write(r.content)
