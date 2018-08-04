@@ -51,17 +51,20 @@ class Josm(object):
                         return True
                 except:
                     pass
-            if time.time() > timeout:
-                LOG.critical(
-                    "Impossible de se connecter à JOSM - est-il lancé ?")
+                if time.time() > timeout:
+                    LOG.critical(
+                        "Impossible de se connecter à JOSM - est-il lancé ?")
+                time.sleep(1)
         return False
 
     def do_work(city):
+
         # a. ensure JOSM is running
         base_url = 'http://0.0.0.0:8111/'
         try:
             r = requests.get(base_url + 'version')
         except:
+            LOG.info("JOSM ne semble pas démarré, en attente de lancement…")
             Josm.start(base_url)
 
         # b. open Strava and BDOrtho IGN imageries
