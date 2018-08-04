@@ -32,18 +32,25 @@ function do_work()  {
     ds2.selection.clearAll();
     ds2.selection.add(city);
 
-    var inside = org.openstreetmap.josm.plugins.utilsplugin2.selection.NodeWayUtils.selectAllInside(ds2.getSelected(), ds2, true);
+    var utils2Classloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("utilsplugin2");
+    if (utils2Classloader == null) {
+        josm.alert("Le plugin utilsplugin2 ne semble pas installé : " + e.message);
+        return;
+    }
+    var utils2Plugin = utils2Classloader.loadClass("org.openstreetmap.josm.plugins.utilsplugin2.selection.NodeWayUtils");
+    var inside = utils2Plugin.getMethod('selectAllInside', java.util.Collection, org.openstreetmap.josm.data.osm.DataSet).invoke(null, ds2.getSelected(), ds2);
+    // var inside = utils2Plugin.selectAllInside(ds2.getSelected(), ds2, true);
     ds2.addSelected(inside);
 
     var buildings = ds2.query('selected building=* -type:relation');
     ds2.selection.clearAll();
     ds2.selection.add(buildings);
 
-    // 4. configure conflation
-    // TODO
-
-    // 5. select work layer
+    // 4. select work layer
     josm.layers.activeLayer = osmLayer;
+
+    // 5. configure conflation
+    josm.alert("Merci d'ouvrir la fenêtre de configuration de conflation maintenant.\nReference layer : " + housesLayer.name + "\nData layer: " + osmLayer.name);
 }
 
 if (housesLayer == null) {

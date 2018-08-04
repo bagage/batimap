@@ -28,8 +28,20 @@ function do_work() {
         // select in todo
         ds.selection.clearAll();
         ds.selection.add(segmented);
-        var todoPlugin = org.openstreetmap.josm.plugins.todo.TodoPlugin;
-        todoPlugin.dialog.trigger();
+
+        var todoClassloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("todo");
+        if (todoClassloader == null) {
+            josm.alert("Le plugin Todo ne semble pas installé : " + e.message);
+            return;
+        }
+        var todoPlugin = todoClassloader.loadClass("org.openstreetmap.josm.plugins.todo.TodoPlugin");
+        var dialogField = todoPlugin.getDeclaredField('dialog');
+        dialogField.setAccessible(true);
+        var dialog = dialogField.get(todoPlugin);
+
+        var actAddField = dialog.class.getDeclaredField('actAdd');
+        actAddField.setAccessible(true);
+        actAddField.get(dialog).actionPerformed(null)
     }
 
     // 3. select work layer
