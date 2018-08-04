@@ -3,7 +3,8 @@
 
 import click
 import geojson
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from flask_restful import inputs
 from flask_cors import CORS
 
 from batimap import batimap
@@ -16,6 +17,8 @@ import logging
 app = Flask(__name__)
 app.config.from_pyfile(app.root_path + '/app.conf')
 CORS(app)
+
+LOG = logging.getLogger(__name__)
 
 logging.basicConfig(
     format='%(asctime)s %(message)s',
@@ -39,6 +42,16 @@ all_departments = itertools.chain(
     range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977))
 
 # ROUTES
+
+
+@app.route('/status/<department>', methods=['GET'])
+def api_department_status(department) -> str:
+    return ",\n".join([f"{x[0]}: {x[1]}" for x in batimap.stats(db, op, department=department, force=request.args.get('force', False))])
+
+@app.route('/status/<department>/<city>', methods=['GET'])
+def api_city_status(department, city) -> str:
+    for (city, date, author) in batimap.stats(db, op, cities=[city], force=request.args.get('force', default=False, type=inputs.boolean)):
+        return f"{city}: {date}"
 
 
 @app.route('/insee/<insee>', methods=['GET'])
@@ -65,7 +78,7 @@ def api_status(department) -> dict:
 
 
 @app.route('/update/<insee>', methods=['POST'])
-def update_insee_list(insee) -> dict:
+def api_update_insee_list(insee) -> dict:
     batimap.stats(db, op, cities=[insee], force=True)
     # TODO: only clear tiles if color was changed // return different status
     # codes

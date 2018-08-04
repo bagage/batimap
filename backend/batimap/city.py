@@ -125,7 +125,7 @@ class City(object):
             for line in r.iter_lines(decode_unicode=True):
                 # only display progression
                 # TODO: improve this…
-                if line.endswith(".pdf"):
+                if line.endswith(".pdf") or "coupe la bbox en" in line:
                     LOG.info(line)
                 elif "ERROR:" in line or "ERREUR:" in line:
                     LOG.error(line)
