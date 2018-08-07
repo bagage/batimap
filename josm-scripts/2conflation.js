@@ -54,7 +54,58 @@ function do_work()  {
     josm.layers.activeLayer = osmLayer;
 
     // 5. configure conflation
-    josm.alert("Merci d'ouvrir la fenêtre de configuration de conflation maintenant.\nReference layer : " + housesLayer.name + "\nData layer: " + osmLayer.name);
+    var conflationClassLoader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("conflation");
+    if (conflationClassLoader == null) {
+        josm.alert("Le plugin Conflation ne semble pas installé : " + e.message);
+        return;
+    }
+    var settingsClass = conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.SimpleMatchSettings");
+    var settings = settingsClass.newInstance();
+    settings.subjectLayer = osmLayer;
+    settings.subjectDataSet = osmLayer.data;
+    settings.subjectSelection = new java.util.ArrayList();
+    settings.subjectSelection.addAll(ds2.getSelected());
+    settings.referenceLayer = housesLayer;
+    settings.referenceDataSet = housesLayer.data;
+    settings.referenceSelection = new java.util.ArrayList();
+    settings.referenceSelection.addAll(ds1.getSelected());
+
+    conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MatchingPanel")
+        .getConstructor(
+            org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
+            org.openstreetmap.josm.data.Preferences,
+            java.lang.Runnable)
+        .newInstance(
+            null,
+            new org.openstreetmap.josm.data.Preferences(),
+            null)
+       .fillSettings(settings);
+    conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MergingPanel")
+        .getConstructor(
+            org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
+            org.openstreetmap.josm.data.Preferences)
+        .newInstance(
+            null,
+            new org.openstreetmap.josm.data.Preferences())
+        .fillSettings(settings);
+
+    var pluginClass = org.openstreetmap.josm.plugins.PluginHandler.getPlugin("conflation");
+    var dialogField = pluginClass.getClass().getDeclaredField('dialog');
+    dialogField.setAccessible(true);
+    var dialog = dialogField.get(pluginClass);
+
+    var s = dialog.getClass().getDeclaredField('settings');
+    s.setAccessible(true);
+    s.set(dialog, settings);
+
+    var pm = dialog.getClass().getDeclaredMethod('performMatching');
+    pm.setAccessible(true);
+    pm.invoke(dialog);
+
+    // remove wall=yes temporary attribute
+    command.change(walls, {
+       tags: {"wall": null}
+    }).applyTo(housesLayer);
 }
 
 if (housesLayer == null) {
