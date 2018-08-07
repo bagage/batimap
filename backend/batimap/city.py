@@ -198,6 +198,8 @@ class City(object):
                     authors) else None
                 date = max(sources_date, key=sources_date.count) if len(
                     sources_date) else 'never'
+
+                LOG.debug(f"City stats: {sources_date}")
             # only update date if we did not use cache files for buildings
             self.db.update_stats_for_insee(
                 self.insee,
