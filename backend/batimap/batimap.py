@@ -32,22 +32,23 @@ def generate(db, cities):
             LOG.debug("{} est déjà prêt".format(c))
 
 
-def work(db, cities):
+def work(db, cities, force=False):
     for city in cities:
         c = City(db, city)
         LOG.debug("Récupération de la date du dernier import…")
         date = c.get_last_import_date()
         city_path = c.get_work_path()
-        if date == str(datetime.datetime.now().year):
-            need_work = False
+        need_work = False
+        if not c.is_vectorized:
+            LOG.error("{} n'est pas vectorisée !".format(c))
+        elif date == str(datetime.datetime.now().year):
             LOG.debug("{} déjà à jour".format(c))
         else:
             need_work = city_path is not None
-
         if need_work:
-            if not path.exists(city_path):
+            if force or not path.exists(city_path):
                 LOG.debug("Téléchargement des données depuis le cadastre…")
-                if not c.fetch_cadastre_data():
+                if not c.fetch_cadastre_data(force=force):
                     LOG.error(
                         "Échec de téléchargement des données du cadastre.")
                     return

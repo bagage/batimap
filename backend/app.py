@@ -159,7 +159,7 @@ def initcadastre_command():
 @app.cli.command('get-city-stats')
 @click.argument('cities', nargs=-1)
 @click.option('--fast', is_flag=True)
-def get_city_stats(fast, cities):
+def get_city_stats(cities, fast):
     """
     Returns cadastral status of given cities.
     If status is unknown, it is computed first.
@@ -171,7 +171,7 @@ def get_city_stats(fast, cities):
 @app.cli.command('get-department-stats')
 @click.argument('departments', nargs=-1)
 @click.option('--fast', is_flag=True)
-def get_department_stats(fast, departments):
+def get_department_stats(departments, fast):
     """
     Returns cadastral status of given departments cities.
     If status is unknown, it is computed first.
@@ -204,8 +204,12 @@ def generate_city_building(cities):
 
 @app.cli.command('load-city-josm')
 @click.argument('cities', nargs=-1)
-def load_city_josm(cities):
+@click.option('--force', is_flag=True)
+def load_city_josm(cities, force):
     """
     Create and open JOSM project for given cities.
     """
-    batimap.work(db, cities=cities)
+    if force:
+        for (city, date, author) in batimap.stats(db, op, cities=cities, force=True):
+            click.echo('{}: date={} author={}'.format(city, date, author))
+    batimap.work(db, cities=cities, force=force)

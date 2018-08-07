@@ -118,7 +118,8 @@ class City(object):
         data = {
             'dep': self.department.zfill(3),
             'type': 'bati',
-            'force': force,
+            # fixme: if data is too old, we should ask for new generation
+            'force': 'true' if force else 'false',
             'ville': self.name_cadastre,
         }
 
