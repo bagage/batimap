@@ -209,7 +209,6 @@ def load_city_josm(cities, force):
     """
     Create and open JOSM project for given cities.
     """
-    if force:
-        for (city, date, author) in batimap.stats(db, op, cities=cities, force=True):
-            click.echo('{}: date={} author={}'.format(city, date, author))
+    for (city, date, author) in batimap.stats(db, op, cities=cities, force=True):
+        click.echo('{}: date={} author={}'.format(city, date, author))
     batimap.work(db, cities=cities, force=force)
