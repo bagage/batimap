@@ -95,13 +95,13 @@ def api_status(department) -> dict:
 
 @app.route('/update/<insee>', methods=['POST'])
 def api_update_insee_list(insee) -> dict:
-    batimap.stats(db, op, cities=[insee], force=True)
+    (_, date, _) = next(batimap.stats(db, op, cities=[insee], force=True))
     # TODO: only clear tiles if color was changed // return different status
     # codes
 
     # clear tiles for the zone
     db.clear_tiles(insee)
-    return "Ok"
+    return jsonify(date)
 
 
 # CLI
