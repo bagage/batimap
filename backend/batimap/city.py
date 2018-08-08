@@ -150,7 +150,7 @@ class City(object):
 
                 if line.endswith(".pdf"):
                     current += 1
-                    msg = f"{current}/{total} ({current * 100.0 / total}%)" if total > 0 else f"{current}"
+                    msg = f"{current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
                     LOG.info(msg)
                 elif "ERROR:" in line or "ERREUR:" in line:
                     LOG.error(line)
