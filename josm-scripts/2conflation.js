@@ -70,6 +70,7 @@ function do_work()  {
     settings.referenceSelection = new java.util.ArrayList();
     settings.referenceSelection.addAll(ds1.getSelected());
 
+    const prefs = new org.openstreetmap.josm.data.Preferences();
     conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MatchingPanel")
         .getConstructor(
             org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
@@ -77,17 +78,18 @@ function do_work()  {
             java.lang.Runnable)
         .newInstance(
             null,
-            new org.openstreetmap.josm.data.Preferences(),
+            prefs,
             null)
        .fillSettings(settings);
-    conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MergingPanel")
+    const mergingPanel = conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MergingPanel")
         .getConstructor(
             org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
             org.openstreetmap.josm.data.Preferences)
         .newInstance(
             null,
-            new org.openstreetmap.josm.data.Preferences())
-        .fillSettings(settings);
+            prefs);
+    mergingPanel.restoreFromPreferences(prefs);
+    mergingPanel.fillSettings(settings);
 
     var pluginClass = org.openstreetmap.josm.plugins.PluginHandler.getPlugin("conflation");
     var dialogField = pluginClass.getClass().getDeclaredField('dialog');
