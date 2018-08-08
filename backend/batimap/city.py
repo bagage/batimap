@@ -8,6 +8,7 @@ import shutil
 import tarfile
 from contextlib import closing
 from os import path
+from bs4 import BeautifulSoup
 
 import requests
 from colour import Color
@@ -56,10 +57,7 @@ class City(object):
         self.name_cadastre = None
         self.is_vectorized = False
         idx = 3 if self.department.startswith('97') else 2
-        # response = requests.get(
-        #     'http://cadastre.openstreetmap.fr/data/{0}/{0}-liste.txt'.format(self.department.zfill(3)))
-        # for _, code, cname in [line.split(maxsplit=2) for line in
-        # response.text.strip().split('\n')]:
+
         for line in self.__cadastre_code:
             try:
                 (d, _, cadastre_name, _, code_cadastre,
@@ -115,8 +113,23 @@ class City(object):
             return False
 
         url = 'http://cadastre.openstreetmap.fr'
+
+        dept = self.department.zfill(3)
+
+        r = requests.get(f"{url}/data/{dept}/")
+        bs = BeautifulSoup(r.content, "lxml")
+
+        for e in bs.find_all('tr'):
+            if f"{self.name_cadastre.upper()}.tar.bz2" in [x.text for x in e.select('td:nth-of-type(2) a')]:
+                date = e.select('td:nth-of-type(3)')[0].text.strip()
+                if (datetime.datetime.now() - datetime.datetime.strptime(date, "%d-%b-%Y %H:%M")).days > 30:
+                    LOG.warn(f"{self.name_cadastre} was already generated at {date}, but is too old so refreshing it…")
+                    force = True
+                else:
+                    LOG.info(f"{self.name_cadastre} was already generated at {date}, no need to regenerate it!")
+
         data = {
-            'dep': self.department.zfill(3),
+            'dep': dept,
             'type': 'bati',
             # fixme: if data is too old, we should ask for new generation
             'force': 'true' if force else 'false',
@@ -145,7 +158,7 @@ class City(object):
 
         tarname = self.get_work_path() + '.tar.bz2'
         r = requests.get(
-            "http://cadastre.openstreetmap.fr/data/{}/{}.tar.bz2".format(data['dep'], data['ville']))
+            "{}/data/{}/{}.tar.bz2".format(url, data['dep'], data['ville']))
         if r.status_code != 200:
             # try to regenerate cadastre data
             if not force:
