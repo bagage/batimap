@@ -10,26 +10,35 @@ services:
     - "5432:5432"
     volumes:
     - ./postgis/data:/var/lib/postgresql/data
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.10
   tiles:
     build: tiles
-    command: bash /wait-for-it.sh postgis:5432 -- tegola -config /root/config.toml
+    command: bash /wait-for-it.sh 10.5.0.10:5432 -- tegola -config /root/config.toml
     ports:
     - "9999:9999"
     volumes:
     - ./tiles/:/root
     depends_on:
     - postgis
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.11
   backend:
     build: backend
     environment:
     - FLASK_APP=app.py
-    command: flask run -h 0.0.0.0
+    command: bash /wait-for-it.sh 10.5.0.10:5432 -- flask run -h 0.0.0.0
     ports:
     - "5000:5000"
     volumes:
     - ./backend/:/code
     depends_on:
     - postgis
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.12
   frontend:
     build: frontend
     ports:
@@ -39,3 +48,13 @@ services:
     depends_on:
     - tiles
     - backend
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.13
+
+networks:
+  fixed_network:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
