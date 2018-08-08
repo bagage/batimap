@@ -12,7 +12,7 @@ services:
     - ./postgis/data:/var/lib/postgresql/data
   tiles:
     build: tiles
-    command: tegola -config /root/config.toml
+    command: bash /wait-for-it.sh postgis:5432 -- tegola -config /root/config.toml
     ports:
     - "9999:9999"
     volumes:
