@@ -202,7 +202,7 @@ def generate_city_building(cities):
     batimap.generate(db, cities=cities)
 
 
-@app.cli.command('load-city-josm')
+@app.cli.command('josm')
 @click.argument('cities', nargs=-1)
 @click.option('--force', is_flag=True)
 def load_city_josm(cities, force):

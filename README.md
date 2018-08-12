@@ -22,7 +22,7 @@ Supposons que l'on souhaite mettre à jour le cadastre de [Upie, code insee 2635
     Ici le dernier import date de 2017, donc il est déjà à jour. Supposons qu'il ne le soit pas et qu'on veuille effectuer la mise à jour.
 > Upie(26358): date=2017 author=GautierPP
 
-2. Mise en place de l'environnement : `FLASK_APP=backend/app.py flask load-city-josm Upie`. Cela va générer le bâti depuis le cadastre et ouvrir JOSM dès que c'est prêt.
+2. Mise en place de l'environnement : `FLASK_APP=backend/app.py flask josm Upie`. Cela va générer le bâti depuis le cadastre et ouvrir JOSM dès que c'est prêt.
 
 3. Dans JOSM, ouvrir le menu `Scripting` puis choisir le script `1segmented.js`. La TODO list va se remplir. Chaque élément correspond à un bâtiment qui est possible segmenté, à vous de décider si oui (et alors il faut le fusionner via le menu `Outils -> Joindre les zones superposées`) ou non.
 
