@@ -12,6 +12,23 @@ for (var i = 0; i < josm.layers.length; i++) {
     }
 }
 
+function getTodoDialog() {
+    var map = org.openstreetmap.josm.gui.MainApplication.map;
+    var dialogsField = map.getClass().getDeclaredField('allDialogs');
+
+    dialogsField.setAccessible(true);
+    var dialogs = dialogsField.get(map);
+    for (var dialogIdx = 0; dialogIdx < dialogs.size(); dialogIdx++) {
+        var dialog = dialogs.get(dialogIdx);
+        if (dialog.getClass().toString() == "class org.openstreetmap.josm.plugins.todo.TodoDialog") {
+            return dialog;
+        }
+    }
+
+    josm.alert("Impossible de trouver l'onglet Todo. Est-ce que le plugin est installé ?")
+    return null;
+}
+
 function do_work() {
     // 2. We select segmented items and add them in the todo list plugin.
     // Then we zoom on first item and wait for user to work.
@@ -34,14 +51,12 @@ function do_work() {
             josm.alert("Le plugin Todo ne semble pas installé : " + e.message);
             return;
         }
-        var todoPlugin = todoClassloader.loadClass("org.openstreetmap.josm.plugins.todo.TodoPlugin");
-        var dialogField = todoPlugin.getDeclaredField('dialog');
-        dialogField.setAccessible(true);
-        var dialog = dialogField.get(todoPlugin);
-
-        var actAddField = dialog.class.getDeclaredField('actAdd');
-        actAddField.setAccessible(true);
-        actAddField.get(dialog).actionPerformed(null)
+        var dialog = getTodoDialog();
+        if (dialog != null) {
+            var actAddField = dialog.class.getDeclaredField('actAdd');
+            actAddField.setAccessible(true);
+            actAddField.get(dialog).actionPerformed(null);
+        }
     }
 
     // 3. select work layer

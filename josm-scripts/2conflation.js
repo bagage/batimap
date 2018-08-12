@@ -13,6 +13,23 @@ for (var i = 0; i < josm.layers.length; i++) {
 }
 
 
+function getConflationDialog() {
+    var map = org.openstreetmap.josm.gui.MainApplication.map;
+    var dialogsField = map.getClass().getDeclaredField('allDialogs');
+
+    dialogsField.setAccessible(true);
+    var dialogs = dialogsField.get(map);
+    for (var dialogIdx = 0; dialogIdx < dialogs.size(); dialogIdx++) {
+        var dialog = dialogs.get(dialogIdx);
+        if (dialog.getClass().toString() == "class org.openstreetmap.josm.plugins.conflation.ConflationToggleDialog") {
+            return dialog;
+        }
+    }
+
+    josm.alert("Impossible de trouver l'onglet Conflation. Est-ce que le plugin est installé ?")
+    return null;
+}
+
 function do_work()  {
     // 2. OSM layer: select all elements within relation by first selecting city, then all inside, then filter buildings
     insee = osmLayer.name.split(" ")[3];
@@ -91,19 +108,16 @@ function do_work()  {
     mergingPanel.restoreFromPreferences(prefs);
     mergingPanel.fillSettings(settings);
 
-    var pluginClass = org.openstreetmap.josm.plugins.PluginHandler.getPlugin("conflation");
-    var dialogField = pluginClass.getClass().getDeclaredField('dialog');
-    dialogField.setAccessible(true);
-    var dialog = dialogField.get(pluginClass);
+    var dialog = getConflationDialog();
+    if (dialog != null) {
+        var s = dialog.getClass().getDeclaredField('settings');
+        s.setAccessible(true);
+        s.set(dialog, settings);
 
-    var s = dialog.getClass().getDeclaredField('settings');
-    s.setAccessible(true);
-    s.set(dialog, settings);
-
-    var pm = dialog.getClass().getDeclaredMethod('performMatching');
-    pm.setAccessible(true);
-    pm.invoke(dialog);
-
+        var pm = dialog.getClass().getDeclaredMethod('performMatching');
+        pm.setAccessible(true);
+        pm.invoke(dialog);
+    }
     // remove wall=yes temporary attribute
     command.change(walls, {
        tags: {"wall": null}
