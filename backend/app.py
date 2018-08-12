@@ -193,15 +193,6 @@ def get_france_stats(fast):
             click.echo('{}: date={} author={}'.format(city, date, author))
 
 
-@app.cli.command('generate-city-building')
-@click.argument('cities', nargs=-1)
-def generate_city_building(cities):
-    """
-    Download buildings for given cities. IMPROVE_ME
-    """
-    batimap.generate(db, cities=cities)
-
-
 @app.cli.command('josm')
 @click.argument('cities', nargs=-1)
 @click.option('--force', is_flag=True)
