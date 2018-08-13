@@ -9,9 +9,9 @@ import tarfile
 from contextlib import closing
 from os import path
 from bs4 import BeautifulSoup
-
+import json
+from collections import Counter
 import requests
-from colour import Color
 from pkg_resources import resource_stream
 
 LOG = logging.getLogger(__name__)
@@ -73,32 +73,8 @@ class City(object):
     def __repr__(self):
         return '{}({})'.format(self.name, self.insee)
 
-    def date_color_dict(self):
-        # Retrieve the last cadastre import for the given insee municipality.
-        # 2009 and below should be red,
-        # current year should be green
-        # previous year should be orange
-        # below 2009 and previous year, use a color gradient
-        this_year = datetime.datetime.now().year
-        colors = list(Color('red').range_to(Color('orange'), this_year - 2009))
-        colors.append(Color('green'))
-
-        d = {}
-        d['raster'] = 'black'
-        d['unknown'] = 'gray'
-        d['never'] = 'pink'
-        for i in range(len(colors)):
-            d[str(2009 + i)] = colors[i].hex
-        return d
-
     def get_last_import_date(self):
-        color = self.db.last_import_color(self.insee)
-        date2color = self.date_color_dict()
-        date = [d for (d, c) in date2color.items() if c == color]
-        return date[0] if len(date) else 'unknown'
-
-    def get_last_import_author(self):
-        return self.db.last_import_author(self.insee)
+        return self.db.last_import_date(self.insee)
 
     def get_work_path(self):
         if self.name_cadastre is None:
@@ -179,8 +155,11 @@ class City(object):
 
     def fetch_osm_data(self, overpass, force):
         date = self.get_last_import_date()
-        author = self.get_last_import_author()
-        if force or date is None or author is None:
+        author = None
+        if force or date is None:
+            sources_date = []
+            authors = []
+
             if not self.is_vectorized:
                 date = 'raster'
             else:
@@ -197,8 +176,6 @@ class City(object):
                     LOG.error(
                         "Failed to count buildings for {}: {}".format(self, e))
                     return (None, None)
-                sources_date = []
-                authors = []
                 for element in response.get('elements'):
                     src = element.get('tags').get('source') or 'unknown'
                     src = re.sub(self.__cadastre_src2date_regex,
@@ -213,13 +190,13 @@ class City(object):
                 date = max(sources_date, key=sources_date.count) if len(
                     sources_date) else 'never'
 
-                LOG.debug(f"City stats: {sources_date}")
+                LOG.debug(f"City stats: {Counter(sources_date)}")
             # only update date if we did not use cache files for buildings
             self.db.update_stats_for_insee(
                 self.insee,
-                self.date_color_dict().get(date, 'gray'),
-                self.department,
-                author,
-                update_time=True
+                date,
+                json.dumps({'dates': Counter(sources_date),
+                            'authors': Counter(authors)}),
+                True
             )
-        return (date, author)
+        return date

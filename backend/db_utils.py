@@ -24,16 +24,19 @@ class Postgis(object):
     def create_tables(self):
         req = """
                 CREATE TABLE IF NOT EXISTS
-                    color_city(
-                        insee TEXT PRIMARY KEY NOT NULL,
+                    city_stats(
+                        insee CHAR(10) PRIMARY KEY NOT NULL,
                         department CHAR(3) NOT NULL,
-                        color CHAR(20),
+                        name CHAR(100) NOT NULL,
+                        name_cadastre CHAR(100) NOT NULL,
+                        is_raster BOOLEAN,
+                        date CHAR(10),
                         last_update TIMESTAMP,
-                        last_author TEXT
+                        details TEXT
                     )
         """
         self.cursor.execute(req)
-        LOG.debug('color_city table created')
+        LOG.debug('city_stats table created')
         req = """
                 CREATE INDEX IF NOT EXISTS
                     insee_idx
@@ -49,11 +52,11 @@ class Postgis(object):
                 SELECT
                     p.name,
                     c.insee,
-                    c.color,
+                    c.date,
                     ST_AsGeoJSON(p.way) AS geometry
                 FROM
                     planet_osm_polygon p,
-                    color_city c
+                    city_stats c
                 WHERE
                     p.tags->'ref:INSEE' = %s
                 AND
@@ -65,7 +68,7 @@ class Postgis(object):
         for row in self.cursor.fetchall():
             features.append(Feature(properties={
                 'name': "{} - {}".format(row[0], row[1]),
-                'color': row[2]
+                'date': row[2]
             },
                 geometry=loads(row[3])))
 
@@ -77,13 +80,13 @@ class Postgis(object):
                     p.name, c.insee
                 FROM
                     planet_osm_polygon p,
-                    color_city c
+                    city_stats c
                 WHERE
                     p.tags->'admin_level' = '8'
                 AND
                     c.insee = p.tags->'ref:INSEE'
                 AND
-                    c.color = %s
+                    c.date = %s
                 """
         self.cursor.execute(req, [date])
 
@@ -92,54 +95,54 @@ class Postgis(object):
     def get_colors(self):
         req = """
                 SELECT
-                    color,
+                    date,
                     count(*)
                 FROM
-                    color_city
+                    city_stats
                 GROUP BY
-                    color
+                    date
         """
         self.cursor.execute(req)
 
         return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
-    def get_city_with_colors(self, colors, lonNW: float, latNW: float, lonSE: float, latSE: float) -> FeatureCollection:
+    def get_city_with_colors(self, dates, lonNW: float, latNW: float, lonSE: float, latSE: float) -> FeatureCollection:
         req = """
                 SELECT
                     count(p.name)
                 FROM
                     planet_osm_polygon p,
-                    color_city c
+                    city_stats c
                 WHERE
                     p.tags->'admin_level' = '8'
                 AND
                     c.insee = p.tags->'ref:INSEE'
                 AND
-                    c.color in (%s)
+                    c.date in (%s)
                 """
-        self.cursor.execute(req, ["','".join(colors)])
+        self.cursor.execute(req, ["','".join(dates)])
         count = self.cursor.fetchall()[0][0]
 
         req = """
                 SELECT
                     p.name,
                     c.insee,
-                    c.color,
+                    c.date,
                     ST_AsGeoJSON(p.way, 6) AS geometry
                 FROM
                     planet_osm_polygon p,
-                    color_city c
+                    city_stats c
                 WHERE
                     p.tags->'admin_level' = '8'
                 AND
                     c.insee = p.tags->'ref:INSEE'
                 AND
-                    c.color in (%(color)s)
+                    c.date in (%(date)s)
                """
-        args = {'color': "','".join(colors)}
+        args = {'date': "','".join(dates)}
 
         # if there are too much cities, filter by distance
-        if len(colors) > 1 and count > 1500:
+        if len(dates) > 1 and count > 1500:
             # we should fetch all cities within the view
             maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2)
             # instead if we zoomed out too much, we limit to maximum 110km
@@ -166,7 +169,7 @@ class Postgis(object):
         for row in self.cursor.fetchall():
             features.append(Feature(properties={
                 'name': "{} - {}".format(row[0], row[1]),
-                'color': row[2]
+                'date': row[2]
             },
                 geometry=loads(row[3])))
 
@@ -175,13 +178,13 @@ class Postgis(object):
     def get_department_colors(self, department):
         req = """
             SELECT
-                color
+                date
             FROM
-                color_city
+                city_stats
             WHERE
                 department = %s
             GROUP BY
-                color
+                date
             ORDER BY
                 count(*) DESC
         """
@@ -220,7 +223,7 @@ class Postgis(object):
             rs = (grequests.request('PURGE', x) for x in urls)
             grequests.map(rs)
 
-    def name_for_insee(self, insee):
+    def name_for_insee(self, insee, ignore_error=False):
         req = """
                 SELECT DISTINCT
                     name
@@ -237,7 +240,7 @@ class Postgis(object):
 
         results = self.cursor.fetchall()
 
-        if len(results) == 0:
+        if len(results) == 0 and not ignore_error:
             LOG.critical("Cannot found city with INSEE {}.".format(insee))
             exit(1)
 
@@ -284,27 +287,12 @@ class Postgis(object):
             LOG.critical("More than one city with name {}.".format(name))
             exit(1)
 
-    def last_import_color(self, insee):
+    def last_import_date(self, insee):
         req = """
                 SELECT
-                    TRIM(color)
+                    date
                 FROM
-                    color_city
-                WHERE
-                    insee = %s
-        """
-        self.cursor.execute(req, [insee])
-
-        results = self.cursor.fetchall()
-        assert(len(results) <= 1)
-        return results[0][0] if len(results) else None
-
-    def last_import_author(self, insee):
-        req = """
-                SELECT
-                    last_author
-                FROM
-                    color_city
+                    city_stats
                 WHERE
                     insee = %s
         """
@@ -356,23 +344,43 @@ class Postgis(object):
 
         return Bbox(results[0][0]) if len(results) else None
 
-    def update_stats_for_insee(self, insee, color, department, author, update_time=False):
+    def update_stats_for_insee(self, insee, date, details, update_time=False):
+        req = """
+                UPDATE
+                    city_stats
+                SET date = %s, last_update = now(), details = %s
+                WHERE insee = %s
+        """
+
+        try:
+            self.cursor.execute(
+                req, [date, details, insee])
+            self.connection.commit()
+        except Exception as e:
+            LOG.warning("Cannot write in database: " + str(e))
+
+    def insert_stats_for_insee(self, insee, dept, nom_commune, is_raster):
+        name = self.name_for_insee(insee, True)
+        LOG.debug(f"Inserting stats for {insee} {nom_commune} - {name}")
+        if not name:
+            LOG.warning(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
+            name = ''
 
         req = """
                 INSERT INTO
-                    color_city
+                    city_stats(insee, department, name, name_cadastre, is_raster)
                 VALUES
-                    (%s, %s, %s, now(), %s)
+                    (%s, %s, %s, %s, %s)
                 ON CONFLICT (insee)
                 DO
                 UPDATE SET
-                    color = excluded.color,
-                    department = excluded.department
+                    department = excluded.department,
+                    name_cadastre = excluded.name_cadastre,
+                    is_raster = excluded.is_raster
         """
-        if update_time:
-            req += ", last_update = excluded.last_update, last_author = excluded.last_author"
         try:
-            self.cursor.execute(req, [insee, department, color, author])
+            self.cursor.execute(
+                req, [insee, dept, name, nom_commune, is_raster])
             self.connection.commit()
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))

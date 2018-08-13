@@ -53,7 +53,7 @@ export class MapComponent {
   }
 
   stylingFunction(properties, zoom, type): any {
-    const color = properties.color;// fixme: use instead this.date2color(properties.date);
+    const color = this.date2color(properties.date);
     // const color_input = $('input[type=checkbox]#color-' + color.replace('#', ''));
     // if (color_input.length == 1 && color_input[0].checked !== true) {
     //     // console.log(color, "is unchecked, do not render");
@@ -82,7 +82,7 @@ export class MapComponent {
       },
       interactive: true,  // Make sure that this VectorGrid fires mouse/pointer events
       getFeatureId: function (f) {
-        return f.properties.color;
+        return f.properties.date;
       }
     };
 

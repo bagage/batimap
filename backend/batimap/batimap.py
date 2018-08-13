@@ -18,8 +18,8 @@ def stats(db, overpass, department=None, cities=[], force=False):
 
     for city in cities:
         c = City(db, city)
-        (date, author) = c.fetch_osm_data(overpass, force)
-        yield((c, date, author))
+        date = c.fetch_osm_data(overpass, force)
+        yield((c, date))
 
 
 def generate(db, cities):

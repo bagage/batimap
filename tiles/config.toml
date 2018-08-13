@@ -19,12 +19,13 @@ id_fieldname = "osm_id"
 sql = """
   SELECT
     ST_AsBinary(way) AS way,
-    name,
+    c.name,
+    c.details,
     insee,
-    TRIM(color) as color,
+    date,
     osm_id
   FROM
-    planet_osm_polygon, color_city
+    planet_osm_polygon, city_stats c
   WHERE
     tags->'admin_level' = '8'
     AND tags->'ref:INSEE' = insee
@@ -38,13 +39,14 @@ id_fieldname = "osm_id"
 sql = """
   SELECT
     ST_AsBinary(ST_Centroid(way)) AS way,
-    name,
+    c.name,
+    c.details,
     insee,
-    TRIM(color) as color,
+    date,
     osm_id
   FROM
     planet_osm_polygon,
-    color_city
+    city_stats c
   WHERE
     tags->'admin_level' = '8'
     AND tags->'ref:INSEE' = insee
@@ -56,28 +58,28 @@ name = "departments"
 geometry_fieldname = "way"
 id_fieldname = "osm_id"
 sql = """
-  WITH x AS (
+  WITH view_department_stats AS (
     SELECT DISTINCT ON
       (department) department,
-      color
+      date
     FROM
-      color_city
+      city_stats
     GROUP BY
       department,
-      color
+      date
     ORDER BY
       department,
-      COUNT(color) DESC
+      COUNT(date) DESC
   )
   SELECT
     ST_AsBinary(way) AS way,
-    TRIM(color) AS color,
-    name,
+    date,
+    p.name,
     tags->'ref:INSEE' AS insee,
     osm_id
   FROM
-    planet_osm_polygon,
-    x
+    planet_osm_polygon p,
+    view_department_stats
   WHERE
     tags->'admin_level' = '6'
     AND tags->'ref:INSEE' LIKE department || '%'
