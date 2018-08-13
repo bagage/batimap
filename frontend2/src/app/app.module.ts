@@ -10,8 +10,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 
 const appRoutes: Routes = [
-  {path: 'map', component: MapComponent},
-  {path: '', redirectTo: '/map', pathMatch: 'full'}
+  {path: '', component: MapComponent}
 ];
 
 @NgModule({

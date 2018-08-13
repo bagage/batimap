@@ -4,6 +4,10 @@ import {LeafletModule} from '@asymmetrik/ngx-leaflet';
 import {MapComponent} from './map.component';
 import {CitiesListModule} from '../cities-list/cities-list.module';
 
+import 'leaflet';
+import 'leaflet.vectorgrid';
+import 'leaflet.restoreview';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -12,4 +16,5 @@ import {CitiesListModule} from '../cities-list/cities-list.module';
   ],
   declarations: [MapComponent]
 })
-export class MapModule { }
+export class MapModule {
+}

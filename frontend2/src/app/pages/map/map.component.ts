@@ -1,25 +1,32 @@
-import {Component, OnInit} from '@angular/core';
-import {canvas, latLng, tileLayer} from 'leaflet';
-
-declare var L: any;
+import {Component} from '@angular/core';
+import * as L from 'leaflet';
+import {latLng, tileLayer} from 'leaflet';
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css']
 })
-export class MapComponent implements OnInit {
+export class MapComponent {
 
   options = {
     layers: [
-      tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '...'})
+      tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+        {
+          maxZoom: 18,
+          attribution: '© Contributeurs OpenStreetMap'
+        })
     ],
     zoom: 5,
-    center: latLng(46.879966, -121.726909)
+    center: latLng(46.111, 3.977)
   };
 
+  onMapReady(map) {
+    map.restoreView();
+    this.setupVectorTiles(map);
+  }
 
-  initVectorTiles() {
+  setupVectorTiles(map) {
     const stylingFunction = function (properties, zoom, type) {
       const color = properties.color;
       // const color_input = $('input[type=checkbox]#color-' + color.replace('#', ''));
@@ -39,7 +46,7 @@ export class MapComponent implements OnInit {
 
     const cadastreURL = 'http://localhost:9999/maps/batimap/{z}/{x}/{y}.vector.pbf';
     const vectorTileOptions = {
-      rendererFactory: canvas.tile,
+      // rendererFactory: canvas.tile,
       maxZoom: 20,
       maxNativeZoom: 13,
       vectorTileLayerStyles: {
@@ -60,13 +67,12 @@ export class MapComponent implements OnInit {
       }
     };
 
-    var pbfLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions);
+    const cadastreLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions);
+    cadastreLayer.on('click', this.openPopup);
+    cadastreLayer.addTo(map);
   }
 
-  constructor() {
+  openPopup($event) {
+    console.log($event.layer.properties);
   }
-
-  ngOnInit() {
-  }
-
 }
