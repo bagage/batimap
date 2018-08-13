@@ -31,40 +31,54 @@ export class MapComponent {
     this.setupVectorTiles(map);
   }
 
-  setupVectorTiles(map) {
-    const stylingFunction = function (properties, zoom, type) {
-      const color = properties.color;
-      // const color_input = $('input[type=checkbox]#color-' + color.replace('#', ''));
-      // if (color_input.length == 1 && color_input[0].checked !== true) {
-      //     // console.log(color, "is unchecked, do not render");
-      //     return []; //do not render it
-      // }
-      return {
-        weight: 2,
-        color: color,
-        opacity: 1,
-        fill: true,
-        radius: type === 'point' ? zoom / 2 : 1,
-        fillOpacity: 0.7
-      };
-    };
+  date2color(yearStr: string): string {
+    const currentYear = new Date().getFullYear();
+    if (Number.isInteger(+yearStr)) {
+      const year = Number.parseInt(yearStr, 10);
+      if (year === currentYear) {
+        return 'green';
+      } else if (year === currentYear - 1) {
+        return 'orange';
+      } else {
+        return 'red';
+      }
+    } else if (yearStr === 'raster') {
+      return 'black';
+    } else if (yearStr === 'never') {
+      return 'pink';
+    } else {
+      // unknown
+      return 'gray';
+    }
+  }
 
+  stylingFunction(properties, zoom, type): any {
+    const color = properties.color;// fixme: use instead this.date2color(properties.date);
+    // const color_input = $('input[type=checkbox]#color-' + color.replace('#', ''));
+    // if (color_input.length == 1 && color_input[0].checked !== true) {
+    //     // console.log(color, "is unchecked, do not render");
+    //     return []; //do not render it
+    // }
+    return {
+      weight: 2,
+      color: color,
+      opacity: 1,
+      fill: true,
+      radius: type === 'point' ? zoom / 2 : 1,
+      fillOpacity: 0.7
+    };
+  }
+
+  setupVectorTiles(map) {
     const cadastreURL = 'http://localhost:9999/maps/batimap/{z}/{x}/{y}.vector.pbf';
     const vectorTileOptions = {
       // rendererFactory: canvas.tile,
       maxZoom: 20,
       maxNativeZoom: 13,
       vectorTileLayerStyles: {
-        'cities-point': function (properties, zoom) {
-          return stylingFunction(properties, zoom, 'point');
-        },
-
-        'cities': function (properties, zoom) {
-          return stylingFunction(properties, zoom, 'polygon');
-        },
-        'departments': function (properties, zoom) {
-          return stylingFunction(properties, zoom, 'polygon');
-        },
+        'cities-point': (properties, zoom) => this.stylingFunction(properties, zoom, 'point'),
+        'cities': (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),
+        'departments': (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),
       },
       interactive: true,  // Make sure that this VectorGrid fires mouse/pointer events
       getFeatureId: function (f) {
