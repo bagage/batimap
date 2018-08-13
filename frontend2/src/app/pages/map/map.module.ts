@@ -1,5 +1,4 @@
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {LeafletModule} from '@asymmetrik/ngx-leaflet';
 import {MapComponent} from './map.component';
 import {CitiesListModule} from '../cities-list/cities-list.module';
@@ -7,14 +6,17 @@ import {CitiesListModule} from '../cities-list/cities-list.module';
 import 'leaflet';
 import 'leaflet.vectorgrid';
 import 'leaflet.restoreview';
+import {MatLibModule} from '../mat-lib.module';
+import {CityDetailsDialogModule} from '../city-details-dialog/city-details-dialog.module';
 
 @NgModule({
   imports: [
-    CommonModule,
     LeafletModule,
-    CitiesListModule
+    MatLibModule,
+    CitiesListModule,
+    CityDetailsDialogModule
   ],
-  declarations: [MapComponent]
+  declarations: [MapComponent],
 })
 export class MapModule {
 }

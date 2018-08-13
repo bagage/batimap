@@ -1,6 +1,8 @@
 import {Component} from '@angular/core';
 import * as L from 'leaflet';
 import {latLng, tileLayer} from 'leaflet';
+import {MatDialog} from '@angular/material';
+import {CityDetailsDialogComponent} from '../city-details-dialog/city-details-dialog.component';
 
 @Component({
   selector: 'app-map',
@@ -20,6 +22,9 @@ export class MapComponent {
     zoom: 5,
     center: latLng(46.111, 3.977)
   };
+
+  constructor(private matDialog: MatDialog) {
+  }
 
   onMapReady(map) {
     map.restoreView();
@@ -68,11 +73,13 @@ export class MapComponent {
     };
 
     const cadastreLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions);
-    cadastreLayer.on('click', this.openPopup);
+    cadastreLayer.on('click', (e) => {
+      this.openPopup(e);
+    });
     cadastreLayer.addTo(map);
   }
 
   openPopup($event) {
-    console.log($event.layer.properties);
+    const dialog = this.matDialog.open(CityDetailsDialogComponent, {data: $event.layer.properties});
   }
 }

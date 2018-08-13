@@ -8,6 +8,6 @@ import {CitiesListModule} from './cities-list/cities-list.module';
     CommonModule,
     MapModule,
     CitiesListModule
-  ],
+  ]
 })
 export class PagesModule { }
