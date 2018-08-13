@@ -1,5 +1,0 @@
-{
-    "APISERVER": "http://localhost:5000",
-    "RASTERTILESERVER": "https://tiles.wmflabs.org/bw-mapnik",
-    "VECTORTILESERVER": "http://localhost:9999/maps/batimap"
-}
