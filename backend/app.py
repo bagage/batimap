@@ -149,7 +149,7 @@ def initdb_command():
 
 @app.cli.command('stats')
 @click.argument('items', nargs=-1)
-@click.option('--region', type=click.Choice(['city', 'department', 'country']))
+@click.option('--region', type=click.Choice(['city', 'department', 'france']))
 @click.option('--fast', is_flag=True)
 def get_city_stats(items, region, fast):
     _get_city_stats(items, region, fast)
@@ -160,7 +160,7 @@ def _get_city_stats(items, region, fast):
     Returns cadastral status of given items.
     If status is unknown, it is computed first.
     """
-    if region == 'country':
+    if region == 'france':
         d = all_departments
         c = None
     elif region == 'department':
