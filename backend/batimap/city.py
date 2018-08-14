@@ -155,7 +155,6 @@ class City(object):
 
     def fetch_osm_data(self, overpass, force):
         date = self.get_last_import_date()
-        author = None
         if force or date is None:
             sources_date = []
             authors = []
@@ -178,17 +177,16 @@ class City(object):
                     return (None, None)
                 for element in response.get('elements'):
                     src = element.get('tags').get('source') or 'unknown'
-                    src = re.sub(self.__cadastre_src2date_regex,
-                                 r'\2', src.lower())
+                    src = re.sub(self.__cadastre_src2date_regex, r'\2', src.lower())
                     sources_date.append(src)
 
                     a = element.get('user') or 'unknown'
                     authors.append(a)
 
-                author = max(authors, key=authors.count) if len(
-                    authors) else None
                 date = max(sources_date, key=sources_date.count) if len(
                     sources_date) else 'never'
+                date_match = self.__cadastre_src2date_regex.match(date)
+                date = date_match.groups()[0] if date_match and date_match.groups() else 'unknown'
 
                 LOG.debug(f"City stats: {Counter(sources_date)}")
             # only update date if we did not use cache files for buildings
