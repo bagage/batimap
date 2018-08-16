@@ -24,11 +24,13 @@
     "@angular/router": "^6.1.0",
     "@asymmetrik/ngx-leaflet": "^4.0.0",
     "angular-material-source": "git://github.com/angular/material",
+    "class-transformer": "^0.1.9",
     "core-js": "^2.5.4",
     "hammerjs": "^2.0.8",
     "leaflet": "^1.3.1",
     "leaflet.restoreview": "https://github.com/makinacorpus/Leaflet.RestoreView",
     "leaflet.vectorgrid": "^1.3.0",
+    "reflect-metadata": "^0.1.12",
     "rxjs": "^6.0.0",
     "zone.js": "~0.8.26"
   },

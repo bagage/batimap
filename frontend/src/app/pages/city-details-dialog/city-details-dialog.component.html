@@ -1,7 +1,20 @@
 <h2 mat-dialog-title>Détails commune</h2>
-<mat-dialog-content>Data: {{data | json}}</mat-dialog-content>
+<mat-dialog-content>
+  <h3>{{city.insee}} - {{city.name}}</h3>
+  Dernier import en {{city.date}}.
+
+  <div *ngIf="city.details">
+    <h4>Détails</h4>
+
+    <h5># Bâtiments par date</h5>
+    {{city.details.dates | json}}
+
+    <h5># Bâtiments par auteur</h5>
+    {{city.details.authors | json}}
+  </div>
+</mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button cdkFocusInitial mat-dialog-close>Fermer</button>
   <button mat-button>Raffraichir</button>
-  <button mat-button>JOSM</button>
+  <button mat-button (click)="openJOSM()">JOSM</button>
 </mat-dialog-actions>

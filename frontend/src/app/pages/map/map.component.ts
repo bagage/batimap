@@ -3,6 +3,8 @@ import * as L from 'leaflet';
 import {latLng, tileLayer} from 'leaflet';
 import {MatDialog} from '@angular/material';
 import {CityDetailsDialogComponent} from '../city-details-dialog/city-details-dialog.component';
+import {City} from '../../classes/city';
+import {deserialize, plainToClass} from 'class-transformer';
 
 @Component({
   selector: 'app-map',
@@ -94,6 +96,7 @@ export class MapComponent {
   }
 
   openPopup($event) {
-    const dialog = this.matDialog.open(CityDetailsDialogComponent, {data: $event.layer.properties});
+    const city = plainToClass<City, object>(City, $event.layer.properties);
+    const dialog = this.matDialog.open(CityDetailsDialogComponent, {data: city});
   }
 }
