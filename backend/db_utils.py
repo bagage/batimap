@@ -25,12 +25,12 @@ class Postgis(object):
         req = """
                 CREATE TABLE IF NOT EXISTS
                     city_stats(
-                        insee CHAR(10) PRIMARY KEY NOT NULL,
-                        department CHAR(3) NOT NULL,
-                        name CHAR(100) NOT NULL,
-                        name_cadastre CHAR(100) NOT NULL,
+                        insee VARCHAR(10) PRIMARY KEY NOT NULL,
+                        department VARCHAR(3) NOT NULL,
+                        name VARCHAR(100) NOT NULL,
+                        name_cadastre VARCHAR(100) NOT NULL,
                         is_raster BOOLEAN,
-                        date CHAR(10),
+                        date VARCHAR(10),
                         last_update TIMESTAMP,
                         details TEXT
                     )
