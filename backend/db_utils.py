@@ -302,6 +302,21 @@ class Postgis(object):
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
 
+    def city_data(self, insee):
+        req = """
+                SELECT
+                    *
+                FROM
+                    city_stats
+                WHERE
+                    insee = %s
+        """
+        self.cursor.execute(req, [insee])
+
+        results = self.cursor.fetchall()
+        assert(len(results) <= 1)
+        return results[0] if len(results) else None
+
     def within_department(self, department: str):
         department = '{:0>2}%'.format(department)
         req = """

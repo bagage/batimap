@@ -12,7 +12,6 @@ from bs4 import BeautifulSoup
 import json
 from collections import Counter
 import requests
-from pkg_resources import resource_stream
 
 LOG = logging.getLogger(__name__)
 
@@ -21,8 +20,6 @@ class City(object):
     __insee_regex = re.compile("^[a-zA-Z0-9]{3}[0-9]{2}$")
     __cadastre_src2date_regex = re.compile(
         r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
-    __cadastre_code = resource_stream(
-        __name__, 'code_cadastre.csv').read().decode().split('\n')
     __total_pdfs_regex = re.compile(
         ".*coupe la bbox en \d+ \* \d+ \[(\d+) pdfs\]$")
 
@@ -40,35 +37,16 @@ class City(object):
         self.db = db
         if self.__insee_regex.match(identifier) is not None:
             self.insee = identifier
-            self.name = db.name_for_insee(identifier)
+            self.name = self.db.name_for_insee(self.insee)
         else:
             self.name = identifier
-            self.insee = db.insee_for_name(identifier)
+            self.insee = self.db.insee_for_name(self.name)
 
-        # Format of INSEE is [0-9]{2}[0-9]{3} OR 97[0-9]{1}[0-9]{2} for overseas
-        # the first part is the department number, the second the city
-        # unique id
-        if self.insee.startswith('97'):
-            self.department = self.insee[:-2]
-        else:
-            self.department = self.insee[:-3]
-
-        # get cadastre name and code
-        self.name_cadastre = None
-        self.is_vectorized = False
-        idx = 3 if self.department.startswith('97') else 2
-
-        for line in self.__cadastre_code:
-            try:
-                (d, _, cadastre_name, _, code_cadastre,
-                 bati_type) = line.strip().split(',')
-                if d == self.department and code_cadastre[idx:] == self.insee[idx:]:
-                    self.name_cadastre = "{}-{}".format(
-                        code_cadastre, cadastre_name)
-                    self.is_vectorized = (bati_type == 'VECT')
-                    break
-            except Exception as e:
-                pass
+        data = db.city_data(self.insee)
+        if data:
+            self.department = data[1].strip()
+            self.name_cadastre = data[3].strip()
+            self.is_vectorized = not data[4]
 
     def __repr__(self):
         return '{}({})'.format(self.name, self.insee)
