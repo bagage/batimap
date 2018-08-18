@@ -87,7 +87,7 @@ function do_work()  {
     settings.referenceSelection = new java.util.ArrayList();
     settings.referenceSelection.addAll(ds1.getSelected());
 
-    const prefs = new org.openstreetmap.josm.data.Preferences();
+    const prefs = org.openstreetmap.josm.data.Preferences.main();
     conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MatchingPanel")
         .getConstructor(
             org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
