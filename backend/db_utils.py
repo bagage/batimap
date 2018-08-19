@@ -25,12 +25,12 @@ class Postgis(object):
         req = """
                 CREATE TABLE IF NOT EXISTS
                     city_stats(
-                        insee CHAR(10) PRIMARY KEY NOT NULL,
-                        department CHAR(3) NOT NULL,
-                        name CHAR(100) NOT NULL,
-                        name_cadastre CHAR(100) NOT NULL,
+                        insee VARCHAR(10) PRIMARY KEY NOT NULL,
+                        department VARCHAR(3) NOT NULL,
+                        name VARCHAR(100) NOT NULL,
+                        name_cadastre VARCHAR(100) NOT NULL,
                         is_raster BOOLEAN,
-                        date CHAR(10),
+                        date VARCHAR(10),
                         last_update TIMESTAMP,
                         details TEXT
                     )
@@ -301,6 +301,21 @@ class Postgis(object):
         results = self.cursor.fetchall()
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
+
+    def city_data(self, insee):
+        req = """
+                SELECT
+                    *
+                FROM
+                    city_stats
+                WHERE
+                    insee = %s
+        """
+        self.cursor.execute(req, [insee])
+
+        results = self.cursor.fetchall()
+        assert(len(results) <= 1)
+        return results[0] if len(results) else None
 
     def within_department(self, department: str):
         department = '{:0>2}%'.format(department)
