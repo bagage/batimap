@@ -14,7 +14,7 @@
   </div>
 </mat-dialog-content>
 <mat-dialog-actions>
-  <button mat-button cdkFocusInitial mat-dialog-close>Fermer</button>
-  <button mat-button>Raffraichir</button>
-  <button mat-button (click)="openJOSM()">JOSM</button>
+  <button mat-raised-button color="warn" cdkFocusInitial mat-dialog-close>Fermer</button>
+  <button mat-raised-button color="primary">Raffraichir</button>
+  <button mat-raised-button color="primary" (click)="conflateCity()" [disabled]="!(josmIsStarted | async)">JOSM</button>
 </mat-dialog-actions>

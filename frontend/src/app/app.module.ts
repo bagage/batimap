@@ -7,6 +7,8 @@ import {RouterModule, Routes} from '@angular/router';
 import {MapComponent} from './pages/map/map.component';
 import {PagesModule} from './pages/pages.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {JosmService} from './services/josm.service';
+import {HttpClientModule} from '@angular/common/http';
 
 
 const appRoutes: Routes = [
@@ -20,6 +22,7 @@ const appRoutes: Routes = [
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
+    HttpClientModule,
     PagesModule,
     LeafletModule.forRoot(),
     RouterModule.forRoot(
@@ -27,7 +30,7 @@ const appRoutes: Routes = [
       // ,{enableTracing: true}
     )
   ],
-  providers: [],
+  providers: [JosmService],
   bootstrap: [AppComponent]
 })
 export class AppModule {

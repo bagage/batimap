@@ -105,3 +105,18 @@ def work(db, cities, force=False):
                 "Déplacement de {} vers les archives".format(city_path))
             shutil.move(city_path, path.join(
                 City.WORKDONE_PATH, path.basename(city_path)))
+
+
+def josm_data(db, insee):
+    c = City(db, insee)
+    if not c:
+        return None
+
+    base_url = f"https://cadastre.openstreetmap.fr/data/{c.department.zfill(3)}/{c.name_cadastre}-houses-"
+    bbox = c.get_bbox()
+
+    return {
+        'buildingsUrl': base_url + "simplifie.osm",
+        'segmententationPredictionssUrl': base_url + "prediction_segmente.osm",
+        'bbox': [bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax]
+    }

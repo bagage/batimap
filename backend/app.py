@@ -8,7 +8,6 @@ import click
 import geojson
 import itertools
 import logging
-import requests
 
 from flask import Flask, jsonify, request
 from flask_restful import inputs
@@ -56,7 +55,10 @@ def api_department_status(department) -> str:
 
 @app.route('/status/<department>/<city>', methods=['GET'])
 def api_city_status(department, city) -> str:
-    for (city, date, author) in batimap.stats(db, op, cities=[city], force=request.args.get('force', default=False, type=inputs.boolean)):
+    for (city, date, author) in batimap.stats(db,
+                                              op,
+                                              cities=[city],
+                                              force=request.args.get('force', default=False, type=inputs.boolean)):
         return jsonify({city.insee: date})
     return ''
 
@@ -100,6 +102,11 @@ def api_update_insee_list(insee) -> dict:
     return jsonify(date)
 
 
+@app.route('/josm/<insee>', methods=['GET'])
+def api_josm_data(insee) -> dict:
+    return jsonify(batimap.josm_data(db, insee))
+
+
 # CLI
 @app.cli.command('initdb')
 def initdb_command():
@@ -111,6 +118,7 @@ def initdb_command():
     # fill table with cities from cadastre website
     for d in all_departments:
         batimap.update_department_raster_state(db, d)
+
 
 @app.cli.command('stats')
 @click.argument('items', nargs=-1)

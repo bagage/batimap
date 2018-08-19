@@ -66,7 +66,7 @@ class City(object):
         if self.name_cadastre is None:
             return False
 
-        url = 'http://cadastre.openstreetmap.fr'
+        url = 'https://cadastre.openstreetmap.fr'
 
         dept = self.department.zfill(3)
 
