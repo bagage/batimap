@@ -14,11 +14,11 @@ LOG = logging.getLogger(__name__)
 def stats(db, overpass, department=None, cities=[], force=False):
     if force:
         if department:
-            update_department_raster_state(db, department)
+            update_departments_raster_state(db, department)
         else:
             depts = set([City(db, c).department for c in cities])
             for d in depts:
-                update_department_raster_state(db, d)
+                update_departments_raster_state(db, d)
 
     if department:
         cities = db.within_department(department)
@@ -29,36 +29,38 @@ def stats(db, overpass, department=None, cities=[], force=False):
         yield((c, date))
 
 
-def update_department_raster_state(db, department):
+def update_departments_raster_state(db, departments):
     url = 'https://www.cadastre.gouv.fr/scpc/rechercherPlan.do'
     cj = http.cookiejar.CookieJar()
     op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
     r = op.open(url)
     csrf_token = r.read().split(b'CSRF_TOKEN=')[1].split(b'"')[0].decode('utf-8')
+    op.addheaders = [('Accept-Encoding', 'gzip')]
 
-    LOG.debug(f"Récupération des infos pour le département {department}")
-    department = f'{department}'
-    r2 = op.open(f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}&codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
+    for department in departments:
+        LOG.info(f"Récupération des infos pour le département {department}")
+        department = f'{department}'
+        r2 = op.open(f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}&codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
+        fr = BeautifulSoup(r2.read(), "lxml")
 
-    fr = BeautifulSoup(r2.read(), "lxml")
-    for e in fr.find_all(attrs={"class": "parcelles"}):
-        y = e.find(title="Ajouter au panier")
-        if y is None:
-            continue
+        for e in fr.find_all("tbody", attrs={"title": "Ajouter au panier"}):
+            y = e.find(title="Ajouter au panier")
+            if not y or True:
+                continue
 
-        # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
-        split = y.get('onclick').split("'")
-        code_commune = split[1]
-        format_type = split[3]
+            # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
+            split = y.get('onclick').split("'")
+            code_commune = split[1]
+            format_type = split[3]
 
-        # e.strong.string structure: "COBONNE (26400) "
-        commune_cp = e.strong.string
-        nom_commune = commune_cp[:-9]
+            # e.strong.string structure: "COBONNE (26400) "
+            commune_cp = e.strong.string
+            nom_commune = commune_cp[:-9]
 
-        dept = department.zfill(2)
-        insee = dept + code_commune[-3:]
-        is_raster = format_type == 'IMAG'
-        db.insert_stats_for_insee(insee, dept, f"{code_commune}-{nom_commune}", is_raster)
+            dept = department.zfill(2)
+            insee = dept + code_commune[-3:]
+            is_raster = format_type == 'IMAG'
+            db.insert_stats_for_insee(insee, dept, f"{code_commune}-{nom_commune}", is_raster)
 
 
 def josm_data(db, insee):

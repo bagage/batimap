@@ -122,8 +122,7 @@ def initdb_command():
     db.create_tables()
 
     # fill table with cities from cadastre website
-    for d in all_departments:
-        batimap.update_department_raster_state(db, d)
+    batimap.update_departments_raster_state(db, all_departments)
 
 
 @app.cli.command('stats')
