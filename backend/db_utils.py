@@ -302,10 +302,12 @@ class Postgis(object):
         assert(len(results) <= 1)
         return results[0][0] if len(results) else None
 
-    def city_data(self, insee):
-        req = """
+    def city_data(self, insee, data_queries):
+        if not data_queries:
+            data_queries = ["*"]
+        req = f"""
                 SELECT
-                    *
+                    {", ".join(data_queries)}
                 FROM
                     city_stats
                 WHERE
