@@ -23,11 +23,17 @@ CORS(app)
 
 LOG = logging.getLogger(__name__)
 
+verbosity = {
+    'DEBUG': logging.DEBUG,
+    'INFO': logging.INFO,
+    'WARNING': logging.WARNING,
+    'ERRROR': logging.ERROR,
+    'CRITICAL': logging.CRITICAL,
+}
 logging.basicConfig(
     format='%(asctime)s %(message)s',
     datefmt="%H:%M:%S",
-    level=logging.DEBUG if app.config[
-        'DEBUG'] else logging.ERROR
+    level=verbosity[app.config['VERBOSITY'] or ('DEBUG' if app.config['DEBUG'] else 'CRITICAL')]
 )
 
 db = Postgis(
