@@ -13,7 +13,7 @@ wget http://download.geofabrik.de/europe/france/corse-latest.osm.pbf -O my-regio
 # or for whole france (incl. overseas departments):
 # osmium is in osmium-tool on Debian
 wget http://download.geofabrik.de/europe/france-latest.osm.pbf http://download.geofabrik.de/europe/france/{guadeloupe,guyane,martinique,mayotte,reunion}-latest.osm.pbf
-osmium merge *.pbf -o my-region.osm.pbf
+osmium merge *-latest.osm.pbf -o my-region.osm.pbf
 
 
 # then filter data (osmconvert and osmfilter binaries are located in osmctools on Debian)
@@ -21,7 +21,7 @@ osmconvert -v my-region.osm.pbf -o=./my-region.o5m && \
 osmfilter --keep="type=boundary and boundary=administrative" -v my-region.o5m -o=boundaries.o5m && \
 osmconvert -v --out-pbf boundaries.o5m > boundaries.pbf
 
-# WARNING: the following command will remove ALL database. Add '--append --slime' parameters
+# WARNING: the following command will remove ALL database. Add '--append --slim' parameters
 # if you wish to keep your data!
 osm2pgsql -H localhost -U docker -P 25432 --verbose --proj 4326 --hstore-all -W --database gis boundaries.pbf
 ```
