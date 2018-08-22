@@ -13,6 +13,15 @@ services:
     networks:
       fixed_network:
         ipv4_address: 10.5.0.10
+  postgis_init:
+    build: postgis/init
+    environment:
+    - POSTGRES_PASSWORD=batimap
+    - POSTGRES_USER=docker
+    - POSTGRES_DB=gis
+    depends_on:
+    - postgis
+
   tiles:
     build: tiles
     command: bash /wait-for-it.sh 10.5.0.10:5432 -- tegola -config /root/config.toml
