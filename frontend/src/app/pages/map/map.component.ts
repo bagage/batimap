@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, NgZone} from '@angular/core';
 import * as L from 'leaflet';
 import {latLng, tileLayer} from 'leaflet';
 import {MatDialog} from '@angular/material';
@@ -25,7 +25,7 @@ export class MapComponent {
     center: latLng(46.111, 3.977)
   };
 
-  constructor(private matDialog: MatDialog) {
+  constructor(private matDialog: MatDialog, private zone: NgZone) {
   }
 
   onMapReady(map) {
@@ -90,7 +90,9 @@ export class MapComponent {
 
     const cadastreLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions);
     cadastreLayer.on('click', (e) => {
-      this.openPopup(e);
+      this.zone.run(() => {
+        this.openPopup(e);
+      });
     });
     cadastreLayer.addTo(map);
   }
