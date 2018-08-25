@@ -146,14 +146,3 @@ def _get_city_stats(items, region, fast):
     for department in d:
         for (city, date) in batimap.stats(db, op, department=department, cities=c, force=not fast):
             click.echo('{}: date={}'.format(city, date))
-
-
-@app.cli.command('josm')
-@click.argument('cities', nargs=-1)
-@click.option('--force', is_flag=True)
-def load_city_josm(cities, force):
-    """
-    Create and open JOSM project for given cities.
-    """
-    _get_city_stats(cities, 'city', False)
-    batimap.work(db, cities=cities, force=force)
