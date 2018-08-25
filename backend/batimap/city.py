@@ -38,7 +38,6 @@ class City(object):
         date = self.get_last_import_date()
         if force or date is None:
             sources_date = []
-            authors = []
 
             if not self.is_raster:
                 date = 'raster'
@@ -60,9 +59,6 @@ class City(object):
                     src = re.sub(self.__cadastre_src2date_regex, r'\2', src.lower())
                     sources_date.append(src)
 
-                    a = element.get('user') or 'unknown'
-                    authors.append(a)
-
                 date = max(sources_date, key=sources_date.count) if len(
                     sources_date) else 'never'
                 date_match = self.__cadastre_src2date_regex.match(date)
@@ -73,8 +69,7 @@ class City(object):
             self.db.update_stats_for_insee(
                 self.insee,
                 date,
-                json.dumps({'dates': Counter(sources_date),
-                            'authors': Counter(authors)}),
+                json.dumps({'dates': Counter(sources_date)}),
                 True
             )
         return date

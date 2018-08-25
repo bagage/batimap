@@ -4,15 +4,14 @@ import {MatSort, MatTableDataSource} from '@angular/material';
 export interface City {
   name: string;
   insee: string;
-  author: string;
   date: string;
   contributionDetails: any;
 }
 
 
 const ELEMENT_DATA: City[] = [
-  {name: 'Clerieux', insee: '20', author: 'moi', date: '2018', contributionDetails: null},
-  {name: 'Cleraieux', insee: '21', author: 'maoi', date: '2017', contributionDetails: null},
+  {name: 'Clerieux', insee: '20', date: '2018', contributionDetails: null},
+  {name: 'Cleraieux', insee: '21', date: '2017', contributionDetails: null},
 ]
 
 @Component({
@@ -22,7 +21,7 @@ const ELEMENT_DATA: City[] = [
 })
 export class CitiesListComponent implements OnInit {
 
-  displayedColumns: string[] = ['name', 'insee', 'author', 'date', 'details'];
+  displayedColumns: string[] = ['name', 'insee', 'date', 'details'];
   dataSource = new MatTableDataSource(ELEMENT_DATA);
 
   @ViewChild(MatSort) sort: MatSort;

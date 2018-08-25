@@ -40,7 +40,8 @@ def update_departments_raster_state(db, departments):
     for department in departments:
         LOG.info(f"Récupération des infos pour le département {department}")
         department = f'{department}'
-        r2 = op.open(f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}&codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
+        r2 = op.open(f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}&" +
+                     "codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
         fr = BeautifulSoup(r2.read(), "lxml")
 
         for e in fr.find_all("tbody", attrs={"title": "Ajouter au panier"}):

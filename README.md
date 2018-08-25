@@ -20,7 +20,7 @@ Supposons que l'on souhaite mettre à jour le cadastre de [Upie, code insee 2635
 
 1. Vérification de l'état du cadastre dans OSM : `FLASK_APP=backend/app.py flask get-city-stats Upie`.
     Ici le dernier import date de 2017, donc il est déjà à jour. Supposons qu'il ne le soit pas et qu'on veuille effectuer la mise à jour.
-> Upie(26358): date=2017 author=GautierPP
+> Upie(26358): date=2017
 
 2. Mise en place de l'environnement : `FLASK_APP=backend/app.py flask josm Upie`. Cela va générer le bâti depuis le cadastre et ouvrir JOSM dès que c'est prêt.
 

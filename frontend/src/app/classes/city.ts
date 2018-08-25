@@ -10,5 +10,4 @@ export class City {
 
 export class CityDetails {
   dates: Map<string, number>; // number of buildings imported per year date
-  authors: Map<string, number>; // number of buildings by OSM contributor (last edit)
 }

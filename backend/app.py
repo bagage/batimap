@@ -61,10 +61,10 @@ def api_department_status(department) -> str:
 
 @app.route('/status/<department>/<city>', methods=['GET'])
 def api_city_status(department, city) -> str:
-    for (city, date, author) in batimap.stats(db,
-                                              op,
-                                              cities=[city],
-                                              force=request.args.get('force', default=False, type=inputs.boolean)):
+    for (city, date) in batimap.stats(db,
+                                      op,
+                                      cities=[city],
+                                      force=request.args.get('force', default=False, type=inputs.boolean)):
         return jsonify({city.insee: date})
     return ''
 
