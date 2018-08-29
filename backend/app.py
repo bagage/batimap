@@ -124,6 +124,8 @@ def initdb_command():
     # fill table with cities from cadastre website
     batimap.update_departments_raster_state(db, all_departments)
 
+    db.import_city_stats_from_osmplanet(all_departments)
+
 
 @app.cli.command('stats')
 @click.argument('items', nargs=-1)
