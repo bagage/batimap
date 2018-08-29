@@ -1,7 +1,8 @@
 node,way   osm_user     text         linear
-node,way   building     text         polygon
-node,way   ref:INSEE text         linear
-node,way   name         text         linear
 node,way   admin_level  text         linear
-way        way_area     real         linear # This is calculated during import
+node,way   boundary     text         linear
+node,way   building     text         polygon
+node,way   name         text         linear
+node,way   ref:INSEE text         linear
 node,way    source                  text    linear
+way        way_area     real         linear # This is calculated during import
