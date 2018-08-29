@@ -47,8 +47,8 @@ db = Postgis(
 
 op = Overpass(app.config['OVERPASS_URI'])
 
-all_departments = itertools.chain(
-    range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977))
+all_departments = [str(x).zfill(2) for x in itertools.chain(
+    range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977))]
 
 # ROUTES
 
