@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
-from math import cos, floor, log, pi, radians, sqrt, tan
+from math import cos, floor, log, pi, radians, tan, sqrt
 
 import grequests
 import psycopg2
@@ -90,7 +90,7 @@ class Postgis(object):
 
         return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
-    def get_colors(self):
+    def get_dates_count(self):
         req = """
                 SELECT
                     date,
@@ -104,74 +104,51 @@ class Postgis(object):
 
         return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
-    def get_city_with_colors(self, dates, lonNW: float, latNW: float, lonSE: float, latSE: float) -> FeatureCollection:
-        req = """
-                SELECT
-                    count(p.name)
-                FROM
-                    planet_osm_polygon p,
-                    city_stats c
-                WHERE
-                    p.'admin_level' = '8'
-                AND
-                    c.insee = p."ref:INSEE"
-                AND
-                    c.date in (%s)
-                """
-        self.cursor.execute(req, ["','".join(dates)])
-        count = self.cursor.fetchall()[0][0]
+    def get_cities_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
 
         req = """
                 SELECT
                     p.name,
                     c.insee,
                     c.date,
-                    ST_AsGeoJSON(p.way, 6) AS geometry
+                    c.details
                 FROM
                     planet_osm_polygon p,
                     city_stats c
                 WHERE
-                    p.'admin_level' = '8'
+                    p.admin_level = '8'
                 AND
                     c.insee = p."ref:INSEE"
                 AND
-                    c.date in (%(date)s)
-               """
-        args = {'date': "','".join(dates)}
-
-        # if there are too much cities, filter by distance
-        if len(dates) > 1 and count > 1500:
-            # we should fetch all cities within the view
-            maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2)
-            # instead if we zoomed out too much, we limit to maximum 110km
-            # radius circle
-            maxDistance = min(1., maxDistance)
-
-            req += """
-                AND
-                    ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326),
-                    %(distance)s)
+                    ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), %(distance)s)
                 ORDER BY
                     ST_Distance(ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), p.way)
-            """
-            args.update({
-                'lon': (lonNW + lonSE) / 2.,
-                'lat': (latNW + latSE) / 2.,
-                'distance': maxDistance,
-            })
+                LIMIT 100
+               """
 
+        # we should fetch all cities within the view
+        maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2) / 2
+        LOG.info(maxDistance)
+        # instead if we zoomed out too much, we limit to maximum 110km
+        # radius circle
+        maxDistance = min(1., maxDistance)
+
+        args = {
+            'distance': maxDistance,
+            'lon': (lonNW + lonSE) / 2.,
+            'lat': (latNW + latSE) / 2.,
+        }
         self.cursor.execute(req, args)
 
-        features = []
-
+        results = []
         for row in self.cursor.fetchall():
-            features.append(Feature(properties={
-                'name': "{} - {}".format(row[0], row[1]),
-                'date': row[2]
-            },
-                geometry=loads(row[3])))
-
-        return FeatureCollection(features)
+            results.append({
+                'name': row[0],
+                'insee': row[1],
+                'date': row[2],
+                'details': row[3]
+            })
+        return results
 
     def get_department_colors(self, department):
         req = """

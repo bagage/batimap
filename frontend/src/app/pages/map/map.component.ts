@@ -3,7 +3,7 @@ import * as L from 'leaflet';
 import {latLng, tileLayer} from 'leaflet';
 import {MatDialog} from '@angular/material';
 import {CityDetailsDialogComponent} from '../city-details-dialog/city-details-dialog.component';
-import {City} from '../../classes/city';
+import {CityDTO} from '../../classes/city.dto';
 import {deserialize, plainToClass} from 'class-transformer';
 
 @Component({
@@ -24,11 +24,13 @@ export class MapComponent {
     zoom: 5,
     center: latLng(46.111, 3.977)
   };
+  map: any;
 
   constructor(private matDialog: MatDialog, private zone: NgZone) {
   }
 
   onMapReady(map) {
+    this.map = map;
     map.restoreView();
     this.setupVectorTiles(map);
   }
@@ -98,7 +100,7 @@ export class MapComponent {
   }
 
   openPopup($event) {
-    const city = plainToClass<City, object>(City, $event.layer.properties);
+    const city = plainToClass<CityDTO, object>(CityDTO, $event.layer.properties);
     const dialog = this.matDialog.open(CityDetailsDialogComponent, {data: city});
   }
 }

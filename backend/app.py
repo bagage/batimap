@@ -53,6 +53,11 @@ all_departments = [str(x).zfill(2) for x in itertools.chain(
 # ROUTES
 
 
+@app.route('/status', methods=['GET'])
+def api_status() -> dict:
+    return jsonify(db.get_dates_count())
+
+
 @app.route('/status/<department>', methods=['GET'])
 def api_department_status(department) -> str:
     return jsonify([{x[0].insee: x[1]} for x in
@@ -80,21 +85,11 @@ def api_insee(insee) -> dict:
     return geojson.dumps(color_city)
 
 
-@app.route('/colors/<lonNW>/<latNW>/<lonSE>/<latSE>/<colors>', methods=['GET'])
-def api_color(colors, lonNW, latNW, lonSE, latSE) -> dict:
-    color_city = db.get_city_with_colors(colors.split(','), float(
-        lonNW), float(latNW), float(lonSE), float(latSE))
-    return geojson.dumps(color_city)
-
-
-@app.route('/colors', methods=['GET'])
-def api_colors_list() -> dict:
-    return jsonify(db.get_colors())
-
-
-@app.route('/status/<department>', methods=['GET'])
-def api_status(department) -> dict:
-    return jsonify(db.get_department_colors(department))
+@app.route('/cities/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>', methods=['GET'])
+def api_color(lonNW, latNW, lonSE, latSE) -> dict:
+    cities = db.get_cities_in_bbox(
+        float(lonNW), float(latNW), float(lonSE), float(latSE))
+    return geojson.dumps(cities)
 
 
 @app.route('/update/<insee>', methods=['POST'])

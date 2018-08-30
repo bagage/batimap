@@ -1,6 +1,6 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA} from '@angular/material';
-import {City} from '../../classes/city';
+import {CityDTO} from '../../classes/city.dto';
 import {JosmService} from '../../services/josm.service';
 import {Observable} from 'rxjs';
 
@@ -9,18 +9,14 @@ import {Observable} from 'rxjs';
   styleUrls: ['./city-details-dialog.component.css']
 })
 export class CityDetailsDialogComponent implements OnInit {
-  city: City;
+  city: CityDTO;
   josmIsStarted: Observable<boolean>;
 
-  constructor(@Inject(MAT_DIALOG_DATA) private data: City, public josmService: JosmService) {
+  constructor(@Inject(MAT_DIALOG_DATA) private data: CityDTO, public josmService: JosmService) {
     this.city = data;
   }
 
   ngOnInit(): void {
     this.josmIsStarted = this.josmService.isStarted();
-  }
-
-  conflateCity() {
-    this.josmService.conflateCity(this.city).subscribe();
   }
 }

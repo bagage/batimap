@@ -1,8 +1,8 @@
 <div
      style="height: 500px;"
      leaflet
-     (leafletMapReady)="onMapReady($event)"
+     (leafletMapReady)="onMapReady($event); list.map = $event"
      [leafletOptions]="options">
 </div>
 
-<app-cities-list></app-cities-list>
+<app-cities-list #list></app-cities-list>
