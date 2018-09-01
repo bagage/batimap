@@ -7,6 +7,7 @@ from collections import Counter
 
 LOG = logging.getLogger(__name__)
 
+
 class City(object):
     __insee_regex = re.compile("^[a-zA-Z0-9]{3}[0-9]{2}$")
     __cadastre_src2date_regex = re.compile(
@@ -23,7 +24,7 @@ class City(object):
 
         data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster"])
         assert len(data) == 3
-        self.department, self.name_cadastre, self.is_raster = data
+        (self.department, self.name_cadastre, self.is_raster) = data
 
     def __repr__(self):
         return f'{self.name}({self.insee})'
@@ -38,8 +39,7 @@ class City(object):
         date = self.get_last_import_date()
         if force or date is None:
             sources_date = []
-
-            if not self.is_raster:
+            if self.is_raster:
                 date = 'raster'
             else:
                 request = f"""[out:json];
@@ -61,15 +61,16 @@ class City(object):
 
                 date = max(sources_date, key=sources_date.count) if len(
                     sources_date) else 'never'
-                date_match = self.__cadastre_src2date_regex.match(date)
+                date_match = re.compile(r'^(\d{4})$').match(date)
                 date = date_match.groups()[0] if date_match and date_match.groups() else 'unknown'
 
                 LOG.debug(f"City stats: {Counter(sources_date)}")
             # only update date if we did not use cache files for buildings
-            self.db.update_stats_for_insee(
+            self.db.update_stats_for_insee([(
                 self.insee,
+                self.name,
                 date,
                 json.dumps({'dates': Counter(sources_date)}),
                 True
-            )
+            )])
         return date

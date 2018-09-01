@@ -9,6 +9,7 @@ import {PagesModule} from './pages/pages.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {JosmService} from './services/josm.service';
 import {HttpClientModule} from '@angular/common/http';
+import { JosmButtonComponent } from './components/josm-button/josm-button.component';
 
 
 const appRoutes: Routes = [

@@ -1,15 +1,9 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {forkJoin, Observable} from 'rxjs';
-import {City} from '../classes/city';
-import {flatMap, map} from 'rxjs/operators';
-import {environment} from '../../environments/environment';
-
-class ConflateCityDTO {
-  buildingsUrl: string;
-  segmententationPredictionssUrl: string;
-  bbox: [number, number, number, number];
-}
+import {HttpClient} from '@angular/common/http';
+import {Observable, of} from 'rxjs';
+import {CityDTO} from '../classes/city.dto';
+import {catchError, flatMap, map, share} from 'rxjs/operators';
+import {BatimapService} from './batimap.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,10 +11,6 @@ class ConflateCityDTO {
 export class JosmService {
   private JOSM_URL_BASE = 'http://127.0.0.1:8111/';
   private JOSM_URL_VERSION = this.JOSM_URL_BASE + 'version';
-
-  private URL_CITY_DATA(insee: string): string {
-    return environment.serverUrl + 'josm/' + insee;
-  }
 
   private JOSM_URL_IMAGERY(title: string, url: string): Observable<any> {
     return this.http.get(this.JOSM_URL_BASE + 'imagery', {
@@ -61,16 +51,16 @@ export class JosmService {
   }
 
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private batimapService: BatimapService) {
   }
 
-  public isStarted(): Observable<any> {
-    return this.http.get(this.JOSM_URL_VERSION);
+  public isStarted(): Observable<boolean> {
+    return this.http.get(this.JOSM_URL_VERSION).pipe(map(() => true), catchError(() => of(false)), share());
   }
 
-  public conflateCity(city: City): Observable<any> {
+  public conflateCity(city: CityDTO): Observable<any> {
     // get city data
-    return this.http.get<ConflateCityDTO>(this.URL_CITY_DATA(city.insee))
+    return this.batimapService.cityData(city.insee)
       .pipe(flatMap(dto => this.JOSM_URL_IMAGERY('BDOrtho IGN', 'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg')
         .pipe(flatMap(() => this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false)
           .pipe(flatMap(() => this.JOSM_URL_OPEN_FILE(dto.segmententationPredictionssUrl, true)

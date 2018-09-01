@@ -7,6 +7,7 @@ from .city import City
 from bs4 import BeautifulSoup
 import http.cookiejar
 import urllib.request
+import zlib
 
 LOG = logging.getLogger(__name__)
 
@@ -17,12 +18,10 @@ def stats(db, overpass, department=None, cities=[], force=False):
             update_departments_raster_state(db, department)
         else:
             depts = set([City(db, c).department for c in cities])
-            for d in depts:
-                update_departments_raster_state(db, d)
+            update_departments_raster_state(db, depts)
 
     if department:
         cities = db.within_department(department)
-
     for city in cities:
         c = City(db, city)
         date = c.fetch_osm_data(overpass, force)
@@ -39,14 +38,15 @@ def update_departments_raster_state(db, departments):
 
     for department in departments:
         LOG.info(f"Récupération des infos pour le département {department}")
+        tuples = []
         department = f'{department}'
         r2 = op.open(f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}&" +
-                     "codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
-        fr = BeautifulSoup(r2.read(), "lxml")
+                     f"codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
+        fr = BeautifulSoup(zlib.decompress(r2.read(), 16+zlib.MAX_WBITS), "lxml")
 
-        for e in fr.find_all("tbody", attrs={"title": "Ajouter au panier"}):
+        for e in fr.find_all("tbody", attrs={"class": "parcelles"}):
             y = e.find(title="Ajouter au panier")
-            if not y or True:
+            if not y:
                 continue
 
             # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
@@ -61,7 +61,14 @@ def update_departments_raster_state(db, departments):
             dept = department.zfill(2)
             insee = dept + code_commune[-3:]
             is_raster = format_type == 'IMAG'
-            db.insert_stats_for_insee(insee, dept, f"{code_commune}-{nom_commune}", is_raster)
+
+            name = db.name_for_insee(insee, True)
+            if not name:
+                LOG.critical(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
+                continue
+
+            tuples.append((insee, dept, name, f"{code_commune}-{nom_commune}", is_raster))
+        db.insert_stats_for_insee(tuples)
 
 
 def josm_data(db, insee):

@@ -27,8 +27,8 @@ sql = """
   FROM
     planet_osm_polygon, city_stats c
   WHERE
-    tags->'admin_level' = '8'
-    AND tags->'ref:INSEE' = insee
+    admin_level = '8'
+    AND "ref:INSEE" = insee
     AND way && !BBOX!
 """
 
@@ -48,8 +48,8 @@ sql = """
     planet_osm_polygon,
     city_stats c
   WHERE
-    tags->'admin_level' = '8'
-    AND tags->'ref:INSEE' = insee
+    admin_level = '8'
+    AND "ref:INSEE" = insee
     AND way && !BBOX!
 """
 
@@ -59,8 +59,8 @@ geometry_fieldname = "way"
 id_fieldname = "osm_id"
 sql = """
   WITH view_department_stats AS (
-    SELECT DISTINCT ON
-      (department) department,
+    SELECT DISTINCT ON (department)
+      department,
       date
     FROM
       city_stats
@@ -75,14 +75,14 @@ sql = """
     ST_AsBinary(way) AS way,
     date,
     p.name,
-    tags->'ref:INSEE' AS insee,
+    "ref:INSEE" AS insee,
     osm_id
   FROM
     planet_osm_polygon p,
     view_department_stats
   WHERE
-    tags->'admin_level' = '6'
-    AND tags->'ref:INSEE' LIKE department || '%'
+    admin_level = '6'
+    AND "ref:INSEE" LIKE department || '%'
     AND way && !BBOX!
 """
 

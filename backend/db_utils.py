@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
-from math import cos, floor, log, pi, radians, sqrt, tan
+from math import cos, floor, log, pi, radians, tan, sqrt
 
 import grequests
 import psycopg2
+import psycopg2.extras
 import logging
 from geojson import Feature, FeatureCollection, loads
+import re
+import operator
 
 from batimap.bbox import Bbox
 
@@ -37,14 +40,9 @@ class Postgis(object):
         """
         self.cursor.execute(req)
         LOG.debug('city_stats table created')
-        req = """
-                CREATE INDEX IF NOT EXISTS
-                    insee_idx
-                ON
-                    planet_osm_polygon ((tags->'ref:INSEE'));
-        """
-        self.cursor.execute(req)
-        LOG.debug('insee_idx index created')
+
+        self.cursor.execute("CREATE INDEX IF NOT EXISTS way_gist ON planet_osm_polygon USING gist(way);")
+        self.cursor.execute("CREATE INDEX IF NOT EXISTS insee_idx ON planet_osm_polygon((\"ref:INSEE\"));")
         self.connection.commit()
 
     def get_insee(self, insee: int) -> FeatureCollection:
@@ -58,9 +56,9 @@ class Postgis(object):
                     planet_osm_polygon p,
                     city_stats c
                 WHERE
-                    p.tags->'ref:INSEE' = %s
+                    p."ref:INSEE" = %s
                 AND
-                    p.tags->'ref:INSEE' = c.insee
+                    p."ref:INSEE" = c.insee
         """
         self.cursor.execute(req, [insee])
         features = []
@@ -82,9 +80,9 @@ class Postgis(object):
                     planet_osm_polygon p,
                     city_stats c
                 WHERE
-                    p.tags->'admin_level' = '8'
+                    p.'admin_level' = '8'
                 AND
-                    c.insee = p.tags->'ref:INSEE'
+                    c.insee = p."ref:INSEE"
                 AND
                     c.date = %s
                 """
@@ -92,7 +90,7 @@ class Postgis(object):
 
         return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
-    def get_colors(self):
+    def get_dates_count(self):
         req = """
                 SELECT
                     date,
@@ -106,74 +104,51 @@ class Postgis(object):
 
         return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
-    def get_city_with_colors(self, dates, lonNW: float, latNW: float, lonSE: float, latSE: float) -> FeatureCollection:
-        req = """
-                SELECT
-                    count(p.name)
-                FROM
-                    planet_osm_polygon p,
-                    city_stats c
-                WHERE
-                    p.tags->'admin_level' = '8'
-                AND
-                    c.insee = p.tags->'ref:INSEE'
-                AND
-                    c.date in (%s)
-                """
-        self.cursor.execute(req, ["','".join(dates)])
-        count = self.cursor.fetchall()[0][0]
+    def get_cities_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
 
         req = """
                 SELECT
                     p.name,
                     c.insee,
                     c.date,
-                    ST_AsGeoJSON(p.way, 6) AS geometry
+                    c.details
                 FROM
                     planet_osm_polygon p,
                     city_stats c
                 WHERE
-                    p.tags->'admin_level' = '8'
+                    p.admin_level = '8'
                 AND
-                    c.insee = p.tags->'ref:INSEE'
+                    c.insee = p."ref:INSEE"
                 AND
-                    c.date in (%(date)s)
-               """
-        args = {'date': "','".join(dates)}
-
-        # if there are too much cities, filter by distance
-        if len(dates) > 1 and count > 1500:
-            # we should fetch all cities within the view
-            maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2)
-            # instead if we zoomed out too much, we limit to maximum 110km
-            # radius circle
-            maxDistance = min(1., maxDistance)
-
-            req += """
-                AND
-                    ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326),
-                    %(distance)s)
+                    ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), %(distance)s)
                 ORDER BY
                     ST_Distance(ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), p.way)
-            """
-            args.update({
-                'lon': (lonNW + lonSE) / 2.,
-                'lat': (latNW + latSE) / 2.,
-                'distance': maxDistance,
-            })
+                LIMIT 100
+               """
 
+        # we should fetch all cities within the view
+        maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2) / 2
+        LOG.info(maxDistance)
+        # instead if we zoomed out too much, we limit to maximum 110km
+        # radius circle
+        maxDistance = min(1., maxDistance)
+
+        args = {
+            'distance': maxDistance,
+            'lon': (lonNW + lonSE) / 2.,
+            'lat': (latNW + latSE) / 2.,
+        }
         self.cursor.execute(req, args)
 
-        features = []
-
+        results = []
         for row in self.cursor.fetchall():
-            features.append(Feature(properties={
-                'name': "{} - {}".format(row[0], row[1]),
-                'date': row[2]
-            },
-                geometry=loads(row[3])))
-
-        return FeatureCollection(features)
+            results.append({
+                'name': row[0],
+                'insee': row[1],
+                'date': row[2],
+                'details': row[3]
+            })
+        return results
 
     def get_department_colors(self, department):
         req = """
@@ -205,7 +180,7 @@ class Postgis(object):
             FROM
                 planet_osm_polygon
             WHERE
-                tags->'ref:INSEE' = %s
+                "ref:INSEE" = %s
         """
         self.cursor.execute(req, [insee])
         coords = json.loads(self.cursor.fetchall()[0][0])['coordinates'][0]
@@ -230,7 +205,7 @@ class Postgis(object):
                 FROM
                     planet_osm_polygon
                 WHERE
-                    tags->'ref:INSEE' = %s
+                    "ref:INSEE" = %s
                 AND
                     admin_level = '8'
                 AND
@@ -239,7 +214,6 @@ class Postgis(object):
         self.cursor.execute(req, [insee])
 
         results = self.cursor.fetchall()
-
         if len(results) == 0 and not ignore_error:
             LOG.critical("Cannot found city with INSEE {}.".format(insee))
             exit(1)
@@ -249,7 +223,7 @@ class Postgis(object):
     def insee_for_name(self, name, interactive=True):
         req = """
                 SELECT
-                    tags->'ref:INSEE',
+                    "ref:INSEE",
                     name
                 FROM
                     planet_osm_polygon
@@ -320,10 +294,10 @@ class Postgis(object):
         return results[0] if len(results) else None
 
     def within_department(self, department: str):
-        department = '{:0>2}%'.format(department)
+        department = department.zfill(2)
         req = """
                 SELECT DISTINCT
-                    tags->'ref:INSEE' AS insee
+                    "ref:INSEE" AS insee
                 FROM
                     planet_osm_polygon
                 WHERE
@@ -331,7 +305,7 @@ class Postgis(object):
                 AND
                     boundary='administrative'
                 AND
-                    tags->'ref:INSEE' LIKE %s
+                    "ref:INSEE" LIKE %s || '%%'
                 ORDER BY
                     insee
         """
@@ -346,7 +320,7 @@ class Postgis(object):
                 FROM
                     planet_osm_polygon
                 WHERE
-                    tags->'ref:INSEE' = %s
+                    "ref:INSEE" = %s
                 AND
                     admin_level = '8'
                 AND
@@ -361,43 +335,70 @@ class Postgis(object):
 
         return Bbox(results[0][0]) if len(results) else None
 
-    def update_stats_for_insee(self, insee, date, details, update_time=False):
+    def update_stats_for_insee(self, tuples):
         req = """
-                UPDATE
-                    city_stats
-                SET date = %s, last_update = now(), details = %s
-                WHERE insee = %s
+                UPDATE city_stats as c
+                SET date = e.date, name = e.name, last_update = now(), details = e.details
+                FROM (VALUES %s) as e(insee, name, date, details)
+                WHERE e.insee = c.insee
         """
 
         try:
-            self.cursor.execute(
-                req, [date, details, insee])
+            psycopg2.extras.execute_values(self.cursor, req, tuples)
             self.connection.commit()
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
 
-    def insert_stats_for_insee(self, insee, dept, nom_commune, is_raster):
-        name = self.name_for_insee(insee, True)
-        LOG.debug(f"Inserting stats for {insee} {nom_commune} - {name}")
-        if not name:
-            LOG.warning(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
-            name = ''
-
+    def insert_stats_for_insee(self, tuples):
         req = """
-                INSERT INTO
-                    city_stats(insee, department, name, name_cadastre, is_raster)
-                VALUES
-                    (%s, %s, %s, %s, %s)
-                ON CONFLICT (insee)
-                DO
+                INSERT INTO city_stats(insee, department, name, name_cadastre, is_raster)
+                VALUES %s
+                ON CONFLICT (insee) DO
                 UPDATE SET
                     department = excluded.department,
                     name_cadastre = excluded.name_cadastre,
                     is_raster = excluded.is_raster
         """
         try:
-            self.cursor.execute(
-                req, [insee, dept, name, nom_commune, is_raster])
+            psycopg2.extras.execute_values(
+                self.cursor, req, tuples)
             self.connection.commit()
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
+
+    def import_city_stats_from_osmplanet(self, departments):
+        for department in departments:
+            query = """
+                with cities as (
+                    select "ref:INSEE" as insee, name, way
+                    from planet_osm_polygon
+                    where "ref:INSEE" like %s || '%%' and admin_level = '8'
+                )
+                select c.insee, c.name, p.source, count(p.*)
+                from cities c, buildings_osm_polygon p
+                where p.building is not null and ST_Contains(c.way, p.way)
+                group by c.insee, c.name, p.source
+                order by insee
+            """
+            # fixme: search in planet_osm_point and planet_osm_line too!
+
+            LOG.debug(f"Import buildings from db for department {department}…")
+            self.cursor.execute(query, [department.zfill(2)])
+
+            cadastre_src2date_regex = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
+
+            buildings_count = {}
+            insee_name = {}
+            for (insee, name, source, count) in self.cursor.fetchall():
+                date = re.sub(cadastre_src2date_regex, r'\2', (source or 'unknown').lower())
+                if not buildings_count.get(insee):
+                    buildings_count[insee] = {}
+                insee_name[insee] = name
+                buildings_count[insee][date] = count
+
+            tuples = []
+            for insee, counts in buildings_count.items():
+                date_match = re.compile(r'^(\d{4})$').match(max(counts.items(), key=operator.itemgetter(1))[0])
+                date = date_match.groups()[0] if date_match and date_match.groups() else 'unknown'
+                tuples.append((insee, insee_name[insee], date, json.dumps({'dates': counts})))
+            self.update_stats_for_insee(tuples)

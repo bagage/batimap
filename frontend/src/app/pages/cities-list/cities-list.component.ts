@@ -1,18 +1,9 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import {MatSort, MatTableDataSource} from '@angular/material';
-
-export interface City {
-  name: string;
-  insee: string;
-  date: string;
-  contributionDetails: any;
-}
-
-
-const ELEMENT_DATA: City[] = [
-  {name: 'Clerieux', insee: '20', date: '2018', contributionDetails: null},
-  {name: 'Cleraieux', insee: '21', date: '2017', contributionDetails: null},
-]
+import {BatimapService} from '../../services/batimap.service';
+import {CityDTO} from '../../classes/city.dto';
+import {JosmService} from '../../services/josm.service';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-cities-list',
@@ -20,13 +11,35 @@ const ELEMENT_DATA: City[] = [
   styleUrls: ['./cities-list.component.css']
 })
 export class CitiesListComponent implements OnInit {
+  @Input() map: any;
 
-  displayedColumns: string[] = ['name', 'insee', 'date', 'details'];
-  dataSource = new MatTableDataSource(ELEMENT_DATA);
+  displayedColumns: string[] = ['name', 'insee', 'date', 'details', 'actions'];
+  dataSource = new MatTableDataSource<CityDTO>();
+  isReady: boolean;
+  josmReady$: Observable<boolean>;
 
   @ViewChild(MatSort) sort: MatSort;
 
+  constructor(private batimapService: BatimapService, public josmService: JosmService) {
+  }
+
   ngOnInit() {
     this.dataSource.sort = this.sort;
+    this.josmReady$ = this.josmService.isStarted();
+
+    this.refreshDataSource();
+    this.map.on('moveend', () => {
+      this.refreshDataSource();
+    });
+  }
+
+  private refreshDataSource() {
+    this.isReady = false;
+    this.batimapService.citiesInBbox(this.map.getBounds()).subscribe((cities: CityDTO[]) => {
+      console.log('new result is', cities.length);
+      this.dataSource.data = null;
+      this.dataSource.data = cities;
+      this.isReady = true;
+    });
   }
 }
