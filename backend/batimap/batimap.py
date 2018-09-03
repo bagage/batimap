@@ -8,6 +8,10 @@ from bs4 import BeautifulSoup
 import http.cookiejar
 import urllib.request
 import zlib
+import requests
+import datetime
+from contextlib import closing
+import re
 
 LOG = logging.getLogger(__name__)
 
@@ -84,3 +88,56 @@ def josm_data(db, insee):
         'segmententationPredictionssUrl': base_url + "prediction_segmente.osm",
         'bbox': [bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax]
     }
+
+
+def fetch_cadastre_data(city, force=False):
+    __total_pdfs_regex = re.compile(
+        ".*coupe la bbox en \d+ \* \d+ \[(\d+) pdfs\]$")
+
+    if not city or not city.name_cadastre:
+        return False
+
+    url = 'https://cadastre.openstreetmap.fr'
+
+    dept = city.department.zfill(3)
+
+    r = requests.get(f"{url}/data/{dept}/")
+    bs = BeautifulSoup(r.content, "lxml")
+
+    for e in bs.find_all('tr'):
+        if f"{city.name_cadastre.upper()}.tar.bz2" in [x.text for x in e.select('td:nth-of-type(2) a')]:
+            date = e.select('td:nth-of-type(3)')[0].text.strip()
+            if (datetime.datetime.now() - datetime.datetime.strptime(date, "%d-%b-%Y %H:%M")).days > 30:
+                LOG.warn(f"{city.name_cadastre} was already generated at {date}, but is too old so refreshing it…")
+                force = True
+            else:
+                LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
+
+    data = {
+        'dep': dept,
+        'type': 'bati',
+        # fixme: if data is too old, we should ask for new generation
+        'force': 'true' if force else 'false',
+        'ville': city.name_cadastre,
+    }
+
+    # otherwise we invoke Cadastre generation
+    with closing(requests.post(url, data=data, stream=True)) as r:
+        total = 0
+        current = 0
+        for line in r.iter_lines(decode_unicode=True):
+            # only display progression
+            # TODO: improve this…
+            if "coupe la bbox en" in line:
+                match = __total_pdfs_regex.match(line)
+                if match:
+                    total = int(match.groups()[0])
+
+            if line.endswith(".pdf"):
+                current += 1
+                msg = f"{current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
+                LOG.info(msg)
+            elif "ERROR:" in line or "ERREUR:" in line:
+                LOG.error(line)
+                return False
+    return True
