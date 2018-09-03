@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+if [ -z $POSTGRES_PASSWORD ]; then
+    exit 1
+fi
+if [ -z $POSTGRES_USER ]; then
+    exit 1
+fi
+
 SCRIPT_DIR=$(realpath $(dirname $0))
 WORK_DIR=/tmp/batimap-init
 
@@ -39,16 +46,12 @@ done
 echo "Persisting in db…"
 test -f boundaries.osm.pbf || osmium merge *_boundaries.osm.pbf -o boundaries.osm.pbf
 test -f buildings.osm.pbf || osmium merge *_buildings.osm.pbf -o buildings.osm.pbf
-PGPASSWORD=batimap osm2pgsql $option -C 6000Mo -H localhost -U docker -P 5432 \
-    --verbose --proj 4326 --database gis boundaries.osm.pbf \
+PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_ADDRESS -U $POSTGRES_USER -P $POSTGRES_PORT \
+    --verbose --proj 4326 --database $POSTGRES_DB boundaries.osm.pbf \
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
-PGPASSWORD=batimap osm2pgsql $option -C 6000Mo -H localhost -U docker -P 5432 \
-    --verbose --proj 4326 --database gis --prefix buildings_osm buildings.osm.pbf \
+PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_ADDRESS -U $POSTGRES_USER -P $POSTGRES_PORT \
+    --verbose --proj 4326 --database $POSTGRES_DB --prefix buildings_osm buildings.osm.pbf \
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
 rm osm2pgsql.flatnodes
 
-echo "Imports done! Refreshing stats…"
-
-FLASK_APP=$SCRIPT_DIR/../../backend/app.py flask initdb
-
-echo "All done!"
+echo "Imports done!"
