@@ -15,6 +15,6 @@ export class JosmButtonComponent {
   constructor(private josmService: JosmService) { }
 
   conflateCity() {
-    this.josmService.conflateCity(this.city);
+    this.josmService.conflateCity(this.city).subscribe();
   }
 }
