@@ -1,4 +1,14 @@
-<button mat-raised-button color="primary"
-        (click)="conflateCity()"
-        matTooltip="Ouvre JOSM avec les calques préconfigurés pour la commune sélectionnée. Si le bouton n'est pas actif, JOSM n'est probablement pas démarré"
-        [disabled]="!josmReady ">JOSM</button>
+<ng-container *ngIf="!isLoading; else loading">
+  <button mat-raised-button color="primary"
+          (click)="conflateCity()"
+          matTooltip="Ouvre JOSM avec les calques préconfigurés pour la commune sélectionnée. Si le bouton n'est pas actif, JOSM n'est probablement pas démarré"
+          [disabled]="!josmReady ">JOSM
+  </button>
+</ng-container>
+
+<ng-template #loading>
+  <mat-progress-spinner
+    color="primary"
+    mode="indeterminate">
+  </mat-progress-spinner>
+</ng-template>
