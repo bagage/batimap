@@ -13,3 +13,4 @@ psycopg2
 pygeoj
 requests
 ujson
+lxml

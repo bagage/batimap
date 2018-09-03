@@ -1,5 +1,5 @@
 FROM python:3.6-alpine
-RUN apk --update add build-base postgresql-dev bash
+RUN apk --update add build-base postgresql-dev bash libxml2 libxml2-dev libxslt-dev
 ADD . /code
 WORKDIR /code
 
