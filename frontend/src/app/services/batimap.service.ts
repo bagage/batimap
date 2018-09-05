@@ -14,11 +14,11 @@ import {map} from 'rxjs/operators';
 export class BatimapService {
 
   private URL_CITY_DATA(insee: string): string {
-    return environment.serverUrl + 'josm/' + insee;
+    return environment.backendServerUrl + 'josm/' + insee;
   }
 
   private URL_CITIES_BBOX(lonNW: number, latNW: number, lonSE: number, latSE: number) {
-    return environment.serverUrl + `cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
+    return environment.backendServerUrl + `cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
   }
 
   constructor(private http: HttpClient) {

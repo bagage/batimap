@@ -1,4 +1,5 @@
 import {Component, NgZone} from '@angular/core';
+import {environment} from '../../../environments/environment';
 import * as L from 'leaflet';
 import {latLng, tileLayer} from 'leaflet';
 import {MatDialog} from '@angular/material';
@@ -74,7 +75,6 @@ export class MapComponent {
   }
 
   setupVectorTiles(map) {
-    const cadastreURL = 'http://localhost:9999/maps/batimap/{z}/{x}/{y}.vector.pbf';
     const vectorTileOptions = {
       // rendererFactory: canvas.tile,
       maxZoom: 20,
@@ -90,7 +90,7 @@ export class MapComponent {
       }
     };
 
-    const cadastreLayer = L.vectorGrid.protobuf(cadastreURL, vectorTileOptions);
+    const cadastreLayer = L.vectorGrid.protobuf(environment.tilesServerUrl, vectorTileOptions);
     cadastreLayer.on('click', (e) => {
       this.zone.run(() => {
         this.openPopup(e);
