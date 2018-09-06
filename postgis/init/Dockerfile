@@ -13,4 +13,6 @@ ENV POSTGRES_ADDRESS=localhost
 ENV POSTGRES_PORT=5432
 ENV POSTGRES_DB=gis
 
-ENTRYPOINT "/import_from_geofabrik.sh"
+ENV REGIONS=""
+
+ENTRYPOINT "/import_from_geofabrik.sh ${REGIONS}"
