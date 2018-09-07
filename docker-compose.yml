@@ -14,6 +14,22 @@ services:
       fixed_network:
         ipv4_address: 10.5.0.10
 
+  postgis-init:
+    build: postgis/init
+    environment:
+    - POSTGRES_PASSWORD=batimap
+    - POSTGRES_USER=docker
+    - POSTGRES_DB=gis
+    - POSTGRES_ADDRESS=10.5.0.10
+    - REGIONS=france/alsace-latest
+    depends_on:
+    - postgis
+    volumes:
+    - ./postgis-init:/tmp/batimap-init
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.250
+
   tiles:
     build: tiles
     command: bash /wait-for-it.sh 10.5.0.10:5432 -- tegola -config /root/config.toml
@@ -26,6 +42,7 @@ services:
     networks:
       fixed_network:
         ipv4_address: 10.5.0.11
+
   backend:
     build: backend
     environment:
@@ -40,6 +57,7 @@ services:
     networks:
       fixed_network:
         ipv4_address: 10.5.0.12
+
   frontend:
     build: frontend
     ports:

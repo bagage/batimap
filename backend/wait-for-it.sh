@@ -171,7 +171,7 @@ if [[ $CLI != "" ]]; then
         echoerr "$cmdname: strict mode, refusing to execute subprocess"
         exit $RESULT
     fi
-    exec "${CLI[@]}"
+    eval "${CLI[@]}"
 else
     exit $RESULT
 fi
