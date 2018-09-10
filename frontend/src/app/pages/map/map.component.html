@@ -1,8 +1,10 @@
 <div
-     style="height: 500px;"
      leaflet
-     (leafletMapReady)="onMapReady($event); list.map = $event"
+     (leafletMapReady)="onMapReady($event); legend.map = $event"
      [leafletOptions]="options">
 </div>
 
-<app-cities-list #list></app-cities-list>
+<app-map-date-legend #legend></app-map-date-legend>
+
+<!--disable list for now, not ideal flow yet-->
+<app-cities-list #list *ngIf="false"></app-cities-list>

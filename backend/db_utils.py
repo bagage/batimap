@@ -123,12 +123,10 @@ class Postgis(object):
                     ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), %(distance)s)
                 ORDER BY
                     ST_Distance(ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), p.way)
-                LIMIT 100
                """
 
         # we should fetch all cities within the view
         maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2) / 2
-        LOG.info(maxDistance)
         # instead if we zoomed out too much, we limit to maximum 110km
         # radius circle
         maxDistance = min(1., maxDistance)
@@ -148,6 +146,49 @@ class Postgis(object):
                 'date': row[2],
                 'details': row[3]
             })
+        return results
+
+    def get_legend_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
+
+        req = """
+                SELECT
+                    c.date,
+                    count(c.date)
+                FROM
+                    planet_osm_polygon p,
+                    city_stats c
+                WHERE
+                    p.admin_level = '8'
+                AND
+                    c.insee = p."ref:INSEE"
+                AND
+                    ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), %(distance)s)
+                GROUP BY
+                    c.date
+               """
+
+        # we should fetch all cities within the view
+        maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2) / 2
+
+        args = {
+            'distance': maxDistance,
+            'lon': (lonNW + lonSE) / 2.,
+            'lat': (latNW + latSE) / 2.,
+        }
+        self.cursor.execute(req, args)
+
+        results = []
+        total = 0
+        for row in self.cursor.fetchall():
+            if row[1] > 0:
+                results.append({
+                    'name': row[0],
+                    'count': row[1],
+                })
+                total += row[1]
+        for r in results:
+            r["percent"] = round(r["count"] * 100.0 / total, 2)
+
         return results
 
     def get_department_colors(self, department):

@@ -1,0 +1,5 @@
+<ng-container *ngFor="let item of legendItems">
+  <mat-checkbox [id]="'legend' + item.name" [(ngModel)]="item.checked" (change)="legendChanges(item)" [ngStyle]="{'color': legendService.date2color(item.name)}">
+    {{item.name}} ({{item.percent}}%)
+  </mat-checkbox>
+</ng-container>
