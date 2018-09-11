@@ -46,12 +46,26 @@ done
 echo "Persisting in db…"
 test -f boundaries.osm.pbf || osmium merge *_boundaries.osm.pbf -o boundaries.osm.pbf
 test -f buildings.osm.pbf || osmium merge *_buildings.osm.pbf -o buildings.osm.pbf
-PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_ADDRESS -U $POSTGRES_USER -P $POSTGRES_PORT \
+
+echo "Waiting for postgis to be available..."
+while :
+do
+    pg_isready -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB
+    result=$?
+    if [[ $result -eq 0 ]]; then
+        echo "$cmdname: postgis is available"
+        break
+    fi
+    sleep 5
+done
+
+PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
     --verbose --proj 4326 --database $POSTGRES_DB boundaries.osm.pbf \
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
-PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_ADDRESS -U $POSTGRES_USER -P $POSTGRES_PORT \
+PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
     --verbose --proj 4326 --database $POSTGRES_DB --prefix buildings_osm buildings.osm.pbf \
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
+
 rm osm2pgsql.flatnodes
 
 echo "Imports done!"

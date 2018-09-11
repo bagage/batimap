@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#   Use this script to test if a given TCP host/port are available
 
 cmdname=$(basename $0)
 
@@ -9,14 +8,12 @@ usage()
 {
     cat << USAGE >&2
 Usage:
-    $cmdname host:port [-s] [-t timeout] [-- command args]
+    $cmdname host:port [-s] [-- command args]
     -h HOST | --host=HOST       Host or IP under test
     -p PORT | --port=PORT       TCP port under test
                                 Alternatively, you specify the host and port as host:port
     -s | --strict               Only execute subcommand if the test succeeds
     -q | --quiet                Don't output any status messages
-    -t TIMEOUT | --timeout=TIMEOUT
-                                Timeout in seconds, zero for no timeout
     -- COMMAND ARGS             Execute command with args after the test finishes
 USAGE
     exit 1
@@ -24,47 +21,23 @@ USAGE
 
 wait_for()
 {
-    if [[ $TIMEOUT -gt 0 ]]; then
-        echoerr "$cmdname: waiting $TIMEOUT seconds for $HOST:$PORT"
-    else
-        echoerr "$cmdname: waiting for $HOST:$PORT without a timeout"
-    fi
+    echoerr "$cmdname: waiting for postgis to be initialized without a timeout"
+
     start_ts=$(date +%s)
     while :
     do
-        if [[ $ISBUSY -eq 1 ]]; then
-            nc -z $HOST $PORT
-            result=$?
-        else
-            (echo > /dev/tcp/$HOST/$PORT) >/dev/null 2>&1
-            result=$?
-        fi
+        count=`PGPASSWORD=$POSTGRES_PASSWD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "SELECT count(*) FROM city_stats"`
+        result=$?
         if [[ $result -eq 0 ]]; then
-            end_ts=$(date +%s)
-            echoerr "$cmdname: $HOST:$PORT is available after $((end_ts - start_ts)) seconds"
-            break
+            if [[ $count -gt 0 ]]; then
+                end_ts=$(date +%s)
+                echoerr "$cmdname: postgis is available after $((end_ts - start_ts)) seconds"
+                break
+            fi
         fi
-        sleep 1
+        sleep 5
     done
     return $result
-}
-
-wait_for_wrapper()
-{
-    # In order to support SIGINT during timeout: http://unix.stackexchange.com/a/57692
-    if [[ $QUIET -eq 1 ]]; then
-        timeout $BUSYTIMEFLAG $TIMEOUT $0 --quiet --child --host=$HOST --port=$PORT --timeout=$TIMEOUT &
-    else
-        timeout $BUSYTIMEFLAG $TIMEOUT $0 --child --host=$HOST --port=$PORT --timeout=$TIMEOUT &
-    fi
-    PID=$!
-    trap "kill -INT -$PID" INT
-    wait $PID
-    RESULT=$?
-    if [[ $RESULT -ne 0 ]]; then
-        echoerr "$cmdname: timeout occurred after waiting $TIMEOUT seconds for $HOST:$PORT"
-    fi
-    return $RESULT
 }
 
 # process arguments
@@ -73,12 +46,8 @@ do
     case "$1" in
         *:* )
         hostport=(${1//:/ })
-        HOST=${hostport[0]}
-        PORT=${hostport[1]}
-        shift 1
-        ;;
-        --child)
-        CHILD=1
+        POSTGRES_HOST=${hostport[0]}
+        POSTGRES_PORT=${hostport[1]}
         shift 1
         ;;
         -q | --quiet)
@@ -90,30 +59,33 @@ do
         shift 1
         ;;
         -h)
-        HOST="$2"
-        if [[ $HOST == "" ]]; then break; fi
+        POSTGRES_HOST="$2"
+        if [[ $POSTGRES_HOST == "" ]]; then break; fi
         shift 2
         ;;
         --host=*)
-        HOST="${1#*=}"
+        POSTGRES_HOST="${1#*=}"
         shift 1
         ;;
         -p)
-        PORT="$2"
-        if [[ $PORT == "" ]]; then break; fi
+        POSTGRES_PORT="$2"
+        if [[ $POSTGRES_PORT == "" ]]; then break; fi
         shift 2
         ;;
         --port=*)
-        PORT="${1#*=}"
+        POSTGRES_PORT="${1#*=}"
         shift 1
         ;;
-        -t)
-        TIMEOUT="$2"
-        if [[ $TIMEOUT == "" ]]; then break; fi
-        shift 2
+        --user=*)
+        POSTGRES_USER="${1#*=}"
+        shift 1
         ;;
-        --timeout=*)
-        TIMEOUT="${1#*=}"
+        --password=*)
+        POSTGRES_PASSWD="${1#*=}"
+        shift 1
+        ;;
+        --db=*)
+        POSTGRES_DB="${1#*=}"
         shift 1
         ;;
         --)
@@ -131,47 +103,23 @@ do
     esac
 done
 
-if [[ "$HOST" == "" || "$PORT" == "" ]]; then
+if [[ "$POSTGRES_HOST" == "" || "$POSTGRES_PORT" == "" || "$POSTGRES_USER" == "" || "$POSTGRES_PASSWD" == "" || "$POSTGRES_DB" == "" ]]; then
     echoerr "Error: you need to provide a host and port to test."
     usage
 fi
 
-TIMEOUT=${TIMEOUT:-15}
 STRICT=${STRICT:-0}
-CHILD=${CHILD:-0}
 QUIET=${QUIET:-0}
 
-# check to see if timeout is from busybox?
-# check to see if timeout is from busybox?
-TIMEOUT_PATH=$(realpath $(which timeout))
-if [[ $TIMEOUT_PATH =~ "busybox" ]]; then
-        ISBUSY=1
-        BUSYTIMEFLAG="-t"
-else
-        ISBUSY=0
-        BUSYTIMEFLAG=""
-fi
-
-if [[ $CHILD -gt 0 ]]; then
-    wait_for
-    RESULT=$?
-    exit $RESULT
-else
-    if [[ $TIMEOUT -gt 0 ]]; then
-        wait_for_wrapper
-        RESULT=$?
-    else
-        wait_for
-        RESULT=$?
-    fi
-fi
+wait_for
+RESULT=$?
 
 if [[ $CLI != "" ]]; then
     if [[ $RESULT -ne 0 && $STRICT -eq 1 ]]; then
         echoerr "$cmdname: strict mode, refusing to execute subprocess"
         exit $RESULT
     fi
-    exec "${CLI[@]}"
+    eval "${CLI[@]}"
 else
     exit $RESULT
 fi
