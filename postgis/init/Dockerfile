@@ -15,4 +15,4 @@ ENV POSTGRES_DB=gis
 
 ENV REGIONS=""
 
-ENTRYPOINT "/import_from_geofabrik.sh ${REGIONS}"
+ENTRYPOINT ["bash", "-c", "/import_from_geofabrik.sh $REGIONS"]
