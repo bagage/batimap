@@ -32,7 +32,7 @@ services:
 
   tiles:
     build: tiles
-    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- tegola -config /root/config.toml
+    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- tegola --config /root/config.toml serve
     ports:
     - "9999:9999"
     volumes:
