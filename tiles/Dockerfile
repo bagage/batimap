@@ -8,4 +8,6 @@ ADD config.toml /root
 
 COPY wait-for-it.sh /
 
-CMD tegola_linux_amd64 -config /root/config.toml
+ENV CONFIG=/root/config.toml
+
+CMD tegola -config $CONFIG

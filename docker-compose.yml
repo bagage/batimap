@@ -20,8 +20,8 @@ services:
     - POSTGRES_PASSWORD=batimap
     - POSTGRES_USER=docker
     - POSTGRES_DB=gis
-    - POSTGRES_ADDRESS=10.5.0.10
-    - REGIONS=france/alsace-latest
+    - POSTGRES_HOST=10.5.0.10
+    # - REGIONS=france/alsace-latest
     depends_on:
     - postgis
     volumes:
@@ -32,7 +32,7 @@ services:
 
   tiles:
     build: tiles
-    command: bash /wait-for-it.sh 10.5.0.10:5432 -- tegola -config /root/config.toml
+    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- tegola -config /root/config.toml
     ports:
     - "9999:9999"
     volumes:
@@ -47,7 +47,7 @@ services:
     build: backend
     environment:
     - FLASK_APP=app.py
-    command: bash /wait-for-it.sh 10.5.0.10:5432 -- flask run -h 0.0.0.0
+    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- flask initdb && flask run -h 0.0.0.0
     ports:
     - "5000:5000"
     volumes:
