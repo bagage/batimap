@@ -14,6 +14,7 @@ from flask_restful import inputs
 from flask_cors import CORS
 
 from batimap import batimap
+from batimap.city import City
 from batimap.overpassw import Overpass
 from db_utils import Postgis
 
@@ -92,6 +93,12 @@ def api_color(lonNW, latNW, lonSE, latSE) -> dict:
     return geojson.dumps(cities)
 
 
+@app.route('/legend/<lonNW>/<latNW>/<lonSE>/<latSE>', methods=['GET'])
+def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
+    return jsonify(db.get_legend_in_bbox(
+        float(lonNW), float(latNW), float(lonSE), float(latSE)))
+
+
 @app.route('/update/<insee>', methods=['POST'])
 def api_update_insee_list(insee) -> dict:
     (_, date, _) = next(batimap.stats(db, op, cities=[insee], force=True))
@@ -105,6 +112,7 @@ def api_update_insee_list(insee) -> dict:
 
 @app.route('/josm/<insee>', methods=['GET'])
 def api_josm_data(insee) -> dict:
+    batimap.fetch_cadastre_data(City(db, insee))
     return jsonify(batimap.josm_data(db, insee))
 
 

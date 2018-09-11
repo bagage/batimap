@@ -1,11 +1,13 @@
-import {Component, NgZone} from '@angular/core';
+import {Component, NgZone, ViewChild} from '@angular/core';
 import {environment} from '../../../environments/environment';
 import * as L from 'leaflet';
 import {latLng, tileLayer} from 'leaflet';
 import {MatDialog} from '@angular/material';
 import {CityDetailsDialogComponent} from '../city-details-dialog/city-details-dialog.component';
 import {CityDTO} from '../../classes/city.dto';
-import {deserialize, plainToClass} from 'class-transformer';
+import {plainToClass} from 'class-transformer';
+import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-legend.component';
+import {LegendService} from '../../services/legend.service';
 
 @Component({
   selector: 'app-map',
@@ -13,6 +15,7 @@ import {deserialize, plainToClass} from 'class-transformer';
   styleUrls: ['./map.component.css']
 })
 export class MapComponent {
+  @ViewChild(MapDateLegendComponent) legend: MapDateLegendComponent;
 
   options = {
     layers: [
@@ -27,7 +30,7 @@ export class MapComponent {
   };
   map: any;
 
-  constructor(private matDialog: MatDialog, private zone: NgZone) {
+  constructor(private matDialog: MatDialog, private zone: NgZone, private legendService: LegendService) {
   }
 
   onMapReady(map) {
@@ -36,34 +39,11 @@ export class MapComponent {
     this.setupVectorTiles(map);
   }
 
-  date2color(yearStr: string): string {
-    const currentYear = new Date().getFullYear();
-    if (Number.isInteger(+yearStr)) {
-      const year = Number.parseInt(yearStr, 10);
-      if (year === currentYear) {
-        return 'green';
-      } else if (year === currentYear - 1) {
-        return 'orange';
-      } else {
-        return 'red';
-      }
-    } else if (yearStr === 'raster') {
-      return 'black';
-    } else if (yearStr === 'never') {
-      return 'pink';
-    } else {
-      // unknown
-      return 'gray';
-    }
-  }
-
   stylingFunction(properties, zoom, type): any {
-    const color = this.date2color(properties.date);
-    // const color_input = $('input[type=checkbox]#color-' + color.replace('#', ''));
-    // if (color_input.length == 1 && color_input[0].checked !== true) {
-    //     // console.log(color, "is unchecked, do not render");
-    //     return []; //do not render it
-    // }
+    const color = this.legendService.date2color(properties.date);
+    if (!this.legendService.isActive(properties.date)) {
+      return [];
+    }
     return {
       weight: 2,
       color: color,
@@ -97,10 +77,12 @@ export class MapComponent {
       });
     });
     cadastreLayer.addTo(map);
+
+    this.legend.cadastreLayer = cadastreLayer;
   }
 
   openPopup($event) {
     const city = plainToClass<CityDTO, object>(CityDTO, $event.layer.properties);
-    const dialog = this.matDialog.open(CityDetailsDialogComponent, {data: city});
+    this.matDialog.open(CityDetailsDialogComponent, {data: city});
   }
 }

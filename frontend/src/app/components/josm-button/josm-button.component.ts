@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 import {CityDTO} from '../../classes/city.dto';
 import {JosmService} from '../../services/josm.service';
 
@@ -12,9 +12,16 @@ export class JosmButtonComponent {
   @Input() city: CityDTO;
   @Input() josmReady: boolean;
 
-  constructor(private josmService: JosmService) { }
+  isLoading = false;
+
+  constructor(private josmService: JosmService, private changeDetector: ChangeDetectorRef) {
+  }
 
   conflateCity() {
-    this.josmService.conflateCity(this.city);
+    this.isLoading = true;
+    this.josmService.conflateCity(this.city).subscribe(null, null, () => {
+      this.isLoading = false;
+      this.changeDetector.detectChanges();
+    });
   }
 }

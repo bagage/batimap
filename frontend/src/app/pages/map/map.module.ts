@@ -9,6 +9,7 @@ import 'leaflet.restoreview';
 import {MatLibModule} from '../mat-lib.module';
 import {CityDetailsDialogModule} from '../city-details-dialog/city-details-dialog.module';
 import {CommonModule} from '@angular/common';
+import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-legend.component';
 
 @NgModule({
   imports: [
@@ -18,7 +19,7 @@ import {CommonModule} from '@angular/common';
     CitiesListModule,
     CityDetailsDialogModule
   ],
-  declarations: [MapComponent],
+  declarations: [MapComponent, MapDateLegendComponent],
 })
 export class MapModule {
 }

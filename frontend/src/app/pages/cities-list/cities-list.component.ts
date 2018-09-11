@@ -36,7 +36,6 @@ export class CitiesListComponent implements OnInit {
   private refreshDataSource() {
     this.isReady = false;
     this.batimapService.citiesInBbox(this.map.getBounds()).subscribe((cities: CityDTO[]) => {
-      console.log('new result is', cities.length);
       this.dataSource.data = null;
       this.dataSource.data = cities;
       this.isReady = true;
