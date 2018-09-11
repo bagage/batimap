@@ -1,6 +1,6 @@
 FROM debian
 RUN apt update && \
-    apt install -y curl jq unzip && \
+    apt install -y curl jq unzip postgresql-client && \
     apt autoremove && apt clean
 
 ARG VERSION="latest"
