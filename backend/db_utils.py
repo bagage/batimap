@@ -411,14 +411,16 @@ class Postgis(object):
         for department in departments:
             query = """
                 with cities as (
-                    select "ref:INSEE" as insee, name, way
-                    from planet_osm_polygon
-                    where "ref:INSEE" like %s || '%%' and admin_level = '8'
+                    select insee, p.name, way, is_raster
+                    from planet_osm_polygon p, city_stats
+                    where "ref:INSEE" like %s || '%%'
+                    and admin_level = '8'
+                    and "ref:INSEE" = insee
                 )
-                select c.insee, c.name, p.source, count(p.*)
+                select c.insee, c.name, p.source, count(p.*), c.is_raster
                 from cities c, buildings_osm_polygon p
                 where p.building is not null and ST_Contains(c.way, p.way)
-                group by c.insee, c.name, p.source
+                group by c.insee, c.name, p.source, c.is_raster
                 order by insee
             """
             # fixme: search in planet_osm_point and planet_osm_line too!
@@ -430,7 +432,13 @@ class Postgis(object):
 
             buildings_count = {}
             insee_name = {}
-            for (insee, name, source, count) in self.cursor.fetchall():
+            for (insee, name, source, count, is_raster) in self.cursor.fetchall():
+                if is_raster:
+                    insee_name[insee] = name
+                    buildings_count[insee] = {}
+                    buildings_count[insee]['raster'] = 1
+                    continue
+
                 date = re.sub(cadastre_src2date_regex, r'\2', (source or 'unknown').lower())
                 if not buildings_count.get(insee):
                     buildings_count[insee] = {}
@@ -439,7 +447,7 @@ class Postgis(object):
 
             tuples = []
             for insee, counts in buildings_count.items():
-                date_match = re.compile(r'^(\d{4})$').match(max(counts.items(), key=operator.itemgetter(1))[0])
+                date_match = re.compile(r'^(\d{4}|raster)$').match(max(counts.items(), key=operator.itemgetter(1))[0])
                 date = date_match.groups()[0] if date_match and date_match.groups() else 'unknown'
                 tuples.append((insee, insee_name[insee], date, json.dumps({'dates': counts})))
             self.update_stats_for_insee(tuples)
