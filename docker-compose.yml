@@ -16,7 +16,7 @@ services:
 
   tiles:
     build: tiles
-    command: bash /wait-for-it.sh 10.5.0.10:5432 -- tegola -config /root/config.toml
+    command: bash /wait-for-it.sh 10.5.0.10:5432 -- tegola --config /root/config.toml serve
     ports:
     - "9999:9999"
     volumes:
