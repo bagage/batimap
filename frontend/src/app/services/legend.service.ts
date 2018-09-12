@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {LegendDTO} from '../classes/legend.dto';
-// import {palette} from 'palette';
+import * as palette from 'google-palette';
 
 @Injectable({
   providedIn: 'root'
@@ -28,9 +28,8 @@ export class LegendService {
       } else if (year >= oldestYear) {
         /*last color is black and we do not want to use it for this because it represents raster cities*/
         const colorsCount = currentYear - oldestYear + 1;
-        // const colors: string[] = palette('tol-sq', colorsCount).map(it => '#' + it);
-        // return colors[currentYear - year];
-        return 'red'
+        const colors: string[] = palette('tol-sq', colorsCount).map(it => '#' + it);
+        return colors[currentYear - year];
       }
     } else if (yearStr === 'raster') {
       return 'black';
