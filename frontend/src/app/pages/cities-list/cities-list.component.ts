@@ -4,6 +4,7 @@ import {BatimapService} from '../../services/batimap.service';
 import {CityDTO} from '../../classes/city.dto';
 import {JosmService} from '../../services/josm.service';
 import {Observable} from 'rxjs';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-cities-list',
@@ -11,7 +12,7 @@ import {Observable} from 'rxjs';
   styleUrls: ['./cities-list.component.css']
 })
 export class CitiesListComponent implements OnInit {
-  @Input() map: any;
+  @Input() map: L.Map;
 
   displayedColumns: string[] = ['name', 'insee', 'date', 'details', 'actions'];
   dataSource = new MatTableDataSource<CityDTO>();

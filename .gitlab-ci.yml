@@ -1,0 +1,21 @@
+image: node:8
+stages:
+  - test
+
+before_script:
+  - yarn config set cache-folder cache-ci
+
+cache:
+  untracked: true
+  paths:
+    - cache-ci/
+
+test:
+  stage: test
+  before_script:
+    - apt-get update && apt-get install -yy chromium --no-install-recommends && apt-get clean
+    - export CHROME_BIN=/usr/bin/chromium
+    - cd frontend/
+    - yarn
+  script:
+    - yarn test --karma-config src/karma-ci.conf.js

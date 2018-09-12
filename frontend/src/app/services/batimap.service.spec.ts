@@ -1,11 +1,13 @@
 import { TestBed, inject } from '@angular/core/testing';
 
 import { BatimapService } from './batimap.service';
+import {HttpClientTestingModule} from '../../../node_modules/@angular/common/http/testing';
 
 describe('BatimapService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [BatimapService]
+      providers: [BatimapService],
+      imports: [HttpClientTestingModule]
     });
   });
 

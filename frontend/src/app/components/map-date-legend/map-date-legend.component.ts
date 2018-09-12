@@ -1,8 +1,8 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, NgZone, OnInit} from '@angular/core';
+import {Component, Input, NgZone, OnInit} from '@angular/core';
 import {BatimapService} from '../../services/batimap.service';
-import {Observable} from 'rxjs';
 import {LegendDTO} from '../../classes/legend.dto';
 import {LegendService} from '../../services/legend.service';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-map-date-legend',
@@ -10,7 +10,7 @@ import {LegendService} from '../../services/legend.service';
   styleUrls: ['./map-date-legend.component.css']
 })
 export class MapDateLegendComponent implements OnInit {
-  @Input() map;
+  @Input() map: L.Map;
   @Input() cadastreLayer;
 
   legendItems: LegendDTO[] = [];
