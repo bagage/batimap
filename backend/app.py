@@ -118,16 +118,17 @@ def api_josm_data(insee) -> dict:
 
 # CLI
 @app.cli.command('initdb')
-def initdb_command():
+@click.argument('departments', nargs=-1)
+def initdb_command(departments):
     """
     Creates required tables in PostgreSQL server.
     """
     db.create_tables()
 
     # fill table with cities from cadastre website
-    batimap.update_departments_raster_state(db, all_departments)
+    batimap.update_departments_raster_state(db, departments or all_departments)
 
-    db.import_city_stats_from_osmplanet(all_departments)
+    db.import_city_stats_from_osmplanet(departments or all_departments)
 
 
 @app.cli.command('stats')
