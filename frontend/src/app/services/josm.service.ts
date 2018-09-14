@@ -63,7 +63,7 @@ export class JosmService {
     return this.batimapService.cityData(city.insee)
       .pipe(flatMap(dto => this.JOSM_URL_IMAGERY('BDOrtho IGN', 'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg')
         .pipe(flatMap(() => this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false)
-          .pipe(flatMap(() => this.JOSM_URL_OPEN_FILE(dto.segmententationPredictionssUrl, true)
+          .pipe(flatMap(() => this.JOSM_URL_OPEN_FILE(dto.segmententationPredictionssUrl, false/*cannot be locked otherwise todo plugin wont work*/)
             .pipe(flatMap(() => this.JOSM_URL_OSM_DATA_FOR_BBOX(`Données OSM pour ${city.insee} - ${city.name}`,
               dto.bbox[0].toString(),
               dto.bbox[1].toString(),
