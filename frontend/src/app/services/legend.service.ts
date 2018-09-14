@@ -7,11 +7,17 @@ import * as palette from 'google-palette';
 })
 export class LegendService {
   public isActive(legend: LegendDTO | string): boolean {
+    if (!legend) {
+      console.warn('legend is null!!!');
+      return true;
+    }
     return 'true' === this.getLocalStorage(typeof legend === 'string' ? legend : legend.name);
   }
 
   public setActive(legend: LegendDTO, isActive: boolean) {
-    return localStorage.setItem(legend.name, isActive ? 'true' : null);
+    if (legend) {
+      localStorage.setItem(legend.name, isActive ? 'true' : null);
+    }
   }
 
   public getLocalStorage(key: string) {
