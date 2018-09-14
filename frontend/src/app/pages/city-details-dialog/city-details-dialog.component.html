@@ -7,10 +7,10 @@
     <h4>Détails</h4>
 
     <h5># Bâtiments par date</h5>
-    {{city.details.dates | json}}
+    {{city.details | json}}
   </div>
 </mat-dialog-content>
-<mat-dialog-actions>
+<mat-dialog-actions class="row-wrapper">
   <button mat-raised-button color="warn" cdkFocusInitial mat-dialog-close>Fermer</button>
   <button mat-raised-button color="primary">Raffraichir</button>
   <app-josm-button [city]="city" [josmReady]="josmIsStarted | async"></app-josm-button>
