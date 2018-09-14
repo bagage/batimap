@@ -10,6 +10,7 @@ import logging
 from geojson import Feature, FeatureCollection, loads
 import re
 import operator
+from collections import defaultdict
 
 from batimap.bbox import Bbox
 
@@ -392,13 +393,14 @@ class Postgis(object):
 
     def insert_stats_for_insee(self, tuples):
         req = """
-                INSERT INTO city_stats(insee, department, name, name_cadastre, is_raster)
+                INSERT INTO city_stats(insee, department, name, name_cadastre, is_raster, date)
                 VALUES %s
                 ON CONFLICT (insee) DO
                 UPDATE SET
                     department = excluded.department,
                     name_cadastre = excluded.name_cadastre,
-                    is_raster = excluded.is_raster
+                    is_raster = excluded.is_raster,
+                    date = excluded.date
         """
         try:
             psycopg2.extras.execute_values(
@@ -409,6 +411,7 @@ class Postgis(object):
 
     def import_city_stats_from_osmplanet(self, departments):
         for department in departments:
+            LOG.debug(f"Import buildings from db for department {department}…")
             query = """
                 with cities as (
                     select insee, p.name, way, is_raster
@@ -425,7 +428,6 @@ class Postgis(object):
             """
             # fixme: search in planet_osm_point and planet_osm_line too!
 
-            LOG.debug(f"Import buildings from db for department {department}…")
             self.cursor.execute(query, [department.zfill(2)])
 
             cadastre_src2date_regex = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
@@ -441,9 +443,9 @@ class Postgis(object):
 
                 date = re.sub(cadastre_src2date_regex, r'\2', (source or 'unknown').lower())
                 if not buildings_count.get(insee):
-                    buildings_count[insee] = {}
+                    buildings_count[insee] = defaultdict(lambda: 0, {})
                 insee_name[insee] = name
-                buildings_count[insee][date] = count
+                buildings_count[insee][date] += count
 
             tuples = []
             for insee, counts in buildings_count.items():

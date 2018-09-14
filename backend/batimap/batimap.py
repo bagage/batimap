@@ -71,7 +71,7 @@ def update_departments_raster_state(db, departments):
                 LOG.critical(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
                 continue
 
-            tuples.append((insee, dept, name, f"{code_commune}-{nom_commune}", is_raster))
+            tuples.append((insee, dept, name, f"{code_commune}-{nom_commune}", is_raster, 'raster' if is_raster else None))
         db.insert_stats_for_insee(tuples)
 
 
