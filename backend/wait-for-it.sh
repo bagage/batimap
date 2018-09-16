@@ -26,7 +26,7 @@ wait_for()
     start_ts=$(date +%s)
     while :
     do
-        count=`PGPASSWORD=$POSTGRES_PASSWD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "SELECT count(*) FROM planet_osm_polygon"`
+        count=`PGPASSWORD=$POSTGRES_PASSWD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "SELECT count(*) FROM planet_osm_polygon" 2>/dev/null`
         result=$?
         if [[ $result -eq 0 ]]; then
             if [[ $count -gt 0 ]]; then
