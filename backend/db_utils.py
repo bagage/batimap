@@ -410,10 +410,8 @@ class Postgis(object):
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
 
-    def import_city_stats_from_osmplanet(self, departments):
-        for department in departments:
-            LOG.debug(f"Import buildings from db for department {department}…")
-            query = """
+    def fetch_buildings_stats(self, table, department, buildings_count, insee_name):
+            query = f"""
                 with cities as (
                     select insee, p.name, way, is_raster
                     from planet_osm_polygon p, city_stats
@@ -422,7 +420,7 @@ class Postgis(object):
                     and "ref:INSEE" = insee
                 )
                 select c.insee, c.name, p.source, count(p.*), c.is_raster
-                from cities c, buildings_osm_polygon p
+                from cities c, {table} p
                 where p.building is not null and ST_Contains(c.way, p.way)
                 group by c.insee, c.name, p.source, c.is_raster
                 order by insee
@@ -432,9 +430,6 @@ class Postgis(object):
             self.cursor.execute(query, [department.zfill(2)])
 
             cadastre_src2date_regex = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
-
-            buildings_count = {}
-            insee_name = {}
             for (insee, name, source, count, is_raster) in self.cursor.fetchall():
                 if is_raster:
                     insee_name[insee] = name
@@ -447,6 +442,16 @@ class Postgis(object):
                     buildings_count[insee] = defaultdict(lambda: 0, {})
                 insee_name[insee] = name
                 buildings_count[insee][date] += count
+
+    def import_city_stats_from_osmplanet(self, departments):
+        for department in departments:
+            LOG.debug(f"Import buildings from db for department {department}…")
+
+            buildings_count = {}
+            insee_name = {}
+
+            for table in ['polygon', 'point', 'line']:
+                self.fetch_buildings_stats(f'buildings_osm_{table}', department, buildings_count, insee_name)
 
             tuples = []
             for insee, counts in buildings_count.items():
