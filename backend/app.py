@@ -5,16 +5,18 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import click
-import geojson
 import itertools
 import logging
 
-from flask import Flask, jsonify, request
+from flask import Flask, request
 from flask_restful import inputs
 from flask_cors import CORS
 
+import json
+
 from batimap import batimap
 from batimap.city import City
+from citydto import CityEncoder, CityDTO
 from batimap.overpassw import Overpass
 from db_utils import Postgis
 
@@ -56,13 +58,13 @@ all_departments = [str(x).zfill(2) for x in itertools.chain(
 
 @app.route('/status', methods=['GET'])
 def api_status() -> dict:
-    return jsonify(db.get_dates_count())
+    return json.dumps(db.get_dates_count())
 
 
 @app.route('/status/<department>', methods=['GET'])
 def api_department_status(department) -> str:
-    return jsonify([{x[0].insee: x[1]} for x in
-                    batimap.stats(db, op, department=department, force=request.args.get('force', False))])
+    return json.dumps([{x[0].insee: x[1]} for x in
+                      batimap.stats(db, op, department=department, force=request.args.get('force', False))])
 
 
 @app.route('/status/<department>/<city>', methods=['GET'])
@@ -71,49 +73,50 @@ def api_city_status(department, city) -> str:
                                       op,
                                       cities=[city],
                                       force=request.args.get('force', default=False, type=inputs.boolean)):
-        return jsonify({city.insee: date})
+        return json.dumps({city.insee: date})
     return ''
 
 
 @app.route('/status/by_date/<date>')
 def api_cities_for_date(date) -> str:
-    return jsonify(db.get_cities_for_date(date))
+    return json.dumps(db.get_cities_for_date(date))
 
 
 @app.route('/insee/<insee>', methods=['GET'])
 def api_insee(insee) -> dict:
     color_city = db.get_insee(insee)
-    return geojson.dumps(color_city)
+    return json.dumps(color_city)
 
 
 @app.route('/cities/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>', methods=['GET'])
 def api_color(lonNW, latNW, lonSE, latSE) -> dict:
     cities = db.get_cities_in_bbox(
         float(lonNW), float(latNW), float(lonSE), float(latSE))
-    return geojson.dumps(cities)
+    return json.dumps(cities, cls=CityEncoder)
 
 
 @app.route('/legend/<lonNW>/<latNW>/<lonSE>/<latSE>', methods=['GET'])
 def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
-    return jsonify(db.get_legend_in_bbox(
+    return json.dumps(db.get_legend_in_bbox(
         float(lonNW), float(latNW), float(lonSE), float(latSE)))
 
 
-@app.route('/update/<insee>', methods=['POST'])
+@app.route('/cities/<insee>/update', methods=['POST'])
 def api_update_insee_list(insee) -> dict:
-    (_, date, _) = next(batimap.stats(db, op, cities=[insee], force=True))
+    (city, date) = next(batimap.stats(db, op, cities=[insee], force=True))
+
     # TODO: only clear tiles if color was changed // return different status
     # codes
 
     # clear tiles for the zone
     db.clear_tiles(insee)
-    return jsonify(date)
+    return json.dumps(CityDTO(city, date), cls=CityEncoder)
 
 
-@app.route('/josm/<insee>', methods=['GET'])
+@app.route('/cities/<insee>/josm', methods=['GET'])
 def api_josm_data(insee) -> dict:
     batimap.fetch_cadastre_data(City(db, insee))
-    return jsonify(batimap.josm_data(db, insee))
+    return json.dumps(batimap.josm_data(db, insee))
 
 
 # CLI

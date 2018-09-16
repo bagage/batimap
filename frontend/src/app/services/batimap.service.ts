@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {environment} from '../../environments/environment';
 import {HttpClient} from '../../../node_modules/@angular/common/http';
-import {Observable, of, pipe} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {ConflateCityDTO} from '../classes/conflate-city.dto';
 import {CityDTO} from '../classes/city.dto';
 import {LatLngBounds} from 'leaflet';
@@ -16,7 +16,11 @@ import {LegendService} from './legend.service';
 export class BatimapService {
 
   private URL_CITY_DATA(insee: string): string {
-    return environment.backendServerUrl + 'josm/' + insee;
+    return environment.backendServerUrl + `cities/${insee}/josm`;
+  }
+
+  private URL_CITY_UPDATE(insee: string): string {
+    return environment.backendServerUrl + `cities/${insee}/update`;
   }
 
   private URL_CITIES_BBOX(lonNW: number, latNW: number, lonSE: number, latSE: number) {
@@ -50,5 +54,9 @@ export class BatimapService {
           }
           return of(legends);
         }));
+  }
+
+  public updateCity(insee: string): Observable<CityDTO> {
+    return this.http.post<CityDTO>(this.URL_CITY_UPDATE(insee), null);
   }
 }

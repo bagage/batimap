@@ -13,6 +13,7 @@ import operator
 from collections import defaultdict
 
 from batimap.bbox import Bbox
+from citydto import CityDTO
 
 LOG = logging.getLogger(__name__)
 
@@ -141,12 +142,12 @@ class Postgis(object):
 
         results = []
         for row in self.cursor.fetchall():
-            results.append({
-                'name': row[0],
-                'insee': row[1],
-                'date': row[2],
-                'details': row[3]
-            })
+            results.append(CityDTO(
+                row[0],
+                row[1],
+                row[2],
+                row[3])
+            )
         return results
 
     def get_legend_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):

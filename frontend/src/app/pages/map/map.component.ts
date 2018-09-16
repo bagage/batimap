@@ -28,7 +28,8 @@ export class MapComponent {
     zoom: 5,
     center: latLng(46.111, 3.977)
   };
-  map: any;
+  map: L.Map;
+  cadastreLayer: any;
 
   constructor(private matDialog: MatDialog, private zone: NgZone, private legendService: LegendService) {
   }
@@ -70,19 +71,19 @@ export class MapComponent {
       }
     };
 
-    const cadastreLayer = L.vectorGrid.protobuf(environment.tilesServerUrl, vectorTileOptions);
-    cadastreLayer.on('click', (e) => {
+    this.cadastreLayer = L.vectorGrid.protobuf(environment.tilesServerUrl, vectorTileOptions);
+    this.cadastreLayer.on('click', (e) => {
       this.zone.run(() => {
         this.openPopup(e);
       });
     });
-    cadastreLayer.addTo(map);
+    this.cadastreLayer.addTo(map);
 
-    this.legend.cadastreLayer = cadastreLayer;
+    this.legend.cadastreLayer = this.cadastreLayer;
   }
 
   openPopup($event) {
     const city = plainToClass<CityDTO, object>(CityDTO, $event.layer.properties);
-    this.matDialog.open(CityDetailsDialogComponent, {data: city});
+    this.matDialog.open(CityDetailsDialogComponent, {data: [city, this.cadastreLayer]});
   }
 }
