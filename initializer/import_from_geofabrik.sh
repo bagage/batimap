@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash -ex
+
+echo "Preparing postgre database..."
 
 if [ -z $POSTGRES_PASSWORD ]; then
     exit 1
