@@ -1,6 +1,11 @@
 [webserver]
 port = ":9999"
 
+[cache]
+type = "file"
+max_zoom = 17
+basepath = "/tmp/tegola-cache"
+
 # register data providers
 [[providers]]
 name = "cadastre"       # provider name is referenced from map layers
