@@ -193,6 +193,21 @@ class Postgis(object):
 
         return results
 
+    def get_departments(self):
+        req = """
+            SELECT
+                "ref:INSEE"
+            FROM
+                planet_osm_polygon
+            WHERE
+                admin_level = '6'
+            ORDER BY
+                "ref:INSEE"
+        """
+        self.cursor.execute(req)
+
+        return [x[0].strip() for x in self.cursor.fetchall()]
+
     def get_department_colors(self, department):
         req = """
             SELECT
@@ -444,8 +459,9 @@ class Postgis(object):
                 buildings_count[insee][date] += count
 
     def import_city_stats_from_osmplanet(self, departments):
+        LOG.info(f"Import buildings from db for departments {departments}…")
         for department in departments:
-            LOG.debug(f"Import buildings from db for department {department}…")
+            LOG.info(f"Import buildings from db for department {department}…")
 
             buildings_count = {}
             insee_name = {}

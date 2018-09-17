@@ -50,9 +50,6 @@ db = Postgis(
 
 op = Overpass(app.config['OVERPASS_URI'])
 
-all_departments = [str(x).zfill(2) for x in itertools.chain(
-    range(1, 20), ('2A', '2B'), range(21, 96), range(971, 977))]
-
 # ROUTES
 
 
@@ -129,9 +126,9 @@ def initdb_command(departments):
     db.create_tables()
 
     # fill table with cities from cadastre website
-    batimap.update_departments_raster_state(db, departments or all_departments)
+    batimap.update_departments_raster_state(db, departments or db.get_departments())
 
-    db.import_city_stats_from_osmplanet(departments or all_departments)
+    db.import_city_stats_from_osmplanet(departments or db.get_departments())
 
 
 @app.cli.command('stats')
@@ -148,7 +145,7 @@ def _get_city_stats(items, region, fast):
     If status is unknown, it is computed first.
     """
     if region == 'france':
-        d = all_departments
+        d = db.get_departments()
         c = None
     elif region == 'department':
         d = items
