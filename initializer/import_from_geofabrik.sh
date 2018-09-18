@@ -1,12 +1,22 @@
-#!/bin/bash -ex
+#!/bin/bash
 
-echo "Preparing postgre database..."
+echo "Preparing postgre database with regions: $@..."
 
-if [ -z $POSTGRES_PASSWORD ]; then
+if [ -z $POSTGRES_PASSWD ]; then
     exit 1
 fi
 if [ -z $POSTGRES_USER ]; then
     exit 1
+fi
+
+count=`PGPASSWORD=$POSTGRES_PASSWD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select count(*) from planet_osm_polygon where osm_id > 2" 2>/dev/null`
+result=$?
+if [[ $result -eq 0 ]]; then
+    if [[ $count -gt 0 ]]; then
+        # do not reimport if there is already something in database to avoid erasing it
+        echo "Database already ready, skipping!"
+        exit 0
+    fi
 fi
 
 SCRIPT_DIR=$(realpath $(dirname $0))
@@ -61,10 +71,10 @@ do
     sleep 5
 done
 
-PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
+PGPASSWORD=$POSTGRES_PASSWD osm2pgsql $option -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
     --verbose --proj 4326 --database $POSTGRES_DB boundaries.osm.pbf \
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
-PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
+PGPASSWORD=$POSTGRES_PASSWD osm2pgsql $option -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
     --verbose --proj 4326 --database $POSTGRES_DB --prefix buildings_osm buildings.osm.pbf \
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
 

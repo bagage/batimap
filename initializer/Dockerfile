@@ -4,8 +4,10 @@ RUN apt update && apt install --no-install-recommends -y axel postgresql postgre
 
 COPY import_from_geofabrik.sh /
 COPY osm2pgsql.style /
+COPY wait-for-it.sh /
 
 RUN chmod +x /import_from_geofabrik.sh
+
 
 ENV POSTGRES_ADDRESS=localhost
 ENV POSTGRES_PORT=5432
