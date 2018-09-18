@@ -206,7 +206,10 @@ class Postgis(object):
         """
         self.cursor.execute(req)
 
-        return [x[0].strip() for x in self.cursor.fetchall()]
+        # erase non digit characters, eg Lyon (69D) should be considered as department 69
+        depts = [''.join(y for y in x[0] if y.isdigit()) for x in self.cursor.fetchall()]
+        # avoid duplicates
+        return [x for i, x in enumerate(depts) if depts.index(x) == i]
 
     def get_department_colors(self, department):
         req = """
