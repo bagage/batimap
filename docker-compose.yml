@@ -14,18 +14,19 @@ services:
       fixed_network:
         ipv4_address: 10.5.0.10
 
-  postgis-init:
-    build: postgis/init
+  initializer:
+    build: initializer
     environment:
     - POSTGRES_PASSWORD=batimap
     - POSTGRES_USER=docker
     - POSTGRES_DB=gis
     - POSTGRES_HOST=10.5.0.10
-    # - REGIONS=france/alsace-latest
+    # - REGIONS=france/rhone-alpes-latest
+    entrypoint: bash /wait-for-it.sh -- /import_from_geofabrik.sh $$REGIONS
     depends_on:
     - postgis
     volumes:
-    - ./postgis-init:/tmp/batimap-init
+    - ./initializer/data:/tmp/batimap-init
     networks:
       fixed_network:
         ipv4_address: 10.5.0.250
@@ -46,8 +47,13 @@ services:
   backend:
     build: backend
     environment:
+    - POSTGRES_PASSWORD=batimap
+    - POSTGRES_USER=docker
+    - POSTGRES_DB=gis
+    - POSTGRES_HOST=10.5.0.10
+    - POSTGRES_PORT=5432
     - FLASK_APP=app.py
-    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- flask initdb && flask run -h 0.0.0.0
+    command: bash /wait-for-it.sh -- flask initdb && flask run -h 0.0.0.0
     ports:
     - "5000:5000"
     volumes:

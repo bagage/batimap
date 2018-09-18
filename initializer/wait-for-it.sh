@@ -26,7 +26,7 @@ wait_for()
     start_ts=$(date +%s)
     while :
     do
-        count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "\du"`
+        count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "\du" 2>/dev/null`
         result=$?
         if [[ $result -eq 0 ]]; then
             end_ts=$(date +%s)
