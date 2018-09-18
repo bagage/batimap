@@ -26,7 +26,7 @@ wait_for()
     start_ts=$(date +%s)
     while :
     do
-        count=`PGPASSWORD=$POSTGRES_PASSWD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "SELECT count(*) FROM buildings_osm_polygon WHERE osm_id > 2" 2>/dev/null`
+        count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "SELECT count(*) FROM buildings_osm_polygon WHERE osm_id > 2" 2>/dev/null`
         result=$?
         if [[ $result -eq 0 ]]; then
             if [[ $count -gt 0 ]]; then
@@ -81,7 +81,7 @@ do
         shift 1
         ;;
         --password=*)
-        POSTGRES_PASSWD="${1#*=}"
+        POSTGRES_PASSWORD="${1#*=}"
         shift 1
         ;;
         --db=*)
@@ -103,7 +103,7 @@ do
     esac
 done
 
-if [[ "$POSTGRES_HOST" == "" || "$POSTGRES_PORT" == "" || "$POSTGRES_USER" == "" || "$POSTGRES_PASSWD" == "" || "$POSTGRES_DB" == "" ]]; then
+if [[ "$POSTGRES_HOST" == "" || "$POSTGRES_PORT" == "" || "$POSTGRES_USER" == "" || "$POSTGRES_PASSWORD" == "" || "$POSTGRES_DB" == "" ]]; then
     echoerr "Error: you need to provide a host and port to test."
     usage
 fi
