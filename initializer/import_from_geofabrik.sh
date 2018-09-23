@@ -9,7 +9,7 @@ if [ -z $POSTGRES_USER ]; then
     exit 1
 fi
 
-count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select count(*) from planet_osm_polygon where osm_id > 2" 2>/dev/null`
+count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select count(*) from buildings_osm_polygon where osm_id > 0" 2>/dev/null`
 result=$?
 if [[ $result -eq 0 ]]; then
     if [[ $count -gt 0 ]]; then
@@ -18,6 +18,8 @@ if [[ $result -eq 0 ]]; then
         exit 0
     fi
 fi
+
+set -e
 
 SCRIPT_DIR=$(realpath $(dirname $0))
 WORK_DIR=/tmp/batimap-init
