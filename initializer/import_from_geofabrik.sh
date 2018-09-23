@@ -1,11 +1,23 @@
 #!/bin/bash
 
+if [ $# -gt 0 ]; then
+    regions="$@"
+else
+    regions=(
+        france-latest
+        france/guadeloupe-latest
+        france/guyane-latest
+        france/martinique-latest
+        france/mayotte-latest
+        france/reunion-latest
+    )
+    regions=${regions[@]}
+fi
+
 echo "Preparing postgre database with regions: $@..."
 
-if [ -z $POSTGRES_PASSWORD ]; then
-    exit 1
-fi
-if [ -z $POSTGRES_USER ]; then
+if [ -z $POSTGRES_PASSWORD ] || [ -z $POSTGRES_USER ] || [ -z $POSTGRES_HOST ] || [ -z $POSTGRES_PORT ] || [ -z $POSTGRES_DB ]; then
+    echo "Missing postgres environment variable for script, exitting!"
     exit 1
 fi
 
@@ -26,20 +38,6 @@ WORK_DIR=/tmp/batimap-init
 
 mkdir -p $WORK_DIR
 cd $WORK_DIR
-
-if [ $# -gt 0 ]; then
-    regions="$@"
-else
-    regions=(
-        france-latest
-        france/guadeloupe-latest
-        france/guyane-latest
-        france/martinique-latest
-        france/mayotte-latest
-        france/reunion-latest
-    )
-    regions=${regions[@]}
-fi
 
 for region in $regions; do
     file=$(basename $region).osm.pbf
