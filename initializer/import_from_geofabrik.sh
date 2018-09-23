@@ -71,10 +71,10 @@ do
     sleep 5
 done
 
-PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
+PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
     --verbose --proj 4326 --database $POSTGRES_DB boundaries.osm.pbf \
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
-PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql $option -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
+PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
     --verbose --proj 4326 --database $POSTGRES_DB --prefix buildings_osm buildings.osm.pbf \
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
 
