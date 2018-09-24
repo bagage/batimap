@@ -8,7 +8,7 @@ RUN apt update \
                       libboost-system-dev libboost-filesystem-dev liblua5.3-dev \
     && apt clean \
     && cd /tmp/ \
-    && git clone https://github.com/openstreetmap/osm2pgsql --depth 1 \
+    && git clone https://github.com/bagage/osm2pgsql --depth 1 -b drop-old-style-mps \
     && mkdir osm2pgsql/build \
     && cd /tmp/osm2pgsql/build \
     && cmake .. && make install \
