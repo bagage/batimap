@@ -82,7 +82,7 @@ class Postgis(object):
                     planet_osm_polygon p,
                     city_stats c
                 WHERE
-                    p.'admin_level' = '8'
+                    p.admin_level::int >= 8
                 AND
                     c.insee = p."ref:INSEE"
                 AND
@@ -118,7 +118,7 @@ class Postgis(object):
                     planet_osm_polygon p,
                     city_stats c
                 WHERE
-                    p.admin_level = '8'
+                    p.admin_level::int >= 8
                 AND
                     c.insee = p."ref:INSEE"
                 AND
@@ -160,7 +160,7 @@ class Postgis(object):
                     planet_osm_polygon p,
                     city_stats c
                 WHERE
-                    p.admin_level = '8'
+                    p.admin_level::int >= 8
                 AND
                     c.insee = p."ref:INSEE"
                 AND
@@ -200,7 +200,7 @@ class Postgis(object):
             FROM
                 planet_osm_polygon
             WHERE
-                admin_level = '8' AND "ref:INSEE" is not null
+                admin_level::int >= 8 AND "ref:INSEE" is not null
             ORDER BY dept
         """
         self.cursor.execute(req)
@@ -264,7 +264,7 @@ class Postgis(object):
                 WHERE
                     "ref:INSEE" = %s
                 AND
-                    admin_level = '8'
+                    admin_level::int >= 8
                 AND
                     boundary = 'administrative'
         """
@@ -285,7 +285,7 @@ class Postgis(object):
                 FROM
                     planet_osm_polygon
                 WHERE
-                    admin_level = '8'
+                    admin_level::int >= 8
                 AND
                     boundary = 'administrative'
                 AND
@@ -358,7 +358,7 @@ class Postgis(object):
                 FROM
                     planet_osm_polygon
                 WHERE
-                    admin_level='8'
+                    admin_level::int >= 8
                 AND
                     boundary='administrative'
                 AND
@@ -379,7 +379,7 @@ class Postgis(object):
                 WHERE
                     "ref:INSEE" = %s
                 AND
-                    admin_level = '8'
+                    admin_level::int >= 8
                 AND
                     boundary = 'administrative'
         """
@@ -430,7 +430,7 @@ class Postgis(object):
                     select insee, p.name, way, is_raster
                     from planet_osm_polygon p, city_stats
                     where "ref:INSEE" like %s || '%%'
-                    and admin_level = '8'
+                    and admin_level::int >= 8
                     and "ref:INSEE" = insee
                 )
                 select c.insee, c.name, p.source, count(p.*), c.is_raster
