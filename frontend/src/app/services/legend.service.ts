@@ -11,12 +11,12 @@ export class LegendService {
       console.warn('legend is null!!!');
       return true;
     }
-    return 'true' === this.getLocalStorage(typeof legend === 'string' ? legend : legend.name);
+    return 'false' !== this.getLocalStorage(typeof legend === 'string' ? legend : legend.name);
   }
 
   public setActive(legend: LegendDTO, isActive: boolean) {
     if (legend) {
-      localStorage.setItem(legend.name, isActive ? 'true' : null);
+      localStorage.setItem(legend.name, isActive ? null : 'false');
     }
   }
 
