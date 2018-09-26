@@ -196,20 +196,16 @@ class Postgis(object):
     def get_departments(self):
         req = """
             SELECT
-                "ref:INSEE"
+                DISTINCT(SUBSTR("ref:INSEE", 1, CHAR_LENGTH("ref:INSEE") - 3)) as dept
             FROM
                 planet_osm_polygon
             WHERE
-                admin_level = '6'
-            ORDER BY
-                "ref:INSEE"
+                admin_level = '8' AND "ref:INSEE" is not null
+            ORDER BY dept
         """
         self.cursor.execute(req)
 
-        # erase non digit characters, eg Lyon (69D) should be considered as department 69
-        depts = [''.join(y for y in x[0] if y.isdigit()) for x in self.cursor.fetchall()]
-        # avoid duplicates
-        return [x for i, x in enumerate(depts) if depts.index(x) == i]
+        return [x[0] for x in self.cursor.fetchall()]
 
     def get_department_colors(self, department):
         req = """
