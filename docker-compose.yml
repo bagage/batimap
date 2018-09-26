@@ -38,6 +38,7 @@ services:
     - "9999:9999"
     volumes:
     - ./tiles/:/root
+    - ./tiles/data/cache:/tmp/tegola-cache
     depends_on:
     - postgis
     networks:
