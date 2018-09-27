@@ -6,7 +6,7 @@ import {ConflateCityDTO} from '../classes/conflate-city.dto';
 import {CityDTO} from '../classes/city.dto';
 import {LatLngBounds} from 'leaflet';
 import {plainToClass} from 'class-transformer';
-import {map, switchMap} from 'rxjs/operators';
+import {debounceTime, map, switchMap} from 'rxjs/operators';
 import {LegendDTO} from '../classes/legend.dto';
 import {LegendService} from './legend.service';
 
@@ -41,19 +41,20 @@ export class BatimapService {
   public citiesInBbox(bbox: LatLngBounds): Observable<CityDTO[]> {
     return this.http.get<CityDTO[]>(
       this.URL_CITIES_BBOX(bbox.getNorthWest().lng, bbox.getNorthWest().lat, bbox.getSouthEast().lng, bbox.getSouthEast().lat))
-      .pipe(map(r => plainToClass(CityDTO, r)));
+      .pipe(map(r => plainToClass(CityDTO, r)), debounceTime(3000));
   }
 
   public legendForBbox(bbox: LatLngBounds): Observable<LegendDTO[]> {
     return this.http.get<LegendDTO[]>(
       this.URL_LEGEND(bbox.getNorthWest().lng, bbox.getNorthWest().lat, bbox.getSouthEast().lng, bbox.getSouthEast().lat))
-      .pipe(map(r => plainToClass(LegendDTO, r)))
-      .pipe(switchMap((legends: LegendDTO[]) => {
+      .pipe(map(r => plainToClass(LegendDTO, r)),
+        switchMap((legends: LegendDTO[]) => {
           for (const l of legends) {
             l.checked = this.legendService.isActive(l);
           }
           return of(legends);
-        }));
+        }),
+        debounceTime(3000));
   }
 
   public updateCity(insee: string): Observable<CityDTO> {

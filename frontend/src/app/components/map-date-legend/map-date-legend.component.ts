@@ -14,6 +14,7 @@ export class MapDateLegendComponent implements OnInit {
   @Input() cadastreLayer;
 
   legendItems: LegendDTO[] = [];
+  bounds: L.LatLngBounds;
 
   constructor(private zone: NgZone, private batimapService: BatimapService, public legendService: LegendService) {
   }
@@ -26,11 +27,14 @@ export class MapDateLegendComponent implements OnInit {
   }
 
   refreshLegend() {
-    this.batimapService.legendForBbox(this.map.getBounds()).subscribe(val => {
-      this.zone.run(() => {
-        this.legendItems = val;
+    if (!this.bounds || this.bounds.toBBoxString() !== this.map.getBounds().toBBoxString()) {
+      this.bounds = this.map.getBounds();
+      this.batimapService.legendForBbox(this.bounds).subscribe(val => {
+        this.zone.run(() => {
+          this.legendItems = val;
+        });
       });
-    });
+    }
   }
 
   legendChanges(legend: LegendDTO) {
