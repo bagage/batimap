@@ -51,7 +51,7 @@ class City(object):
                 date = 'raster'
             else:
                 request = f"""[out:json];
-                    area[boundary='administrative'][admin_level>='8']['ref:INSEE'='{self.insee}']->.a;
+                    area[boundary='administrative'][admin_level~'8|9']['ref:INSEE'='{self.insee}']->.a;
                     ( node['building'](area.a);
                       way['building'](area.a);
                       relation['building'](area.a);
