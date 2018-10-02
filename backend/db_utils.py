@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
-from math import cos, floor, log, pi, radians, tan, sqrt
+from math import sqrt
 
-import grequests
 import psycopg2
 import psycopg2.extras
 import logging
@@ -223,37 +222,6 @@ class Postgis(object):
         self.cursor.execute(req, [department])
 
         return sorted([x[0].strip() for x in self.cursor.fetchall()])
-
-    def deg_to_xy(self, lat, lon, zoom):
-        x = int(floor((lon + 180) / 360 * (1 << zoom)))
-        y = int(floor(
-            (1 - log(tan(radians(lat)) + 1 / cos(radians(lat))) / pi) / 2 * (1 << zoom)))
-        return (x, y)
-
-    def clear_tiles(self, insee):
-        req = """
-            SELECT
-                ST_AsGeoJSON(ST_EXTENT(way))
-            FROM
-                planet_osm_polygon
-            WHERE
-                "ref:INSEE" = %s
-        """
-        self.cursor.execute(req, [insee])
-        coords = json.loads(self.cursor.fetchall()[0][0])['coordinates'][0]
-        (lon1, lat1) = coords[0]
-        (lon2, lat2) = coords[2]
-        for z in range(3, 14):
-            (x1, y1) = self.deg_to_xy(lat1, lon1, z)
-            (x2, y2) = self.deg_to_xy(lat2, lon2, z)
-            urls = []
-            for x in range(min(x1, x2), max(x1, x2) + 1):
-                for y in range(min(y1, y2), max(y1, y2) + 1):
-                    url = "/{}/{}/{}.vector.pbf".format(
-                        self.tileserver, z, x, y)
-                    urls.append(url)
-            rs = (grequests.request('PURGE', x) for x in urls)
-            grequests.map(rs)
 
     def name_for_insee(self, insee, ignore_error=False):
         req = """

@@ -102,11 +102,7 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
 def api_update_insee_list(insee) -> dict:
     (city, date) = next(batimap.stats(db, op, cities=[insee], force=True))
 
-    # TODO: only clear tiles if color was changed // return different status
-    # codes
-
-    # clear tiles for the zone
-    db.clear_tiles(insee)
+    # TODO: purge cache if color was changed
     return json.dumps(CityDTO(city, date), cls=CityEncoder)
 
 
