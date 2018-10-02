@@ -7,7 +7,7 @@
     <h4>Détails</h4>
 
     <h5># Bâtiments par date</h5>
-    {{city.details | json}}
+    <li *ngFor="let k of Object.entries(city.details.dates)">{{k[0]}} - {{k[1]}}</li>
   </div>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
