@@ -155,5 +155,10 @@ def _get_city_stats(items, region, fast):
         c = items
 
     for department in d:
-        for (city, date) in batimap.stats(db, op, department=department, cities=c, force=not fast):
+        for (city, date) in batimap.stats(db,
+                                          op,
+                                          department=department,
+                                          cities=c,
+                                          force=not fast,
+                                          refresh_cadastre_state=not fast):
             click.echo('{}: date={}'.format(city, date))
