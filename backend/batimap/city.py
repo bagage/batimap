@@ -18,6 +18,7 @@ class City(object):
     department = None
     name_cadastre = None
     is_raster = False
+    details = None
 
     __db = None
 
@@ -30,9 +31,9 @@ class City(object):
             self.name = identifier
             self.insee = self.__db.insee_for_name(self.name)
 
-        data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster"])
-        assert len(data) == 3
-        (self.department, self.name_cadastre, self.is_raster) = data
+        data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster", "details"])
+        assert len(data) == 4
+        (self.department, self.name_cadastre, self.is_raster, self.details) = data
 
     def __repr__(self):
         return f'{self.name}({self.insee})'
@@ -74,11 +75,12 @@ class City(object):
 
                 LOG.debug(f"City stats: {Counter(sources_date)}")
             # only update date if we did not use cache files for buildings
+            self.details = {'dates': Counter(sources_date)}
             self.__db.update_stats_for_insee([(
                 self.insee,
                 self.name,
                 date,
-                json.dumps({'dates': Counter(sources_date)}),
+                json.dumps(self.details),
                 True
             )])
         return date

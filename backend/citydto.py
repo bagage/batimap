@@ -17,6 +17,7 @@ class CityDTO():
         self.name = city.name
         self.insee = city.insee
         self.date = date
+        self.details = city.details
 
     @property
     def __geo_interface__(self):

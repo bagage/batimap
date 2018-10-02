@@ -33,6 +33,7 @@ export class CityDetailsDialogComponent implements OnInit {
         this.isUpdating = false;
         this.city = result;
         this.cadastreLayer.redraw();
-      });
+      },
+        () => this.isUpdating = false);
   }
 }
