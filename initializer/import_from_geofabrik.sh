@@ -56,8 +56,8 @@ for region in $regions; do
 done
 
 echo "Persisting in db…"
-test -f boundaries.osm.pbf || osmium merge *_boundaries.osm.pbf -o boundaries.osm.pbf
-test -f buildings.osm.pbf || osmium merge *_buildings.osm.pbf -o buildings.osm.pbf
+osmium merge --overwrite *_boundaries.osm.pbf -o boundaries.osm.pbf
+osmium merge --overwrite *_buildings.osm.pbf -o buildings.osm.pbf
 
 echo "Waiting for postgis to be available..."
 while :
