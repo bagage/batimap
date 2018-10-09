@@ -14,7 +14,7 @@ else
     regions=${regions[@]}
 fi
 
-echo "Preparing postgre database with regions: $@..."
+echo "Preparing postgre database with regions: $regions..."
 
 if [ -z $POSTGRES_PASSWORD ] || [ -z $POSTGRES_USER ] || [ -z $POSTGRES_HOST ] || [ -z $POSTGRES_PORT ] || [ -z $POSTGRES_DB ]; then
     echo "Missing postgres environment variable for script, exitting!"
@@ -45,7 +45,6 @@ for region in $regions; do
     axel --no-clobber http://download.geofabrik.de/europe/$region.osm.pbf.md5 || test -f $file.md5
     md5sum -c $file.md5
 done
-
 
 for region in $regions; do
     region=$(basename $region)

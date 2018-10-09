@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 import {CityDTO} from '../../classes/city.dto';
 import {JosmService} from '../../services/josm.service';
+import {BatimapService} from '../../services/batimap.service';
 
 @Component({
   selector: 'app-josm-button',
@@ -14,12 +15,22 @@ export class JosmButtonComponent {
 
   isLoading = false;
 
-  constructor(private josmService: JosmService, private changeDetector: ChangeDetectorRef) {
+  constructor(private josmService: JosmService,
+              private batimapService: BatimapService,
+              private changeDetector: ChangeDetectorRef) {
   }
 
   conflateCity() {
     this.isLoading = true;
     this.josmService.conflateCity(this.city).subscribe(null, null, () => {
+      this.isLoading = false;
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  prepareCity() {
+    this.isLoading = true;
+    this.batimapService.cityData(this.city.insee).subscribe(null, null, () => {
       this.isLoading = false;
       this.changeDetector.detectChanges();
     });

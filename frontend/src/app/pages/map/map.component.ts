@@ -75,7 +75,7 @@ export class MapComponent {
     this.cadastreLayer = L.vectorGrid.protobuf(environment.tilesServerUrl, vectorTileOptions);
     this.cadastreLayer.on('click', (e) => {
       this.zone.run(() => {
-        this.openPopup(e);
+        this.openPopup(e.layer.properties);
       });
     });
     this.cadastreLayer.addTo(map);
@@ -83,9 +83,11 @@ export class MapComponent {
     this.legend.cadastreLayer = this.cadastreLayer;
   }
 
-  openPopup($event) {
-    const city = plainToClass<CityDTO, object>(CityDTO, $event.layer.properties);
-    city.details = plainToClass<CityDetailsDTO, object>(CityDetailsDTO, JSON.parse($event.layer.properties.details));
+  openPopup(cityJson: any) {
+    const city = plainToClass<CityDTO, object>(CityDTO, cityJson);
+    if (cityJson.details) {
+      city.details = plainToClass<CityDetailsDTO, object>(CityDetailsDTO, JSON.parse(cityJson.details));
+    }
     this.matDialog.open(CityDetailsDialogComponent, {data: [city, this.cadastreLayer]});
   }
 }

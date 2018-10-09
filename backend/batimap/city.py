@@ -19,6 +19,7 @@ class City(object):
     name_cadastre = None
     is_raster = False
     details = None
+    date_cadastre = None
 
     __db = None
 
@@ -31,9 +32,9 @@ class City(object):
             self.name = identifier
             self.insee = self.__db.insee_for_name(self.name)
 
-        data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster", "details"])
-        assert len(data) == 4
-        (self.department, self.name_cadastre, self.is_raster, self.details) = data
+        data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster", "details", "date_cadastre"])
+        assert len(data) == 5
+        (self.department, self.name_cadastre, self.is_raster, self.details, self.date_cadastre) = data
 
     def __repr__(self):
         return f'{self.name}({self.insee})'

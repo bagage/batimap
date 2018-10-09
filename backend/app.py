@@ -5,7 +5,6 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import click
-import itertools
 import logging
 
 from flask import Flask, request
@@ -108,7 +107,9 @@ def api_update_insee_list(insee) -> dict:
 
 @app.route('/cities/<insee>/josm', methods=['GET'])
 def api_josm_data(insee) -> dict:
-    batimap.fetch_cadastre_data(City(db, insee))
+    c = City(db, insee)
+    batimap.fetch_cadastre_data(c)
+    batimap.fetch_departments_osm_state(db, [c.department])
     return json.dumps(batimap.josm_data(db, insee))
 
 
@@ -121,10 +122,13 @@ def initdb_command(departments):
     """
     db.create_tables()
 
-    # fill table with cities from cadastre website
-    batimap.update_departments_raster_state(db, departments or db.get_departments())
+    if not departments:
+        departments = db.get_departments()
 
-    db.import_city_stats_from_osmplanet(departments or db.get_departments())
+    # fill table with cities from cadastre website
+    batimap.update_departments_raster_state(db, departments)
+    batimap.fetch_departments_osm_state(db, departments)
+    db.import_city_stats_from_osmplanet(departments)
 
 
 @app.cli.command('stats')

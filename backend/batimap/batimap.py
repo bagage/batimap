@@ -9,11 +9,12 @@ import http.cookiejar
 import urllib.request
 import zlib
 import requests
-import datetime
+from datetime import datetime
 from contextlib import closing
 import re
 
 LOG = logging.getLogger(__name__)
+MAX_CADASTRE_DATA_DAYS = 90
 
 
 def stats(db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
@@ -44,9 +45,9 @@ def update_departments_raster_state(db, departments):
         LOG.info(f"Récupération des infos pour le département {department}")
         tuples = []
         department = f'{department}'
-        r2 = op.open(f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}&" +
-                     f"codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
-        fr = BeautifulSoup(zlib.decompress(r2.read(), 16+zlib.MAX_WBITS), "lxml")
+        r2 = op.open(f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}"
+                     f"&codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
+        fr = BeautifulSoup(zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS), "lxml")
 
         for e in fr.find_all("tbody", attrs={"class": "parcelles"}):
             y = e.find(title="Ajouter au panier")
@@ -76,6 +77,27 @@ def update_departments_raster_state(db, departments):
         db.insert_stats_for_insee(tuples)
 
 
+def fetch_departments_osm_state(db, departments):
+    for d in departments:
+        tuples = []
+        url = 'https://cadastre.openstreetmap.fr'
+        dept = d.zfill(3)
+        r = requests.get(f"{url}/data/{dept}/")
+        bs = BeautifulSoup(r.content, "lxml")
+        for e in bs.select('tr'):
+            osm_data = e.select('td > a')
+            if len(osm_data):
+                osm_data = osm_data[0].text
+                if not osm_data.endswith('simplifie.osm') or '-extrait-' in osm_data:
+                    continue
+                name_cadastre = '-'.join(osm_data.split('-')[:-2])
+                date = datetime.strptime(e.select('td:nth-of-type(3)')[0].text.strip(), "%d-%b-%Y %H:%M")
+
+                if (datetime.now() - date).days <= MAX_CADASTRE_DATA_DAYS:
+                    tuples.append((name_cadastre, date))
+        db.upsert_city_status(tuples)
+
+
 def josm_data(db, insee):
     c = City(db, insee)
     if not c:
@@ -92,23 +114,20 @@ def josm_data(db, insee):
 
 
 def fetch_cadastre_data(city, force=False):
-    __total_pdfs_regex = re.compile(
-        ".*coupe la bbox en \d+ \* \d+ \[(\d+) pdfs\]$")
+    __total_pdfs_regex = re.compile(r".*coupe la bbox en \d+ \* \d+ \[(\d+) pdfs\]$")
 
     if not city or not city.name_cadastre:
         return False
 
     url = 'https://cadastre.openstreetmap.fr'
-
     dept = city.department.zfill(3)
-
     r = requests.get(f"{url}/data/{dept}/")
     bs = BeautifulSoup(r.content, "lxml")
 
     for e in bs.find_all('tr'):
         if f"{city.name_cadastre.upper()}.tar.bz2" in [x.text for x in e.select('td:nth-of-type(2) a')]:
             date = e.select('td:nth-of-type(3)')[0].text.strip()
-            if (datetime.datetime.now() - datetime.datetime.strptime(date, "%d-%b-%Y %H:%M")).days > 30:
+            if (datetime.now() - datetime.strptime(date, "%d-%b-%Y %H:%M")).days > MAX_CADASTRE_DATA_DAYS:
                 LOG.warn(f"{city.name_cadastre} was already generated at {date}, but is too old so refreshing it…")
                 force = True
             else:
@@ -141,4 +160,5 @@ def fetch_cadastre_data(city, force=False):
             elif "ERROR:" in line or "ERREUR:" in line:
                 LOG.error(line)
                 return False
+
     return True
