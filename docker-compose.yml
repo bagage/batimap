@@ -27,23 +27,34 @@ services:
     - postgis
     volumes:
     - ./initializer/data:/tmp/batimap-init
+    - ./tiles/data/outdated:/tiles
     networks:
       fixed_network:
         ipv4_address: 10.5.0.250
 
   tiles:
     build: tiles
-    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- tegola --config /root/config.toml serve
+    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- tegola --config $$CONFIG serve
+    volumes:
+    - ./tiles/:/app
     ports:
     - "9999:9999"
-    volumes:
-    - ./tiles/:/root
-    - ./tiles/data/cache:/tmp/tegola-cache
     depends_on:
     - postgis
     networks:
       fixed_network:
         ipv4_address: 10.5.0.11
+
+  tiles-cleaner:
+    build: tiles-cleaner
+    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- /entrypoint.sh
+    volumes:
+    - ./tiles/:/app
+    depends_on:
+    - postgis
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.14
 
   backend:
     build: backend
@@ -59,6 +70,7 @@ services:
     - "5000:5000"
     volumes:
     - ./backend/:/code
+    - ./tiles/data/outdated:/tiles
     depends_on:
     - postgis
     networks:

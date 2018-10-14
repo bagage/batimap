@@ -4,7 +4,7 @@ port = ":9999"
 [cache]
 type = "file"
 max_zoom = 17
-basepath = "/tmp/tegola-cache"
+basepath = "/app/data/cache"
 
 # register data providers
 [[providers]]

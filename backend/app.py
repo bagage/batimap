@@ -99,9 +99,12 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
 
 @app.route('/cities/<insee>/update', methods=['POST'])
 def api_update_insee_list(insee) -> dict:
-    (city, date) = next(batimap.stats(db, op, cities=[insee], force=True))
+    (_, date) = next(batimap.stats(db, op, cities=[insee], force=False))
+    (city, date2) = next(batimap.stats(db, op, cities=[insee], force=True))
 
-    # TODO: purge cache if color was changed
+    if date != date2 or True:
+        batimap.clear_tiles(db, insee)
+
     return json.dumps(CityDTO(city, date), cls=CityEncoder)
 
 

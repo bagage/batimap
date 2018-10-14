@@ -12,11 +12,7 @@ RUN curl -L -H 'Accept:application/octet-stream' \
     rm /tmp/$FILE && \
     chmod +x /usr/bin/tegola
 
-ADD config.toml /app
-
 COPY wait-for-it.sh /
 COPY entrypoint.sh /
-
-ENV CONFIG=/app/config.toml
 
 CMD /entrypoint.sh
