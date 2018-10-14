@@ -23,7 +23,7 @@ geometry_fieldname = "way"
 id_fieldname = "osm_id"
 sql = """
   SELECT
-    ST_AsBinary(way) AS way,
+    ST_AsBinary(ST_Simplify(way, 0.002, true)) AS way,
     c.name,
     c.details,
     insee,
