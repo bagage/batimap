@@ -15,6 +15,7 @@ export class CityDetailsDialogComponent implements OnInit {
   isUpdating = false;
 
   cadastreLayer: any;
+  Object = Object;
 
   constructor(@Inject(MAT_DIALOG_DATA) private data: [CityDTO, any], public josmService: JosmService, public batimapService: BatimapService) {
     this.city = data[0];
@@ -32,6 +33,7 @@ export class CityDetailsDialogComponent implements OnInit {
         this.isUpdating = false;
         this.city = result;
         this.cadastreLayer.redraw();
-      });
+      },
+        () => this.isUpdating = false);
   }
 }

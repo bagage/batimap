@@ -33,6 +33,7 @@ sql = """
     planet_osm_polygon, city_stats c
   WHERE
     admin_level::int >= '8'
+    AND c.insee = "ref:INSEE"
     AND "ref:INSEE" = insee
     AND way && !BBOX!
 """
@@ -54,6 +55,7 @@ sql = """
     city_stats c
   WHERE
     admin_level::int >= '8'
+    AND c.insee = "ref:INSEE"
     AND "ref:INSEE" = insee
     AND way && !BBOX!
 """

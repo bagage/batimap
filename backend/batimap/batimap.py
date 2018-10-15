@@ -16,8 +16,8 @@ import re
 LOG = logging.getLogger(__name__)
 
 
-def stats(db, overpass, department=None, cities=[], force=False):
-    if force:
+def stats(db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
+    if refresh_cadastre_state:
         if department:
             update_departments_raster_state(db, department)
         else:
