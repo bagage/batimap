@@ -14,7 +14,7 @@ else
     regions=${regions[@]}
 fi
 
-echo "Preparing postgre database with regions: $@..."
+echo "Preparing postgre database with regions: $regions..."
 
 if [ -z $POSTGRES_PASSWORD ] || [ -z $POSTGRES_USER ] || [ -z $POSTGRES_HOST ] || [ -z $POSTGRES_PORT ] || [ -z $POSTGRES_DB ]; then
     echo "Missing postgres environment variable for script, exitting!"
@@ -46,7 +46,6 @@ for region in $regions; do
     md5sum -c $file.md5
 done
 
-
 for region in $regions; do
     region=$(basename $region)
     echo "Preparing $region…"
@@ -56,8 +55,8 @@ for region in $regions; do
 done
 
 echo "Persisting in db…"
-test -f boundaries.osm.pbf || osmium merge *_boundaries.osm.pbf -o boundaries.osm.pbf
-test -f buildings.osm.pbf || osmium merge *_buildings.osm.pbf -o buildings.osm.pbf
+osmium merge --overwrite *_boundaries.osm.pbf -o boundaries.osm.pbf
+osmium merge --overwrite *_buildings.osm.pbf -o buildings.osm.pbf
 
 echo "Waiting for postgis to be available..."
 while :
@@ -79,5 +78,17 @@ PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES
     --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
 
 rm osm2pgsql.flatnodes
+
+# Force tiles to be cached
+echo -n > /tiles/outdated2.txt
+for z in $(seq 10); do
+    pow=$((2**$z))
+    for x in $(seq $pow); do
+        for y in $(seq $pow); do
+            echo "$z/$x/$y" >> /tiles/outdated2.txt
+        done
+    done
+done
+mv /tiles/outdated2.txt /tiles/outdated.txt
 
 echo "Imports done!"

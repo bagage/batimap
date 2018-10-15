@@ -7,4 +7,6 @@ export class CityDTO {
   details: CityDetailsDTO;
   date: string; // date of latest cadastral import, or unknown, or never
   insee: string;
+  @Type(() => Boolean)
+  josm_ready: boolean;
 }

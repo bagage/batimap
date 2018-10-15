@@ -5,7 +5,6 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import click
-import itertools
 import logging
 
 from flask import Flask, request
@@ -100,15 +99,20 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
 
 @app.route('/cities/<insee>/update', methods=['POST'])
 def api_update_insee_list(insee) -> dict:
-    (city, date) = next(batimap.stats(db, op, cities=[insee], force=True))
+    (_, date) = next(batimap.stats(db, op, cities=[insee], force=False))
+    (city, date2) = next(batimap.stats(db, op, cities=[insee], force=True))
 
-    # TODO: purge cache if color was changed
+    if date != date2 or True:
+        batimap.clear_tiles(db, insee)
+
     return json.dumps(CityDTO(city, date), cls=CityEncoder)
 
 
 @app.route('/cities/<insee>/josm', methods=['GET'])
 def api_josm_data(insee) -> dict:
-    batimap.fetch_cadastre_data(City(db, insee))
+    c = City(db, insee)
+    batimap.fetch_cadastre_data(c)
+    batimap.fetch_departments_osm_state(db, [c.department])
     return json.dumps(batimap.josm_data(db, insee))
 
 
@@ -121,10 +125,13 @@ def initdb_command(departments):
     """
     db.create_tables()
 
-    # fill table with cities from cadastre website
-    batimap.update_departments_raster_state(db, departments or db.get_departments())
+    if not departments:
+        departments = db.get_departments()
 
-    db.import_city_stats_from_osmplanet(departments or db.get_departments())
+    # fill table with cities from cadastre website
+    batimap.update_departments_raster_state(db, departments)
+    batimap.fetch_departments_osm_state(db, departments)
+    db.import_city_stats_from_osmplanet(departments)
 
 
 @app.cli.command('stats')

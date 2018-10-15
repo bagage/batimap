@@ -32,11 +32,12 @@ class Postgis(object):
                         insee VARCHAR(10) PRIMARY KEY NOT NULL,
                         department VARCHAR(3) NOT NULL,
                         name VARCHAR(100) NOT NULL,
-                        name_cadastre VARCHAR(100) NOT NULL,
+                        name_cadastre VARCHAR(100) UNIQUE NOT NULL,
                         is_raster BOOLEAN,
                         date VARCHAR(10),
                         last_update TIMESTAMP,
-                        details TEXT
+                        details TEXT,
+                        date_cadastre TIMESTAMP
                     )
         """
         self.cursor.execute(req)
@@ -112,7 +113,8 @@ class Postgis(object):
                     p.name,
                     c.insee,
                     c.date,
-                    c.details
+                    c.details,
+                    c.date_cadastre
                 FROM
                     planet_osm_polygon p,
                     city_stats c
@@ -145,7 +147,8 @@ class Postgis(object):
                 row[0],
                 row[1],
                 row[2],
-                row[3])
+                row[3],
+                row[4] is not None)
             )
         return results
 
@@ -248,18 +251,16 @@ class Postgis(object):
     def insee_for_name(self, name, interactive=True):
         req = """
                 SELECT
-                    "ref:INSEE",
+                    insee,
                     name
                 FROM
-                    planet_osm_polygon
+                    city_stats
                 WHERE
-                    admin_level::int >= 8
-                AND
-                    boundary = 'administrative'
-                AND
                     name ILIKE %s || '%%'
+                OR
+                    name_cadastre ILIKE %s || '%%'
         """
-        self.cursor.execute(req, [name])
+        self.cursor.execute(req, [name, name])
 
         results = [x for x in self.cursor.fetchall()]
         if len(results) == 0:
@@ -384,6 +385,20 @@ class Postgis(object):
                     name_cadastre = excluded.name_cadastre,
                     is_raster = excluded.is_raster,
                     date = excluded.date
+        """
+        try:
+            psycopg2.extras.execute_values(
+                self.cursor, req, tuples)
+            self.connection.commit()
+        except Exception as e:
+            LOG.warning("Cannot write in database: " + str(e))
+
+    def upsert_city_status(self, tuples):
+        req = """
+                UPDATE city_stats as c
+                SET date_cadastre = e.date_cadastre
+                FROM (VALUES %s) as e(name_cadastre, date_cadastre)
+                WHERE e.name_cadastre = c.name_cadastre
         """
         try:
             psycopg2.extras.execute_values(

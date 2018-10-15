@@ -1,9 +1,14 @@
 <ng-container *ngIf="!isLoading; else loading">
-  <button mat-raised-button color="primary"
+  <button *ngIf="city.josm_ready === true; else prepareButton"
+          mat-raised-button color="primary"
           (click)="conflateCity()"
           matTooltip="Ouvre JOSM avec les calques préconfigurés pour la commune sélectionnée. Si le bouton n'est pas actif, JOSM n'est probablement pas démarré"
-          [disabled]="!josmReady ">JOSM
-  </button>
+          [disabled]="!josmReady">JOSM</button>
+  <ng-template #prepareButton>
+    <button mat-raised-button color="secondary"
+            (click)="prepareCity()"
+            matTooltip="Prépare les données pour pouvoir être ensuite éditer avec JOSM">Préparer</button>
+  </ng-template>
 </ng-container>
 
 <ng-template #loading>

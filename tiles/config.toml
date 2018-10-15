@@ -4,7 +4,7 @@ port = ":9999"
 [cache]
 type = "file"
 max_zoom = 17
-basepath = "/tmp/tegola-cache"
+basepath = "/app/data/cache"
 
 # register data providers
 [[providers]]
@@ -23,11 +23,12 @@ geometry_fieldname = "way"
 id_fieldname = "osm_id"
 sql = """
   SELECT
-    ST_AsBinary(way) AS way,
+    ST_AsBinary(ST_Simplify(way, 0.002, true)) AS way,
     c.name,
     c.details,
     insee,
     date,
+    case when date_cadastre is null then '' else 'true' end as josm_ready,
     osm_id
   FROM
     planet_osm_polygon, city_stats c
@@ -49,6 +50,7 @@ sql = """
     c.details,
     insee,
     date,
+    case when date_cadastre is null then '' else 'true' end as josm_ready,
     osm_id
   FROM
     planet_osm_polygon,

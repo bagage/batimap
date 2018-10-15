@@ -4,3 +4,4 @@ frontend/node_modules
 initializer/data/
 postgis/data
 tiles/data
+.bash_history
