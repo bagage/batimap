@@ -108,6 +108,11 @@ def api_update_insee_list(insee) -> dict:
     return json.dumps(CityDTO(city, date), cls=CityEncoder)
 
 
+@app.route('/departments', methods=['GET'])
+def api_departments() -> dict:
+    return json.dumps(db.get_departments())
+
+
 @app.route('/cities/<insee>/josm', methods=['GET'])
 def api_josm_data(insee) -> dict:
     c = City(db, insee)

@@ -81,7 +81,7 @@ sql = """
       COUNT(date) DESC
   )
   SELECT
-    ST_AsBinary(way) AS way,
+    ST_AsBinary(ST_Simplify(way, 0.03, true)) AS way,
     date,
     p.name,
     "ref:INSEE" AS insee,

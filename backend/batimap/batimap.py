@@ -49,7 +49,6 @@ def update_departments_raster_state(db, departments):
         r2 = op.open(f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}"
                      f"&codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000")
         fr = BeautifulSoup(zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS), "lxml")
-
         for e in fr.find_all("tbody", attrs={"class": "parcelles"}):
             y = e.find(title="Ajouter au panier")
             if not y:
@@ -65,7 +64,7 @@ def update_departments_raster_state(db, departments):
             nom_commune = commune_cp[:-9]
 
             dept = department.zfill(2)
-            insee = dept + code_commune[-3:]
+            insee = dept + code_commune[len(dept) - 5:]
             is_raster = format_type == 'IMAG'
 
             name = db.name_for_insee(insee, True)
