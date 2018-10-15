@@ -325,8 +325,10 @@ class Postgis(object):
                 SELECT DISTINCT
                     "ref:INSEE" AS insee
                 FROM
-                    planet_osm_polygon
+                    planet_osm_polygon, city_stats
                 WHERE
+                    "ref:INSEE" = insee
+                AND
                     admin_level::int >= 8
                 AND
                     boundary='administrative'
