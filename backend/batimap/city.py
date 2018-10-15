@@ -33,7 +33,7 @@ class City(object):
             self.insee = self.__db.insee_for_name(self.name)
 
         data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster", "details", "date_cadastre"])
-        assert len(data) == 5
+        assert data and len(data) == 5
         (self.department, self.name_cadastre, self.is_raster, self.details, self.date_cadastre) = data
 
     def __repr__(self):
@@ -71,8 +71,9 @@ class City(object):
 
                 date = max(sources_date, key=sources_date.count) if len(
                     sources_date) else 'never'
-                date_match = re.compile(r'^(\d{4})$').match(date)
-                date = date_match.groups()[0] if date_match and date_match.groups() else 'unknown'
+                if date != 'never':
+                    date_match = re.compile(r'^(\d{4})$').match(date)
+                    date = date_match.groups()[0] if date_match and date_match.groups() else 'unknown'
 
                 LOG.debug(f"City stats: {Counter(sources_date)}")
             # only update date if we did not use cache files for buildings
