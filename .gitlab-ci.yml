@@ -19,3 +19,15 @@ test:
     - yarn
   script:
     - yarn test --karma-config src/karma-ci.conf.js
+
+build:
+  image: docker:stable
+  service:
+    - docker:dind
+  stage:
+    build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - cd postgis
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/postgis:latest .
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/postgis:latest
