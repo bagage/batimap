@@ -35,7 +35,7 @@ build:
     - docker push registry.gitlab.com/bagage/cadastre-conflation/postgis:latest
     - docker build -t registry.gitlab.com/bagage/cadastre-conflation/initializer:latest initializer
     - docker push registry.gitlab.com/bagage/cadastre-conflation/initializer:latest
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/frontend:latest -f Dockerfile.prod frontend
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/frontend:latest -f frontend/Dockerfile.prod
     - docker push registry.gitlab.com/bagage/cadastre-conflation/frontend:latest
     - docker build -t registry.gitlab.com/bagage/cadastre-conflation/backend:latest backend
     - docker push registry.gitlab.com/bagage/cadastre-conflation/backend:latest
