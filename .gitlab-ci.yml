@@ -24,8 +24,7 @@ build:
   image: docker:stable
   services:
     - docker:dind
-  stage:
-    build
+  stage: build
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - cd postgis
