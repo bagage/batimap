@@ -22,7 +22,7 @@ test:
 
 build:
   image: docker:stable
-  service:
+  services:
     - docker:dind
   stage:
     build
