@@ -1,18 +1,18 @@
-image: node:8
 stages:
   - build
   - test
 
-before_script:
-  - yarn config set cache-folder cache-ci
-
-cache:
-  untracked: true
-  paths:
-    - cache-ci/
-
 test:
+  image: node:8
+  cache:
+    untracked: true
+    paths:
+      - cache-ci/
+
   stage: test
+  before_script:
+    - yarn config set cache-folder cache-ci
+
   before_script:
     - apt-get update && apt-get install -yy chromium --no-install-recommends && apt-get clean
     - export CHROME_BIN=/usr/bin/chromium
