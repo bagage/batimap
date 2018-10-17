@@ -1,6 +1,7 @@
 image: node:8
 stages:
   - test
+  - build
 
 before_script:
   - yarn config set cache-folder cache-ci
