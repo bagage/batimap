@@ -4,12 +4,13 @@ stages:
 
 test:
   image: node:8
+  stage: test
+
   cache:
     untracked: true
     paths:
       - cache-ci/
 
-  stage: test
   before_script:
     - yarn config set cache-folder cache-ci
 
@@ -26,8 +27,19 @@ build:
   services:
     - docker:dind
   stage: build
-  script:
+  before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - cd postgis
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/postgis:latest .
+
+  script:
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/postgis:latest postgis
     - docker push registry.gitlab.com/bagage/cadastre-conflation/postgis:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/initializer:latest initializer
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/initializer:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/frontend:latest -f Dockerfile.prod frontend
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/frontend:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/backend:latest backend
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/backend:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/tiles:latest tiles
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/tiles:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:latest tiles-cleaner
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:latest
