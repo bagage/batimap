@@ -21,6 +21,14 @@ describe('JosmButtonComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(JosmButtonComponent);
     component = fixture.componentInstance;
+    const expected_city = {
+      name: '',
+      date: '',
+      details: null,
+      insee: '',
+      josm_ready: false,
+    };
+    component.city = expected_city;
     fixture.detectChanges();
   });
 
