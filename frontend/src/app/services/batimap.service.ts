@@ -6,7 +6,7 @@ import {ConflateCityDTO} from '../classes/conflate-city.dto';
 import {CityDTO} from '../classes/city.dto';
 import {LatLngBounds} from 'leaflet';
 import {plainToClass} from 'class-transformer';
-import {debounceTime, map, switchMap} from 'rxjs/operators';
+import {debounceTime, map, switchMap, tap} from 'rxjs/operators';
 import {LegendDTO} from '../classes/legend.dto';
 import {LegendService} from './legend.service';
 
@@ -58,6 +58,7 @@ export class BatimapService {
   }
 
   public updateCity(insee: string): Observable<CityDTO> {
-    return this.http.post<CityDTO>(this.URL_CITY_UPDATE(insee), null);
+    return this.http.post<CityDTO>(this.URL_CITY_UPDATE(insee), null)
+      .pipe(tap(city => this.legendService.city2date.set(city.insee, city.date)));
   }
 }

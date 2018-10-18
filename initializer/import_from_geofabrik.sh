@@ -79,16 +79,4 @@ PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql -C 6000Mo -H $POSTGRES_HOST -U $POSTGRES
 
 rm osm2pgsql.flatnodes
 
-# Force tiles to be cached
-echo -n > /tiles/outdated2.txt
-for z in $(seq 10); do
-    pow=$((2**$z))
-    for x in $(seq $pow); do
-        for y in $(seq $pow); do
-            echo "$z/$x/$y" >> /tiles/outdated2.txt
-        done
-    done
-done
-mv /tiles/outdated2.txt /tiles/outdated.txt
-
 echo "Imports done!"

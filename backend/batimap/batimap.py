@@ -12,7 +12,6 @@ import requests
 from datetime import datetime
 from contextlib import closing
 import re
-from math import cos, floor, log, pi, radians, tan
 
 LOG = logging.getLogger(__name__)
 MAX_CADASTRE_DATA_DAYS = 90
@@ -164,19 +163,7 @@ def fetch_cadastre_data(city, force=False):
     return True
 
 
-def deg_to_xy(lat, lon, zoom):
-    x = int(floor((lon + 180) / 360 * (1 << zoom)))
-    y = int(floor(
-        (1 - log(tan(radians(lat)) + 1 / cos(radians(lat))) / pi) / 2 * (1 << zoom)))
-    return (x, y)
-
-
 def clear_tiles(db, insee):
         bbox = db.bbox_for_insee(insee)
         with open('/tiles/outdated.txt', 'a') as fd:
-            for z in range(1, 11):
-                (x1, y1) = deg_to_xy(bbox.xmin, bbox.ymin, z)
-                (x2, y2) = deg_to_xy(bbox.xmax, bbox.ymax, z)
-                for x in range(min(x1, x2), max(x1, x2) + 1):
-                    for y in range(min(y1, y2), max(y1, y2) + 1):
-                        fd.write(f"{z}/{y}/{x}\n")
+            fd.write(str(bbox) + "\n")

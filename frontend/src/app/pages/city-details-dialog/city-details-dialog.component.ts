@@ -4,6 +4,7 @@ import {CityDTO} from '../../classes/city.dto';
 import {JosmService} from '../../services/josm.service';
 import {Observable} from 'rxjs';
 import {BatimapService} from '../../services/batimap.service';
+import {LegendService} from '../../services/legend.service';
 
 @Component({
   templateUrl: './city-details-dialog.component.html',
@@ -17,7 +18,10 @@ export class CityDetailsDialogComponent implements OnInit {
   cadastreLayer: any;
   Object = Object;
 
-  constructor(@Inject(MAT_DIALOG_DATA) private data: [CityDTO, any], public josmService: JosmService, public batimapService: BatimapService) {
+  constructor(@Inject(MAT_DIALOG_DATA) private data: [CityDTO, any],
+              public josmService: JosmService,
+              public batimapService: BatimapService,
+              private legendService: LegendService) {
     this.city = data[0];
     this.cadastreLayer = data[1];
   }
@@ -30,10 +34,10 @@ export class CityDetailsDialogComponent implements OnInit {
     this.isUpdating = true;
     this.batimapService.updateCity(this.city.insee)
       .subscribe(result => {
-        this.isUpdating = false;
-        this.city = result;
-        this.cadastreLayer.redraw();
-      },
+          this.isUpdating = false;
+          this.city = result;
+          this.cadastreLayer.redraw();
+        },
         () => this.isUpdating = false);
   }
 }

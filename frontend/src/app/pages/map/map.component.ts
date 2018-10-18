@@ -27,6 +27,7 @@ export class MapComponent {
         })
     ],
     zoom: 5,
+    maxZoom: 13,
     center: latLng(46.111, 3.977)
   };
   map: L.Map;
@@ -42,8 +43,9 @@ export class MapComponent {
   }
 
   stylingFunction(properties, zoom, type): any {
-    const color = this.legendService.date2color(properties.date);
-    if (!this.legendService.isActive(properties.date)) {
+    const date = this.legendService.city2date.get(properties.insee) || properties.date;
+    const color = this.legendService.date2color(date);
+    if (!this.legendService.isActive(date)) {
       return [];
     }
     return {

@@ -6,6 +6,8 @@ import * as palette from 'google-palette';
   providedIn: 'root'
 })
 export class LegendService {
+  public city2date: Map<string, string> = new Map<string, string>();
+
   public isActive(legend: LegendDTO | string): boolean {
     if (!legend) {
       console.warn('legend is null!!!');

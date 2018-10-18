@@ -3,7 +3,7 @@ port = ":9999"
 
 [cache]
 type = "file"
-max_zoom = 17
+max_zoom = 13
 basepath = "/app/data/cache"
 
 # register data providers

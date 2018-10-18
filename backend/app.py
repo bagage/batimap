@@ -102,10 +102,10 @@ def api_update_insee_list(insee) -> dict:
     (_, date) = next(batimap.stats(db, op, cities=[insee], force=False))
     (city, date2) = next(batimap.stats(db, op, cities=[insee], force=True))
 
-    if date != date2 or True:
+    if date != date2:
         batimap.clear_tiles(db, insee)
 
-    return json.dumps(CityDTO(city, date), cls=CityEncoder)
+    return json.dumps(CityDTO(city, date2), cls=CityEncoder)
 
 
 @app.route('/departments', methods=['GET'])
