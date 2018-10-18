@@ -7,6 +7,17 @@ import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {LeafletModule} from '@asymmetrik/ngx-leaflet';
 import * as L from 'leaflet';
+import {AppConfigService} from 'src/app/services/app-config.service';
+
+class MockAppConfigService {
+  getConfig() {
+    return {
+      'backendServerUrl': 'http://localhost:5000/',
+      'tilesServerUrl': 'http://localhost:9999/maps/batimap/{z}/{x}/{y}.vector.pbf'
+    };
+  }
+}
+
 
 describe('CitiesListComponent', () => {
   let component: CitiesListComponent;
@@ -15,7 +26,8 @@ describe('CitiesListComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ CitiesListComponent ],
-      imports: [MatLibModule, SharedComponentsModule, HttpModule, HttpClientTestingModule, LeafletModule]
+      imports: [MatLibModule, SharedComponentsModule, HttpModule, HttpClientTestingModule, LeafletModule],
+      providers: [ {provide: AppConfigService, useClass: MockAppConfigService} ]
     })
     .compileComponents();
   }));

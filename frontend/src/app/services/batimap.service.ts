@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
-import {environment} from '../../environments/environment';
+import {AppConfigService} from './app-config.service';
+
 import {HttpClient} from '../../../node_modules/@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {ConflateCityDTO} from '../classes/conflate-city.dto';
@@ -16,22 +17,24 @@ import {LegendService} from './legend.service';
 export class BatimapService {
 
   private URL_CITY_DATA(insee: string): string {
-    return environment.backendServerUrl + `cities/${insee}/josm`;
+    return this.configService.getConfig().backendServerUrl + `cities/${insee}/josm`;
   }
 
   private URL_CITY_UPDATE(insee: string): string {
-    return environment.backendServerUrl + `cities/${insee}/update`;
+    return this.configService.getConfig().backendServerUrl + `cities/${insee}/update`;
   }
 
   private URL_CITIES_BBOX(lonNW: number, latNW: number, lonSE: number, latSE: number) {
-    return environment.backendServerUrl + `cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
+    return this.configService.getConfig().backendServerUrl + `cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
   }
 
   private URL_LEGEND(lonNW: number, latNW: number, lonSE: number, latSE: number) {
-    return environment.backendServerUrl + `legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
+    return this.configService.getConfig().backendServerUrl + `legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
   }
 
-  constructor(private http: HttpClient, private legendService: LegendService) {
+  constructor(private http: HttpClient,
+              private legendService: LegendService,
+              private configService: AppConfigService) {
   }
 
   public cityData(insee: string): Observable<ConflateCityDTO> {

@@ -1,5 +1,6 @@
 import {Component, NgZone, ViewChild} from '@angular/core';
-import {environment} from '../../../environments/environment';
+import { AppConfigService } from '../../services/app-config.service';
+
 import * as L from 'leaflet';
 import {latLng, tileLayer} from 'leaflet';
 import {MatDialog} from '@angular/material';
@@ -33,7 +34,10 @@ export class MapComponent {
   map: L.Map;
   cadastreLayer: any;
 
-  constructor(private matDialog: MatDialog, private zone: NgZone, private legendService: LegendService) {
+  constructor(private matDialog: MatDialog,
+              private zone: NgZone,
+              private legendService: LegendService,
+              private configService: AppConfigService) {
   }
 
   onMapReady(map) {
@@ -74,7 +78,7 @@ export class MapComponent {
       }
     };
 
-    this.cadastreLayer = L.vectorGrid.protobuf(environment.tilesServerUrl, vectorTileOptions);
+    this.cadastreLayer = L.vectorGrid.protobuf(this.configService.getConfig().tilesServerUrl, vectorTileOptions);
     this.cadastreLayer.on('click', (e) => {
       this.zone.run(() => {
         this.openPopup(e.layer.properties);

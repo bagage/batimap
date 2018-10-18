@@ -7,6 +7,16 @@ import {MAT_DIALOG_DATA} from '@angular/material';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {CityDTO} from '../../classes/city.dto';
+import {AppConfigService} from 'src/app/services/app-config.service';
+
+class MockAppConfigService {
+  getConfig() {
+    return {
+      'backendServerUrl': 'http://localhost:5000/',
+      'tilesServerUrl': 'http://localhost:9999/maps/batimap/{z}/{x}/{y}.vector.pbf'
+    };
+  }
+}
 
 describe('CityDetailsDialogComponent', () => {
   let component: CityDetailsDialogComponent;
@@ -17,7 +27,8 @@ describe('CityDetailsDialogComponent', () => {
       declarations: [CityDetailsDialogComponent],
       imports: [MatLibModule, SharedComponentsModule, HttpModule, HttpClientTestingModule],
       providers: [
-        {provide: MAT_DIALOG_DATA, useValue: {}}
+        {provide: MAT_DIALOG_DATA, useValue: {}},
+        {provide: AppConfigService, useValue: MockAppConfigService},
       ]
     })
       .compileComponents();
