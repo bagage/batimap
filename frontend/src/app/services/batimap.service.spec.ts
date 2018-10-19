@@ -2,21 +2,16 @@ import { TestBed, inject } from '@angular/core/testing';
 
 import { BatimapService } from './batimap.service';
 import {HttpClientTestingModule} from '../../../node_modules/@angular/common/http/testing';
-import {AppConfigService} from 'src/app/services/app-config.service';
-
-class MockAppConfigService {
-  getConfig() {
-    return {
-      'backendServerUrl': 'http://localhost:5000/',
-      'tilesServerUrl': 'http://localhost:9999/maps/batimap/{z}/{x}/{y}.vector.pbf'
-    };
-  }
-}
+import {AppConfigService} from './app-config.service';
+import {MockAppConfigService} from './app-config.service.mock';
 
 describe('BatimapService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [BatimapService, {provide: AppConfigService, useClass: MockAppConfigService}],
+      providers: [
+        BatimapService,
+        {provide: AppConfigService, useClass: MockAppConfigService}
+      ],
       imports: [HttpClientTestingModule]
     });
   });

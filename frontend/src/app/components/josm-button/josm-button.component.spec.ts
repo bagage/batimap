@@ -5,16 +5,8 @@ import {MatLibModule} from '../../pages/mat-lib.module';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {LoaderComponent} from '../loader/loader.component';
-import { AppConfigService } from 'src/app/services/app-config.service';
-
-class MockAppConfigService {
-  getConfig() {
-    return {
-      'backendServerUrl': 'http://localhost:5000/',
-      'tilesServerUrl': 'http://localhost:9999/maps/batimap/{z}/{x}/{y}.vector.pbf'
-    };
-  }
-}
+import {AppConfigService} from '../../services/app-config.service';
+import {MockAppConfigService} from '../../services/app-config.service.mock';
 
 describe('JosmButtonComponent', () => {
   let component: JosmButtonComponent;
