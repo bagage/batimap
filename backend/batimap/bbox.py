@@ -14,4 +14,4 @@ class Bbox(object):
         self.ymax = float(groups[3])
 
     def __repr__(self):
-        return f'{self.xmin}, {self.ymin}, {self.xmax}, {self.ymax}'
+        return f'{self.xmin},{self.ymin},{self.xmax},{self.ymax}'
