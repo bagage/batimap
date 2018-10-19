@@ -7,7 +7,7 @@ cd /app
 
 # cache whole world at start, if needed
 rm -rf data/cache/*
-tegola cache seed --max-zoom 8
+tegola cache seed --max-zoom 10
 
 while true; do
     if [ -s $INPUT_FILE ]; then
