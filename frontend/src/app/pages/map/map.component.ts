@@ -64,24 +64,24 @@ export class MapComponent {
 
   setupVectorTiles(map) {
     const vectorTileOptions = {
-      // rendererFactory: canvas.tile,
-      maxZoom: 20,
-      maxNativeZoom: 13,
       vectorTileLayerStyles: {
-        'cities-point': (properties, zoom) => this.stylingFunction(properties, zoom, 'point'),
         'cities': (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),
+        'cities-point': (properties, zoom) => this.stylingFunction(properties, zoom, 'point'),
         'departments': (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),
       },
       interactive: true,  // Make sure that this VectorGrid fires mouse/pointer events
       getFeatureId: function (f) {
-        return f.properties.date;
+        return f.properties.insee;
       }
     };
 
     this.cadastreLayer = L.vectorGrid.protobuf(this.configService.getConfig().tilesServerUrl, vectorTileOptions);
     this.cadastreLayer.on('click', (e) => {
       this.zone.run(() => {
-        this.openPopup(e.layer.properties);
+        // do not open popup when clicking depts
+        if (e.layer.properties.insee.length > 3) {
+          this.openPopup(e.layer.properties);
+        }
       });
     });
     this.cadastreLayer.addTo(map);

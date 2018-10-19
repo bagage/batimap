@@ -91,7 +91,7 @@ function do_work()  {
     conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MatchingPanel")
         .getConstructor(
             org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
-            org.openstreetmap.josm.data.Preferences,
+            org.openstreetmap.josm.spi.preferences.IPreferences,
             java.lang.Runnable)
         .newInstance(
             null,
@@ -101,7 +101,7 @@ function do_work()  {
     const mergingPanel = conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MergingPanel")
         .getConstructor(
             org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
-            org.openstreetmap.josm.data.Preferences)
+            org.openstreetmap.josm.spi.preferences.IPreferences)
         .newInstance(
             null,
             prefs);
