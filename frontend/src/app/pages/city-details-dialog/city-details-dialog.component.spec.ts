@@ -7,6 +7,8 @@ import {MAT_DIALOG_DATA} from '@angular/material';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {CityDTO} from '../../classes/city.dto';
+import {AppConfigService} from '../../services/app-config.service';
+import {MockAppConfigService} from '../../services/app-config.service.mock';
 
 describe('CityDetailsDialogComponent', () => {
   let component: CityDetailsDialogComponent;
@@ -17,7 +19,8 @@ describe('CityDetailsDialogComponent', () => {
       declarations: [CityDetailsDialogComponent],
       imports: [MatLibModule, SharedComponentsModule, HttpModule, HttpClientTestingModule],
       providers: [
-        {provide: MAT_DIALOG_DATA, useValue: {}}
+        {provide: MAT_DIALOG_DATA, useValue: {}},
+        {provide: AppConfigService, useClass: MockAppConfigService},
       ]
     })
       .compileComponents();

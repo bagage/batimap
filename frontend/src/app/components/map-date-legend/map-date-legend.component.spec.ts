@@ -6,6 +6,8 @@ import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {LeafletModule} from '@asymmetrik/ngx-leaflet';
 import * as L from 'leaflet';
+import {AppConfigService} from '../../services/app-config.service';
+import {MockAppConfigService} from '../../services/app-config.service.mock';
 
 describe('MapDateLegendComponent', () => {
   let component: MapDateLegendComponent;
@@ -14,7 +16,11 @@ describe('MapDateLegendComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [MapDateLegendComponent],
-      imports: [MatLibModule, HttpModule, HttpClientTestingModule, LeafletModule]
+      imports: [MatLibModule, HttpModule, HttpClientTestingModule, LeafletModule],
+      providers: [
+        MapDateLegendComponent,
+        {provide: AppConfigService, useClass: MockAppConfigService},
+      ],
     })
       .compileComponents();
   }));

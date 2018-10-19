@@ -5,6 +5,8 @@ import {MatLibModule} from '../../pages/mat-lib.module';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {LoaderComponent} from '../loader/loader.component';
+import {AppConfigService} from '../../services/app-config.service';
+import {MockAppConfigService} from '../../services/app-config.service.mock';
 
 describe('JosmButtonComponent', () => {
   let component: JosmButtonComponent;
@@ -13,7 +15,8 @@ describe('JosmButtonComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [JosmButtonComponent, LoaderComponent],
-      imports: [MatLibModule, HttpModule, HttpClientTestingModule]
+      imports: [MatLibModule, HttpModule, HttpClientTestingModule],
+      providers: [ {provide: AppConfigService, useClass: MockAppConfigService} ]
     })
       .compileComponents();
   }));

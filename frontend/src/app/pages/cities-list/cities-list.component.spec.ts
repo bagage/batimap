@@ -7,6 +7,8 @@ import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {LeafletModule} from '@asymmetrik/ngx-leaflet';
 import * as L from 'leaflet';
+import {AppConfigService} from '../../services/app-config.service';
+import {MockAppConfigService} from '../../services/app-config.service.mock';
 
 describe('CitiesListComponent', () => {
   let component: CitiesListComponent;
@@ -15,7 +17,8 @@ describe('CitiesListComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ CitiesListComponent ],
-      imports: [MatLibModule, SharedComponentsModule, HttpModule, HttpClientTestingModule, LeafletModule]
+      imports: [MatLibModule, SharedComponentsModule, HttpModule, HttpClientTestingModule, LeafletModule],
+      providers: [ {provide: AppConfigService, useClass: MockAppConfigService} ]
     })
     .compileComponents();
   }));
