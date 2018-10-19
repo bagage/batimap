@@ -1,17 +1,19 @@
-image: node:8
 stages:
   - test
-
-before_script:
-  - yarn config set cache-folder cache-ci
-
-cache:
-  untracked: true
-  paths:
-    - cache-ci/
+  - build
 
 test:
+  image: node:8
   stage: test
+
+  cache:
+    untracked: true
+    paths:
+      - cache-ci/
+
+  before_script:
+    - yarn config set cache-folder cache-ci
+
   before_script:
     - apt-get update && apt-get install -yy chromium --no-install-recommends && apt-get clean
     - export CHROME_BIN=/usr/bin/chromium
@@ -19,3 +21,25 @@ test:
     - yarn
   script:
     - yarn test --karma-config src/karma-ci.conf.js
+
+build:
+  image: docker:stable
+  services:
+    - docker:dind
+  stage: build
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+
+  script:
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/postgis:latest postgis
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/postgis:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/initializer:latest initializer
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/initializer:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/frontend:latest -f frontend/Dockerfile.prod frontend
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/frontend:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/backend:latest backend
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/backend:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/tiles:latest tiles
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/tiles:latest
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:latest tiles-cleaner
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:latest
