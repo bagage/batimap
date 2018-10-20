@@ -20,10 +20,22 @@ LOG = logging.getLogger(__name__)
 class Postgis(object):
 
     def __init__(self, db, user, passw, port, host, tileserver):
-        self.connection = psycopg2.connect(
-            database=db, user=user, password=passw, port=port, host=host)
-        self.cursor = self.connection.cursor()
+        self.db = db
+        self.user = user
+        self.passw = passw
+        self.port = port
+        self.host = host
         self.tileserver = tileserver
+
+    def execute(self, req, args=None):
+        try:
+            self.cursor.execute(req, args)
+        except Exception as e:
+            LOG.warning(f"Could not execute request, will retry due to: {e}")
+            self.connection = psycopg2.connect(
+                database=self.db, user=self.user, password=self.passw, port=self.port, host=self.host)
+            self.cursor = self.connection.cursor()
+            self.cursor.execute(req, args)
 
     def create_tables(self):
         req = """
@@ -40,11 +52,11 @@ class Postgis(object):
                         date_cadastre TIMESTAMP
                     )
         """
-        self.cursor.execute(req)
+        self.execute(req)
         LOG.debug('city_stats table created')
 
-        self.cursor.execute("CREATE INDEX IF NOT EXISTS way_gist ON planet_osm_polygon USING gist(way);")
-        self.cursor.execute("CREATE INDEX IF NOT EXISTS insee_idx ON planet_osm_polygon((\"ref:INSEE\"));")
+        self.execute("CREATE INDEX IF NOT EXISTS way_gist ON planet_osm_polygon USING gist(way);")
+        self.execute("CREATE INDEX IF NOT EXISTS insee_idx ON planet_osm_polygon((\"ref:INSEE\"));")
         self.connection.commit()
 
     def get_insee(self, insee: int) -> FeatureCollection:
@@ -62,7 +74,7 @@ class Postgis(object):
                 AND
                     p."ref:INSEE" = c.insee
         """
-        self.cursor.execute(req, [insee])
+        self.execute(req, [insee])
         features = []
 
         for row in self.cursor.fetchall():
@@ -88,7 +100,7 @@ class Postgis(object):
                 AND
                     c.date = %s
                 """
-        self.cursor.execute(req, [date])
+        self.execute(req, [date])
 
         return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
@@ -102,7 +114,7 @@ class Postgis(object):
                 GROUP BY
                     date
         """
-        self.cursor.execute(req)
+        self.execute(req)
 
         return sorted([[x[0].strip(), x[1]] for x in self.cursor.fetchall()])
 
@@ -139,7 +151,7 @@ class Postgis(object):
             'lon': (lonNW + lonSE) / 2.,
             'lat': (latNW + latSE) / 2.,
         }
-        self.cursor.execute(req, args)
+        self.execute(req, args)
 
         results = []
         for row in self.cursor.fetchall():
@@ -179,7 +191,7 @@ class Postgis(object):
             'lon': (lonNW + lonSE) / 2.,
             'lat': (latNW + latSE) / 2.,
         }
-        self.cursor.execute(req, args)
+        self.execute(req, args)
 
         results = []
         total = 0
@@ -205,7 +217,7 @@ class Postgis(object):
                 admin_level::int >= 8 AND "ref:INSEE" is not null
             ORDER BY dept
         """
-        self.cursor.execute(req)
+        self.execute(req)
 
         return [x[0] for x in self.cursor.fetchall()]
 
@@ -222,7 +234,7 @@ class Postgis(object):
             ORDER BY
                 count(*) DESC
         """
-        self.cursor.execute(req, [department])
+        self.execute(req, [department])
 
         return sorted([x[0].strip() for x in self.cursor.fetchall()])
 
@@ -239,7 +251,7 @@ class Postgis(object):
                 AND
                     boundary = 'administrative'
         """
-        self.cursor.execute(req, [insee])
+        self.execute(req, [insee])
 
         results = self.cursor.fetchall()
         if len(results) == 0 and not ignore_error:
@@ -260,7 +272,7 @@ class Postgis(object):
                 OR
                     name_cadastre ILIKE %s || '%%'
         """
-        self.cursor.execute(req, [name, name])
+        self.execute(req, [name, name])
 
         results = [x for x in self.cursor.fetchall()]
         if len(results) == 0:
@@ -296,7 +308,7 @@ class Postgis(object):
                 WHERE
                     insee = %s
         """
-        self.cursor.execute(req, [insee])
+        self.execute(req, [insee])
 
         results = self.cursor.fetchall()
         assert(len(results) <= 1)
@@ -313,7 +325,7 @@ class Postgis(object):
                 WHERE
                     insee = %s
         """
-        self.cursor.execute(req, [insee])
+        self.execute(req, [insee])
 
         results = self.cursor.fetchall()
         assert(len(results) <= 1)
@@ -337,7 +349,7 @@ class Postgis(object):
                 ORDER BY
                     insee
         """
-        self.cursor.execute(req, [department])
+        self.execute(req, [department])
 
         return [x[0] for x in self.cursor.fetchall()]
 
@@ -354,7 +366,7 @@ class Postgis(object):
                 AND
                     boundary = 'administrative'
         """
-        self.cursor.execute(req, [insee])
+        self.execute(req, [insee])
 
         results = self.cursor.fetchall()
         if len(results) > 1:
@@ -426,7 +438,7 @@ class Postgis(object):
             """
             # fixme: search in planet_osm_point and planet_osm_line too!
 
-            self.cursor.execute(query, [department.zfill(2)])
+            self.execute(query, [department.zfill(2)])
 
             cadastre_src2date_regex = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
             for (insee, name, source, count, is_raster) in self.cursor.fetchall():
