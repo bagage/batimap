@@ -3,6 +3,7 @@ import {BatimapService} from '../../services/batimap.service';
 import {LegendDTO} from '../../classes/legend.dto';
 import {LegendService} from '../../services/legend.service';
 import * as L from 'leaflet';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-map-date-legend',
@@ -13,7 +14,7 @@ export class MapDateLegendComponent implements OnInit {
   @Input() map: L.Map;
   @Input() cadastreLayer;
 
-  legendItems: LegendDTO[] = [];
+  legendItems$: Observable<LegendDTO[]>;
   bounds: L.LatLngBounds;
 
   constructor(private zone: NgZone, private batimapService: BatimapService, public legendService: LegendService) {
@@ -29,11 +30,7 @@ export class MapDateLegendComponent implements OnInit {
   refreshLegend() {
     if (!this.bounds || this.bounds.toBBoxString() !== this.map.getBounds().toBBoxString()) {
       this.bounds = this.map.getBounds();
-      this.batimapService.legendForBbox(this.bounds).subscribe(val => {
-        this.zone.run(() => {
-          this.legendItems = val;
-        });
-      });
+      this.legendItems$ = this.batimapService.legendForBbox(this.bounds);
     }
   }
 

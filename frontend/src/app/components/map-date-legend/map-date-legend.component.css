@@ -1,16 +1,16 @@
 :host {
   position: absolute;
-  right: 5%;
-  top: 5%;
+  right: 1%;
+  top: 2%;
   z-index: 1000; /* must appear above the map! */
   background-color: white;
 
   display: flex;
   flex-direction: column;
 
+  max-width: 220px;
 }
 
-div {
-  flex: 1;
-  height: 500px;
+#title {
+  font-size: medium;
 }

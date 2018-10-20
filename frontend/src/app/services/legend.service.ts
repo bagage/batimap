@@ -47,4 +47,16 @@ export class LegendService {
     // unknown
     return 'gray';
   }
+
+  date2name(yearStr: string) {
+    if (!yearStr || yearStr === 'never') {
+      return 'jamais import';
+    } else if (yearStr === 'raster') {
+      return 'non dispo.';
+    } else if (Number.isInteger(+yearStr)) {
+      return yearStr;
+    } else {
+      return 'indéterminé';
+    }
+  }
 }
