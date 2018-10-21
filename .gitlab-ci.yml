@@ -32,8 +32,8 @@ build_tiles_cleaner:
   only:
     refs:
       - master
-    changes:
-      - tiles-cleaner/*
+    # changes:
+    #   - tiles-cleaner/*
   script:
     - docker build -t registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:$CI_COMMIT_REF_SLUG tiles-cleaner
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:latest
@@ -50,8 +50,8 @@ build_postgis:
   only:
     refs:
       - master
-    changes:
-      - postgis/*
+    # changes:
+    #   - postgis/*
   script:
     - docker build -t registry.gitlab.com/bagage/cadastre-conflation/postgis:$CI_COMMIT_REF_SLUG postgis
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/postgis:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/postgis:latest
@@ -68,8 +68,8 @@ build_initializer:
   only:
     refs:
       - master
-    changes:
-      - initializer/*
+    # changes:
+    #   - initializer/*
   script:
     - docker build -t registry.gitlab.com/bagage/cadastre-conflation/initializer:$CI_COMMIT_REF_SLUG initializer
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/initializer:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/initializer:latest
@@ -86,8 +86,8 @@ build_backend:
   only:
     refs:
       - master
-    changes:
-      - backend/*
+    # changes:
+    #   - backend/*
   script:
     - docker build -t registry.gitlab.com/bagage/cadastre-conflation/backend:$CI_COMMIT_REF_SLUG backend
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/backend:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/backend:latest
@@ -104,8 +104,8 @@ build_tiles:
   only:
     refs:
       - master
-    changes:
-      - tiles/*
+    # changes:
+    #   - tiles/*
   script:
     - docker build -t registry.gitlab.com/bagage/cadastre-conflation/tiles:$CI_COMMIT_REF_SLUG tiles
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/tiles:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/tiles:latest
@@ -122,8 +122,8 @@ build_frontend:
   only:
     refs:
       - master
-    changes:
-      - frontend/*
+    # changes:
+    #   - frontend/*
   script:
     - docker build -t registry.gitlab.com/bagage/cadastre-conflation/frontend:$CI_COMMIT_REF_SLUG -f frontend/Dockerfile.prod frontend
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/frontend:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/frontend:latest
