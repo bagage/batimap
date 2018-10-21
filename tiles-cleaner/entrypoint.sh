@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 INPUT_FILE=/app/data/outdated/outdated.txt
 WORK_FILE=/app/data/outdated/inprogress.txt
