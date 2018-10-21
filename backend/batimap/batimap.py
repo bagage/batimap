@@ -83,6 +83,7 @@ def fetch_departments_osm_state(db, departments):
         dept = d.zfill(3)
         r = requests.get(f"{url}/data/{dept}/")
         bs = BeautifulSoup(r.content, "lxml")
+        refresh_tiles = []
         for e in bs.select('tr'):
             osm_data = e.select('td > a')
             if len(osm_data):
@@ -94,7 +95,15 @@ def fetch_departments_osm_state(db, departments):
 
                 if (datetime.now() - date).days <= MAX_CADASTRE_DATA_DAYS:
                     tuples.append((name_cadastre, date))
+
+                c = City(db, name_cadastre)
+                if c.date_cadastre != date:
+                    LOG.debug(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
+                    refresh_tiles.append(c.insee)
+
         db.upsert_city_status(tuples)
+        for insee in refresh_tiles:
+            clear_tiles(db, insee)
 
 
 def josm_data(db, insee):
