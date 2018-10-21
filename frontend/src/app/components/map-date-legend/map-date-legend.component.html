@@ -1,5 +1,15 @@
-<ng-container *ngFor="let item of legendItems">
-  <mat-checkbox [id]="'legend' + item.name" [(ngModel)]="item.checked" (change)="legendChanges(item)" [ngStyle]="{'color': legendService.date2color(item.name)}">
-    {{item.name}} ({{item.percent}}%)
-  </mat-checkbox>
-</ng-container>
+<mat-card>
+  <mat-card-title id="title">Date de dernier import par commune</mat-card-title>
+  <mat-card-content>
+    <ng-container *ngIf="legendItems$ | async as legendItems; else loading">
+      <mat-checkbox *ngFor="let item of legendItems" [id]="'legend' + item.name" [(ngModel)]="item.checked"
+                    (change)="legendChanges(item)"
+                    [ngStyle]="{'color': legendService.date2color(item.name)}">
+        {{legendService.date2name(item.name)}} ({{item.percent}}%)
+      </mat-checkbox>
+    </ng-container>
+    <ng-template #loading>
+      <app-loader></app-loader>
+    </ng-template>
+  </mat-card-content>
+</mat-card>

@@ -10,6 +10,7 @@ import {MatLibModule} from '../mat-lib.module';
 import {CityDetailsDialogModule} from '../city-details-dialog/city-details-dialog.module';
 import {CommonModule} from '@angular/common';
 import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-legend.component';
+import {SharedComponentsModule} from '../../components/shared-components.module';
 
 @NgModule({
   imports: [
@@ -17,7 +18,8 @@ import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-
     LeafletModule,
     MatLibModule,
     CitiesListModule,
-    CityDetailsDialogModule
+    CityDetailsDialogModule,
+    SharedComponentsModule
   ],
   declarations: [MapComponent, MapDateLegendComponent],
 })
