@@ -174,5 +174,5 @@ def fetch_cadastre_data(city, force=False):
 
 def clear_tiles(db, insee):
         bbox = db.bbox_for_insee(insee)
-        with open('/tiles/outdated.txt', 'a') as fd:
+        with open('tiles/outdated.txt', 'a') as fd:
             fd.write(str(bbox) + "\n")
