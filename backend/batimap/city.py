@@ -32,9 +32,13 @@ class City(object):
             self.name = identifier
             self.insee = self.__db.insee_for_name(self.name)
 
-        data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster", "details", "date_cadastre"])
-        assert data and len(data) == 5
-        (self.department, self.name_cadastre, self.is_raster, self.details, self.date_cadastre) = data
+        if self.name and self.insee:
+            data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster", "details", "date_cadastre"])
+            assert data and len(data) == 5
+            (self.department, self.name_cadastre, self.is_raster, self.details, self.date_cadastre) = data
+        else:
+            self.name = None
+            self.insee = None
 
     def __repr__(self):
         return f'{self.name}({self.insee})'

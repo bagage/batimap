@@ -66,9 +66,9 @@ def update_departments_raster_state(db, departments):
             insee = dept + code_commune[len(dept) - 5:]
             is_raster = format_type == 'IMAG'
 
-            name = db.name_for_insee(insee, True)
+            name = db.name_for_insee(insee)
             if not name:
-                LOG.critical(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
+                LOG.error(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
                 continue
 
             date = 'raster' if is_raster else 'never'
@@ -97,7 +97,7 @@ def fetch_departments_osm_state(db, departments):
                     tuples.append((name_cadastre, date))
 
                 c = City(db, name_cadastre)
-                if c.date_cadastre != date:
+                if c.insee and c.date_cadastre != date:
                     LOG.debug(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
                     refresh_tiles.append(c.insee)
 
@@ -174,5 +174,5 @@ def fetch_cadastre_data(city, force=False):
 
 def clear_tiles(db, insee):
         bbox = db.bbox_for_insee(insee)
-        with open('/tiles/outdated.txt', 'a') as fd:
+        with open('tiles/outdated.txt', 'a') as fd:
             fd.write(str(bbox) + "\n")

@@ -238,7 +238,7 @@ class Postgis(object):
 
         return sorted([x[0].strip() for x in self.cursor.fetchall()])
 
-    def name_for_insee(self, insee, ignore_error=False):
+    def name_for_insee(self, insee):
         req = """
                 SELECT DISTINCT
                     name
@@ -254,9 +254,9 @@ class Postgis(object):
         self.execute(req, [insee])
 
         results = self.cursor.fetchall()
-        if len(results) == 0 and not ignore_error:
-            LOG.critical("Cannot found city with INSEE {}.".format(insee))
-            exit(1)
+        if len(results) == 0:
+            LOG.error("Cannot found city with INSEE {}.".format(insee))
+            return None
 
         return results[0][0] if len(results) else None
 
@@ -276,14 +276,14 @@ class Postgis(object):
 
         results = [x for x in self.cursor.fetchall()]
         if len(results) == 0:
-            LOG.critical("Cannot found city with name {}.".format(name))
-            exit(1)
+            LOG.error("Cannot found city with name {}.".format(name))
+            return None
         elif len(results) == 1:
             return results[0][0]
         elif len(results) > 30:
-            LOG.critical(
+            LOG.error(
                 "Too many cities name starting with {} (total: {}). Please check name.".format(name, len(results)))
-            exit(1)
+            return None
         elif interactive:
             user_input = ''
             while user_input not in [x[0] for x in results]:
@@ -296,8 +296,8 @@ class Postgis(object):
                 )
             return user_input
         else:
-            LOG.critical("More than one city with name {}.".format(name))
-            exit(1)
+            LOG.error("More than one city with name {}.".format(name))
+            return None
 
     def last_import_date(self, insee):
         req = """

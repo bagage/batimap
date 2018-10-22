@@ -27,7 +27,6 @@ services:
     - postgis
     volumes:
     - ./initializer/data:/tmp/batimap-init
-    - ./tiles/data/outdated:/tiles
     networks:
       fixed_network:
         ipv4_address: 10.5.0.250
@@ -70,7 +69,7 @@ services:
     - "5000:5000"
     volumes:
     - ./backend/:/code
-    - ./tiles/data/outdated:/tiles
+    - ./tiles/data/outdated:/code/tiles
     depends_on:
     - postgis
     networks:
