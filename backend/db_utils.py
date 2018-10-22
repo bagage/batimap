@@ -371,7 +371,8 @@ class Postgis(object):
         results = self.cursor.fetchall()
         if len(results) > 1:
             # fixme: this may happen for multi polygons cities (76218 - Doudeauville for instance)
-            LOG.critical(f"Expected a single bbox for insee {insee} at most, but found {len(results)} instead. Taking the first one.")
+            LOG.warning(f"Expected a single bbox for insee {insee} at most, "
+                        f"but found {len(results)} instead. Taking the first one.")
 
         return Bbox(results[0][0]) if len(results) else None
 
