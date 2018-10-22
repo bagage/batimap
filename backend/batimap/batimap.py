@@ -66,9 +66,9 @@ def update_departments_raster_state(db, departments):
             insee = dept + code_commune[len(dept) - 5:]
             is_raster = format_type == 'IMAG'
 
-            name = db.name_for_insee(insee, True)
+            name = db.name_for_insee(insee)
             if not name:
-                LOG.critical(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
+                LOG.error(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
                 continue
 
             date = 'raster' if is_raster else 'never'
