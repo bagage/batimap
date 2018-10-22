@@ -1,5 +1,7 @@
 #!/bin/bash
 
+POSTGRES_PORT=${POSTGRES_PORT:-5432}
+
 if [ $# -gt 0 ]; then
     regions="$@"
 else

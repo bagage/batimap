@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 cmdname=$(basename $0)
+POSTGRES_PORT=${POSTGRES_PORT:-5432}
 
 echoerr() { if [[ $QUIET -ne 1 ]]; then echo "$@" 1>&2; fi }
 
