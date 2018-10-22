@@ -97,7 +97,7 @@ def fetch_departments_osm_state(db, departments):
                     tuples.append((name_cadastre, date))
 
                 c = City(db, name_cadastre)
-                if c.date_cadastre != date:
+                if c.insee and c.date_cadastre != date:
                     LOG.debug(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
                     refresh_tiles.append(c.insee)
 
