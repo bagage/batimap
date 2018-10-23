@@ -1,13 +1,18 @@
 <mat-card>
   <mat-card-title id="title">Date de dernier import par commune</mat-card-title>
   <mat-card-content>
-    <ng-container *ngIf="legendItems$ | async as legendItems; else loading">
+    <ng-container *ngIf="legendItems$ | async as legendItems; else dataHandler">
       <mat-checkbox *ngFor="let item of legendItems" [id]="'legend' + item.name" [(ngModel)]="item.checked"
                     (change)="legendChanges(item)"
                     [ngStyle]="{'color': legendService.date2color(item.name)}">
         {{legendService.date2name(item.name)}} ({{item.percent}}%)
       </mat-checkbox>
     </ng-container>
+    <ng-template #dataHandler>
+      <div *ngIf="error;else loading" class="mat-error">
+        Le serveur est actuellement hors-ligne.
+      </div>
+    </ng-template>
     <ng-template #loading>
       <app-loader></app-loader>
     </ng-template>
