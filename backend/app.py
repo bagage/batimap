@@ -6,6 +6,7 @@ gevent.monkey.patch_all()
 
 import click
 import logging
+import os
 
 from flask import Flask, request
 from flask_restful import inputs
@@ -35,7 +36,9 @@ verbosity = {
 logging.basicConfig(
     format='%(asctime)s %(message)s',
     datefmt="%H:%M:%S",
-    level=verbosity[app.config['VERBOSITY'] or ('DEBUG' if app.config['DEBUG'] else 'CRITICAL')]
+    level=verbosity[os.environ.get('CONFLATION_VERBOSITY') or
+                    app.config['VERBOSITY'] or
+                    ('DEBUG' if app.config['DEBUG'] else 'CRITICAL')]
 )
 
 db = Postgis(

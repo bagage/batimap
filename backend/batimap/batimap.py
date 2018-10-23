@@ -96,10 +96,10 @@ def fetch_departments_osm_state(db, departments):
                 if (datetime.now() - date).days <= MAX_CADASTRE_DATA_DAYS:
                     tuples.append((name_cadastre, date))
 
-                c = City(db, name_cadastre)
-                if c.insee and c.date_cadastre != date:
-                    LOG.debug(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
-                    refresh_tiles.append(c.insee)
+                    c = City(db, name_cadastre)
+                    if c.insee and c.date_cadastre != date:
+                        LOG.debug(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
+                        refresh_tiles.append(c.insee)
 
         db.upsert_city_status(tuples)
         for insee in refresh_tiles:
