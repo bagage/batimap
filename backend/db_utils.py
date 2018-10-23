@@ -416,6 +416,7 @@ class Postgis(object):
                 WHERE e.name_cadastre = c.name_cadastre
         """
         try:
+            LOG.debug(f"Updating cities date_cadastre for {tuples}")
             psycopg2.extras.execute_values(
                 self.cursor, req, tuples)
             self.connection.commit()
