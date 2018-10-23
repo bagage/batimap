@@ -33,9 +33,10 @@ class City(object):
             self.insee = self.__db.insee_for_name(self.name)
 
         if self.name and self.insee:
-            data = db.city_data(self.insee, ["department", "name_cadastre", "is_raster", "details", "date_cadastre"])
-            assert data and len(data) == 5
-            (self.department, self.name_cadastre, self.is_raster, self.details, self.date_cadastre) = data
+            data = db.city_data(self.insee,
+                                ["department", "name", "name_cadastre", "is_raster", "details", "date_cadastre"])
+            assert data and len(data) == 6
+            (self.department, self.name, self.name_cadastre, self.is_raster, self.details, self.date_cadastre) = data
         else:
             self.name = None
             self.insee = None
