@@ -5,7 +5,7 @@ import {LeafletModule} from '@asymmetrik/ngx-leaflet';
 import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-legend.component';
 import {CitiesListModule} from '../cities-list/cities-list.module';
 import {SharedComponentsModule} from '../../components/shared-components.module';
-import {MatLibModule} from '../mat-lib.module';
+import {MatLibModule} from '../../mat-lib.module';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 

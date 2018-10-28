@@ -1,7 +1,7 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {MapDateLegendComponent} from './map-date-legend.component';
-import {MatLibModule} from '../../pages/mat-lib.module';
+import {MatLibModule} from '../../mat-lib.module';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {LeafletModule} from '@asymmetrik/ngx-leaflet';

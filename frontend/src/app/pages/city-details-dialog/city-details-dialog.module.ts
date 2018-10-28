@@ -1,6 +1,6 @@
 import {NgModule} from '@angular/core';
 import {CityDetailsDialogComponent} from './city-details-dialog.component';
-import {MatLibModule} from '../mat-lib.module';
+import {MatLibModule} from '../../mat-lib.module';
 import {CommonModule} from '@angular/common';
 import {SharedComponentsModule} from '../../components/shared-components.module';
 

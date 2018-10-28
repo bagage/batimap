@@ -1,7 +1,7 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {LoaderComponent} from './loader.component';
-import {MatLibModule} from '../../pages/mat-lib.module';
+import {MatLibModule} from '../../mat-lib.module';
 
 describe('LoaderComponent', () => {
   let component: LoaderComponent;

@@ -1,5 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
-import {NgModule, APP_INITIALIZER} from '@angular/core';
+import {APP_INITIALIZER, NgModule} from '@angular/core';
 
 import {AppComponent} from './app.component';
 import {AppConfigService} from './services/app-config.service';
@@ -10,7 +10,6 @@ import {PagesModule} from './pages/pages.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {JosmService} from './services/josm.service';
 import {HttpClientModule} from '@angular/common/http';
-import { JosmButtonComponent } from './components/josm-button/josm-button.component';
 
 const appInitializerFn = (appConfig: AppConfigService) => {
   return () => {
@@ -45,6 +44,7 @@ const appRoutes: Routes = [
       multi: true,
       deps: [AppConfigService]
     },
+    // {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {maxWidth: '700px'}},
     JosmService
   ],
   bootstrap: [AppComponent]

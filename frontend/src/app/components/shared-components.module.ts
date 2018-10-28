@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {JosmButtonComponent} from './josm-button/josm-button.component';
-import {MatLibModule} from '../pages/mat-lib.module';
+import {MatLibModule} from '../mat-lib.module';
 import { LoaderComponent } from './loader/loader.component';
 
 @NgModule({
