@@ -6,8 +6,10 @@
   <div *ngIf="city.details">
     <h4>Détails</h4>
 
-    <h5># Bâtiments par date</h5>
-    <li *ngFor="let k of Object.entries(city.details.dates)">{{k[0]}} - {{k[1]}}</li>
+    <h5>Bâtiments par date</h5>
+    <ul>
+      <li *ngFor="let k of Object.entries(city.details.dates)">{{k[0]}} - {{k[1]}}</li>
+    </ul>
   </div>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
