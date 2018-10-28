@@ -1,4 +1,4 @@
-///<reference path="../../../node_modules/@angular/cdk/tree/typings/tree-module.d.ts"/>
+///<reference path="../../node_modules/@angular/cdk/tree/typings/tree-module.d.ts"/>
 import {NgModule} from '@angular/core';
 import {
   MatAutocompleteModule,

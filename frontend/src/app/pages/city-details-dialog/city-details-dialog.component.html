@@ -1,13 +1,13 @@
 <h2 mat-dialog-title>Détails commune</h2>
 <mat-dialog-content>
   <h3>{{city.insee}} - {{city.name}}</h3>
-  Dernier import en {{city.date}}.
+  {{lastImport()}}
 
   <div *ngIf="city.details">
-    <h4>Détails</h4>
-
-    <h5># Bâtiments par date</h5>
-    <li *ngFor="let k of Object.entries(city.details.dates)">{{k[0]}} - {{k[1]}}</li>
+    <h4>Bâtiments par date</h4>
+    <ul>
+      <li *ngFor="let k of Object.entries(city.details.dates)">{{k[0]}} - {{k[1]}}</li>
+    </ul>
   </div>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">

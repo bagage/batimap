@@ -40,4 +40,17 @@ export class CityDetailsDialogComponent implements OnInit {
         },
         () => this.isUpdating = false);
   }
+
+  lastImport(): string {
+    const d = this.city.date;
+    if (!d || d === 'never') {
+      return 'Le bâti n\'a jamais été importé';
+    } else if (d === 'raster') {
+      return 'Ville raster, pas d\'import possible';
+    } else if (Number.isInteger(+d)) {
+      return `Dernier import en ${d}.`;
+    } else {
+      return `Le bâti existant ne semble pas provenir du cadastre.`;
+    }
+  }
 }

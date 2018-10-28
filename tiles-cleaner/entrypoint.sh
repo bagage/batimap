@@ -2,12 +2,13 @@
 
 INPUT_FILE=/app/data/outdated/outdated.txt
 WORK_FILE=/app/data/outdated/inprogress.txt
+INITIAL_MAX_ZOOM=${INITIAL_MAX_ZOOM:-10}
 
 cd /app
 
 # cache whole world at start, if needed
 rm -rf data/cache/*
-tegola cache seed --max-zoom 10
+tegola cache seed --max-zoom $INITIAL_MAX_ZOOM
 echo > $INPUT_FILE
 
 while true; do

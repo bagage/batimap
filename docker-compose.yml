@@ -46,6 +46,8 @@ services:
 
   tiles-cleaner:
     build: tiles-cleaner
+    environment:
+    - INITIAL_MAX_ZOOM=7
     command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- /entrypoint.sh
     volumes:
     - ./tiles/:/app

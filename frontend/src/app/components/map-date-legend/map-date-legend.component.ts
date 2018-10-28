@@ -5,6 +5,8 @@ import {LegendService} from '../../services/legend.service';
 import * as L from 'leaflet';
 import {Observable} from 'rxjs';
 import {catchError} from 'rxjs/operators';
+import {MatDialog, MatDialogRef} from '@angular/material';
+import {AboutDialogComponent} from '../../pages/about-dialog/about-dialog.component';
 
 @Component({
   selector: 'app-map-date-legend',
@@ -19,7 +21,7 @@ export class MapDateLegendComponent implements OnInit {
   bounds: L.LatLngBounds;
   error = false;
 
-  constructor(private zone: NgZone, private batimapService: BatimapService, public legendService: LegendService) {
+  constructor(private zone: NgZone, private batimapService: BatimapService, public legendService: LegendService, private dialogRef: MatDialog) {
   }
 
   ngOnInit() {
@@ -43,5 +45,9 @@ export class MapDateLegendComponent implements OnInit {
   legendChanges(legend: LegendDTO) {
     this.legendService.setActive(legend, legend.checked);
     this.cadastreLayer.redraw();
+  }
+
+  openHelp() {
+    this.dialogRef.open(AboutDialogComponent);
   }
 }

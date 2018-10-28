@@ -1,4 +1,7 @@
-import { Component } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {MatDialog} from '@angular/material';
+import {AboutDialogComponent} from './pages/about-dialog/about-dialog.component';
+import {Title} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +9,11 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'batimap';
+  constructor(matDialog: MatDialog, titleService: Title) {
+    titleService.setTitle('État du bâti dans OSM');
+
+    if (localStorage.getItem('first-time-help') !== 'false') {
+      matDialog.open(AboutDialogComponent);
+    }
+  }
 }

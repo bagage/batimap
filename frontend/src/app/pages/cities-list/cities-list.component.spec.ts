@@ -1,7 +1,7 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {CitiesListComponent} from './cities-list.component';
-import {MatLibModule} from '../mat-lib.module';
+import {MatLibModule} from '../../mat-lib.module';
 import {SharedComponentsModule} from '../../components/shared-components.module';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';

@@ -1,5 +1,5 @@
 <mat-card>
-  <mat-card-title id="title">Date de dernier import par commune</mat-card-title>
+  <mat-card-title id="title">Date de dernier import par commune <button mat-mini-fab color="primary" (click)="openHelp()">Aide</button></mat-card-title>
   <mat-card-content>
     <ng-container *ngIf="legendItems$ | async as legendItems; else dataHandler">
       <mat-checkbox *ngFor="let item of legendItems" [id]="'legend' + item.name" [(ngModel)]="item.checked"
