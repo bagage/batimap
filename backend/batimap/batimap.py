@@ -122,7 +122,8 @@ def josm_data(db, insee):
 
 
 def fetch_cadastre_data(city, force=False):
-    __total_pdfs_regex = re.compile(r".*coupe la bbox en \d+ \* \d+ \[(\d+) pdfs\]$")
+    __total_pdfs_regex = re.compile(r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$")
+    __pdf_progression_regex = re.compile(r".*\d+-(\d+)-(\d+).pdf$")
 
     if not city or not city.name_cadastre:
         return False
@@ -151,18 +152,22 @@ def fetch_cadastre_data(city, force=False):
 
     # otherwise we invoke Cadastre generation
     with closing(requests.post(url, data=data, stream=True)) as r:
-        total = 0
+        (total_y, total) = (0, 0)
         current = 0
         for line in r.iter_lines(decode_unicode=True):
-            # only display progression
-            # TODO: improve this…
-            if "coupe la bbox en" in line:
-                match = __total_pdfs_regex.match(line)
-                if match:
-                    total = int(match.groups()[0])
-
-            if line.endswith(".pdf"):
-                current += 1
+            match = __total_pdfs_regex.match(line)
+            if match:
+                total_y = int(match.groups()[1])
+                total = int(match.groups()[2])
+            match = __pdf_progression_regex.match(line)
+            if match:
+                x = int(match.groups()[0])
+                y = int(match.groups()[1])
+                current = x * total_y + y
+                msg = f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
+                LOG.info(msg)
+            if "Termin" in line:
+                current = total
                 msg = f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
                 LOG.info(msg)
             elif "ERROR:" in line or "ERREUR:" in line:
