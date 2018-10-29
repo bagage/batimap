@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@ang
 import {CityDTO} from '../../classes/city.dto';
 import {JosmService} from '../../services/josm.service';
 import {BatimapService} from '../../services/batimap.service';
+import {ConflateCityDTO} from '../../classes/conflate-city.dto';
 
 @Component({
   selector: 'app-josm-button',
@@ -30,7 +31,11 @@ export class JosmButtonComponent {
 
   prepareCity() {
     this.isLoading = true;
-    this.batimapService.cityData(this.city.insee).subscribe(null, null, () => {
+    this.batimapService.cityData(this.city.insee).subscribe((conflateDTO: ConflateCityDTO) => {
+      if (conflateDTO.buildingsUrl && conflateDTO.segmententationPredictionssUrl) {
+        this.city.josm_ready = true;
+      }
+    }, null, () => {
       this.isLoading = false;
       this.changeDetector.detectChanges();
     });
