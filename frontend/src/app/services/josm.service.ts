@@ -1,8 +1,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import {empty, Observable, of} from 'rxjs';
 import {CityDTO} from '../classes/city.dto';
-import {catchError, flatMap, map, share} from 'rxjs/operators';
+import {catchError, flatMap, map, share, switchMap, tap} from 'rxjs/operators';
 import {BatimapService} from './batimap.service';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class JosmService {
   private JOSM_URL_BASE = 'http://127.0.0.1:8111/';
   private JOSM_URL_VERSION = this.JOSM_URL_BASE + 'version';
 
-  private JOSM_URL_IMAGERY(title: string, url: string): Observable<any> {
+  private JOSM_URL_IMAGERY(title: string, url: string): Observable<string> {
     return this.http.get(this.JOSM_URL_BASE + 'imagery', {
       responseType: 'text',
       params: {
@@ -23,19 +23,29 @@ export class JosmService {
     });
   };
 
-  private JOSM_URL_OPEN_FILE(url: string, locked: boolean): Observable<any> {
-    return this.http.get(this.JOSM_URL_BASE + 'import', {
-      responseType: 'text',
-      params: {
-        new_layer: 'true',
-        upload_policy: locked ? 'never' : 'true',
-        layer_locked: `${locked}`,
-        url
-      }
-    });
+  private JOSM_URL_OPEN_FILE(url: string, locked: boolean): Observable<string> {
+    // first ensure that the file exists, then load it into JOSM
+    return this.http.head(url).pipe(
+      catchError((e) => {
+        console.warn('OSM data at url', url, 'could not be found, not opening it in JOSM', e);
+        return empty();
+      }),
+      switchMap(() => {
+        console.log('returning another observable');
+        return this.http.get(this.JOSM_URL_BASE + 'import', {
+          responseType: 'text',
+          params: {
+            new_layer: 'true',
+            upload_policy: locked ? 'never' : 'true',
+            layer_locked: `${locked}`,
+            url
+          }
+        });
+      })
+    );
   };
 
-  private JOSM_URL_OSM_DATA_FOR_BBOX(layerName: string, left: string, right: string, bottom: string, top: string): Observable<any> {
+  private JOSM_URL_OSM_DATA_FOR_BBOX(layerName: string, left: string, right: string, bottom: string, top: string): Observable<string> {
     return this.http.get(this.JOSM_URL_BASE + 'load_and_zoom',
       {
         responseType: 'text',
@@ -58,18 +68,19 @@ export class JosmService {
     return this.http.get(this.JOSM_URL_VERSION).pipe(map(() => true), catchError(() => of(false)), share());
   }
 
-  public conflateCity(city: CityDTO): Observable<any> {
+  public conflateCity(city: CityDTO): Observable<string> {
     // get city data
     return this.batimapService.cityData(city.insee)
       .pipe(flatMap(dto => this.JOSM_URL_IMAGERY('BDOrtho IGN', 'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg')
         .pipe(flatMap(() => this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false)
-          .pipe(flatMap(() => this.JOSM_URL_OPEN_FILE(dto.segmententationPredictionssUrl, false/*cannot be locked otherwise todo plugin wont work*/)
-            .pipe(flatMap(() => this.JOSM_URL_OSM_DATA_FOR_BBOX(`Données OSM pour ${city.insee} - ${city.name}`,
-              dto.bbox[0].toString(),
-              dto.bbox[1].toString(),
-              dto.bbox[2].toString(),
-              dto.bbox[3].toString()
-            )))
+          .pipe(flatMap(() =>
+            this.JOSM_URL_OPEN_FILE(dto.segmententationPredictionssUrl, false/*cannot be locked otherwise todo plugin wont work*/)
+              .pipe(flatMap(() => this.JOSM_URL_OSM_DATA_FOR_BBOX(`Données OSM pour ${city.insee} - ${city.name}`,
+                dto.bbox[0].toString(),
+                dto.bbox[1].toString(),
+                dto.bbox[2].toString(),
+                dto.bbox[3].toString()
+              )))
           ))
         ))
       ));

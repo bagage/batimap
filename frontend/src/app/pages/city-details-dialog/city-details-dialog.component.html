@@ -12,7 +12,7 @@
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
   <button mat-raised-button color="warn" cdkFocusInitial mat-dialog-close>Fermer</button>
-  <button mat-raised-button color="primary" (click)="updateCity()" *ngIf="!isUpdating; else loading">Raffraichir</button>
+  <button mat-raised-button color="primary" (click)="updateCity()" *ngIf="!isUpdating; else loading">Rafraîchir</button>
   <app-josm-button [city]="city" [josmReady]="josmIsStarted | async"></app-josm-button>
 </mat-dialog-actions>
 

@@ -32,7 +32,7 @@ export class JosmButtonComponent {
   prepareCity() {
     this.isLoading = true;
     this.batimapService.cityData(this.city.insee).subscribe((conflateDTO: ConflateCityDTO) => {
-      if (conflateDTO.buildingsUrl && conflateDTO.segmententationPredictionssUrl) {
+      if (conflateDTO.buildingsUrl) {
         this.city.josm_ready = true;
       }
     }, null, () => {
