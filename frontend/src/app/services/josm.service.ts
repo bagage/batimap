@@ -31,7 +31,6 @@ export class JosmService {
         return empty();
       }),
       switchMap(() => {
-        console.log('returning another observable');
         return this.http.get(this.JOSM_URL_BASE + 'import', {
           responseType: 'text',
           params: {
