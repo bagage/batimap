@@ -15,7 +15,6 @@ export class CityDetailsDialogComponent implements OnInit {
   josmIsStarted: Observable<boolean>;
 
   cadastreLayer: any;
-  detailsEntry: [string, string][];
 
   updateButtonOpts: MatProgressButtonOptions = {
     active: false,
@@ -34,7 +33,6 @@ export class CityDetailsDialogComponent implements OnInit {
               public batimapService: BatimapService) {
     this.city = data[0];
     this.cadastreLayer = data[1];
-    this.detailsEntry = Object.entries(this.city.details.dates);
   }
 
   ngOnInit(): void {
@@ -63,5 +61,9 @@ export class CityDetailsDialogComponent implements OnInit {
     } else {
       return `Le bâti existant ne semble pas provenir du cadastre.`;
     }
+  }
+
+  get detailsEntry(): [string, string][] {
+    return this.city && this.city.details ? Object.entries(this.city.details.dates) : [];
   }
 }
