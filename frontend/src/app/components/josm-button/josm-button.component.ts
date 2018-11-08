@@ -3,6 +3,9 @@ import {CityDTO} from '../../classes/city.dto';
 import {JosmService} from '../../services/josm.service';
 import {BatimapService} from '../../services/batimap.service';
 import {ConflateCityDTO} from '../../classes/conflate-city.dto';
+import {MatProgressButtonOptions} from 'mat-progress-buttons';
+import {Observable} from 'rxjs';
+import {tap} from 'rxjs/operators';
 
 @Component({
   selector: 'app-josm-button',
@@ -11,33 +14,65 @@ import {ConflateCityDTO} from '../../classes/conflate-city.dto';
   styleUrls: ['./josm-button.component.css']
 })
 export class JosmButtonComponent {
-  @Input() city: CityDTO;
-  @Input() josmReady: boolean;
+  private _city: CityDTO;
 
-  isLoading = false;
+  @Input()
+  set city(value: CityDTO) {
+    this._city = value;
+    if (value.josm_ready) {
+      this.options.tooltip = 'Ouvre JOSM avec les calques préconfigurés pour la commune sélectionnée. ' +
+        'Si le bouton n\'est pas actif, JOSM n\'est probablement pas démarré';
+      this.options.text = 'JOSM';
+      this.options.barColor = this.options.buttonColor = 'primary';
+    } else {
+      this.options.tooltip = 'Prépare les données pour pouvoir être ensuite éditer avec JOSM';
+      this.options.text = 'Préparer';
+      this.options.barColor = this.options.buttonColor = 'secondary';
+    }
+  }
+
+  @Input()
+  set josmReady(value: boolean) {
+    this.options.disabled = this._city.josm_ready && !value;
+  }
+
+  options = {
+    active: false,
+    text: '',
+    buttonColor: 'primary',
+    barColor: 'primary',
+    raised: true,
+    stroked: false,
+    mode: 'indeterminate',
+    value: 0,
+    disabled: false,
+    tooltip: ''
+  };
 
   constructor(private josmService: JosmService,
               private batimapService: BatimapService,
               private changeDetector: ChangeDetectorRef) {
   }
 
-  conflateCity() {
-    this.isLoading = true;
-    this.josmService.conflateCity(this.city).subscribe(null, null, () => {
-      this.isLoading = false;
+
+  onClick() {
+    this.options.active = true;
+    const obs = this.city.josm_ready ? this.conflateCity() : this.prepareCity();
+    obs.subscribe(null, null, () => {
+      this.options.active = false;
       this.changeDetector.detectChanges();
     });
   }
 
-  prepareCity() {
-    this.isLoading = true;
-    this.batimapService.cityData(this.city.insee).subscribe((conflateDTO: ConflateCityDTO) => {
+  conflateCity(): Observable<any> {
+    return this.josmService.conflateCity(this._city);
+  }
+
+  prepareCity(): Observable<any> {
+    return this.batimapService.cityData(this._city.insee).pipe(tap((conflateDTO: ConflateCityDTO) => {
       if (conflateDTO.buildingsUrl) {
-        this.city.josm_ready = true;
+        this._city.josm_ready = true;
       }
-    }, null, () => {
-      this.isLoading = false;
-      this.changeDetector.detectChanges();
-    });
+    }));
   }
 }

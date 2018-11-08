@@ -63,6 +63,7 @@ export class MapComponent {
   }
 
   setupVectorTiles(map) {
+    // noinspection JSUnusedGlobalSymbols
     const vectorTileOptions = {
       vectorTileLayerStyles: {
         'cities': (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),

@@ -10,6 +10,7 @@ import {PagesModule} from './pages/pages.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {JosmService} from './services/josm.service';
 import {HttpClientModule} from '@angular/common/http';
+import {MatProgressButtonsModule} from 'mat-progress-buttons';
 
 const appInitializerFn = (appConfig: AppConfigService) => {
   return () => {
@@ -31,6 +32,7 @@ const appRoutes: Routes = [
     HttpClientModule,
     PagesModule,
     LeafletModule.forRoot(),
+    MatProgressButtonsModule.forRoot(),
     RouterModule.forRoot(
       appRoutes
       // ,{enableTracing: true}

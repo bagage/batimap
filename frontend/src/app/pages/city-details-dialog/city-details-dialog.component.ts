@@ -1,10 +1,10 @@
-import {Component, Inject, Input, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA} from '@angular/material';
 import {CityDTO} from '../../classes/city.dto';
 import {JosmService} from '../../services/josm.service';
 import {Observable} from 'rxjs';
 import {BatimapService} from '../../services/batimap.service';
-import {LegendService} from '../../services/legend.service';
+import {MatProgressButtonOptions} from 'mat-progress-buttons';
 
 @Component({
   templateUrl: './city-details-dialog.component.html',
@@ -13,15 +13,24 @@ import {LegendService} from '../../services/legend.service';
 export class CityDetailsDialogComponent implements OnInit {
   city: CityDTO;
   josmIsStarted: Observable<boolean>;
-  isUpdating = false;
 
   cadastreLayer: any;
-  Object = Object;
+
+  updateButtonOpts: MatProgressButtonOptions = {
+    active: false,
+    text: 'Rafraîchir',
+    buttonColor: 'primary',
+    barColor: 'primary',
+    raised: true,
+    stroked: false,
+    mode: 'indeterminate',
+    value: 0,
+    disabled: false
+  };
 
   constructor(@Inject(MAT_DIALOG_DATA) private data: [CityDTO, any],
               public josmService: JosmService,
-              public batimapService: BatimapService,
-              private legendService: LegendService) {
+              public batimapService: BatimapService) {
     this.city = data[0];
     this.cadastreLayer = data[1];
   }
@@ -31,14 +40,14 @@ export class CityDetailsDialogComponent implements OnInit {
   }
 
   updateCity() {
-    this.isUpdating = true;
+    this.updateButtonOpts.active = true;
     this.batimapService.updateCity(this.city.insee)
       .subscribe(result => {
-          this.isUpdating = false;
+          this.updateButtonOpts.active = false;
           this.city = result;
           this.cadastreLayer.redraw();
         },
-        () => this.isUpdating = false);
+        () => this.updateButtonOpts.active = false);
   }
 
   lastImport(): string {
@@ -52,5 +61,9 @@ export class CityDetailsDialogComponent implements OnInit {
     } else {
       return `Le bâti existant ne semble pas provenir du cadastre.`;
     }
+  }
+
+  get detailsEntry(): [string, string][] {
+    return this.city && this.city.details ? Object.entries(this.city.details.dates) : [];
   }
 }

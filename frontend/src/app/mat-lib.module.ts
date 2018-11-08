@@ -40,6 +40,7 @@ import {
 import {CdkTableModule} from '@angular/cdk/table';
 import {CdkTreeModule} from '@angular/cdk/tree';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatProgressButtonsModule} from 'mat-progress-buttons';
 
 @NgModule({
   exports: [
@@ -82,6 +83,8 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
     MatToolbarModule,
     MatTooltipModule,
     MatTreeModule,
+    MatProgressButtonsModule
   ]
 })
-export class MatLibModule { }
+export class MatLibModule {
+}
