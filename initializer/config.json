@@ -1,0 +1,5 @@
+{
+    "mapping": "mapping.json",
+    "srid": 4326,
+    "cachedir": "cache"
+}

@@ -1,0 +1,92 @@
+{
+    "areas": {
+        "area_tags": [
+            "buildings",
+            "landuse",
+            "leisure",
+            "natural",
+            "aeroway"
+        ],
+        "linear_tags": [
+            "highway",
+            "barrier"
+        ]
+    },
+    "tables": {
+        "buildings": {
+            "columns": [
+                {
+                    "type": "id",
+                    "name": "osm_id",
+                    "key": null
+                },
+                {
+                    "type": "geometry",
+                    "name": "geometry",
+                    "key": null
+                },
+                {
+                    "type": "string",
+                    "name": "name",
+                    "key": "name"
+                },
+                {
+                    "type": "string",
+                    "name": "source",
+                    "key": "source"
+                },
+                {
+                    "type": "mapping_value",
+                    "name": "building",
+                    "key": null
+                }
+            ],
+            "type": "polygon",
+            "mapping": {
+                "building": [
+                    "__any__"
+                ]
+            }
+        },
+        "admin": {
+            "columns": [
+                {
+                    "type": "id",
+                    "name": "osm_id",
+                    "key": null
+                },
+                {
+                    "type": "geometry",
+                    "name": "geometry",
+                    "key": null
+                },
+                {
+                    "type": "string",
+                    "name": "name",
+                    "key": "name"
+                },
+                {
+                    "type": "mapping_value",
+                    "name": "boundary",
+                    "key": null
+                },
+                {
+                    "type": "integer",
+                    "name": "admin_level",
+                    "key": "admin_level"
+                },
+                {
+                    "type": "string",
+                    "name": "insee",
+                    "key": "ref:INSEE"
+                }
+            ],
+           "type": "polygon",
+            "mapping": {
+                "boundary": [
+                    "administrative"
+                ]
+            }
+        }
+    }
+}

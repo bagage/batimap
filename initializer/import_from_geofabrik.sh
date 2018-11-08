@@ -36,29 +36,19 @@ fi
 set -e
 
 SCRIPT_DIR=$(realpath $(dirname $0))
-WORK_DIR=/tmp/batimap-init
+WORK_DIR=/app
 
-mkdir -p $WORK_DIR
 cd $WORK_DIR
 
+echo "downloading $regions"
+
 for region in $regions; do
+    echo "downloading $region.osm.pbf"
     file=$(basename $region).osm.pbf
     axel --no-clobber http://download.geofabrik.de/europe/$region.osm.pbf || test -f $file
     axel --no-clobber http://download.geofabrik.de/europe/$region.osm.pbf.md5 || test -f $file.md5
     md5sum -c $file.md5
 done
-
-for region in $regions; do
-    region=$(basename $region)
-    echo "Preparing $region…"
-    # only keep administrative boundaries and buildings
-    test -f ${region}_boundaries.osm.pbf || osmium tags-filter $region.osm.pbf "type=boundary,boundary=administrative" -o ${region}_boundaries.osm.pbf
-    test -f ${region}_buildings.osm.pbf || osmium tags-filter $region.osm.pbf "building" -o ${region}_buildings.osm.pbf
-done
-
-echo "Persisting in db…"
-osmium merge --overwrite *_boundaries.osm.pbf -o boundaries.osm.pbf
-osmium merge --overwrite *_buildings.osm.pbf -o buildings.osm.pbf
 
 echo "Waiting for postgis to be available..."
 while :
@@ -72,13 +62,16 @@ do
     sleep 5
 done
 
-PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
-    --verbose --proj 4326 --database $POSTGRES_DB boundaries.osm.pbf \
-    --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
-PGPASSWORD=$POSTGRES_PASSWORD osm2pgsql -H $POSTGRES_HOST -U $POSTGRES_USER -P $POSTGRES_PORT \
-    --verbose --proj 4326 --database $POSTGRES_DB --prefix buildings_osm buildings.osm.pbf \
-    --style $SCRIPT_DIR/osm2pgsql.style --slim --flat-nodes osm2pgsql.flatnodes
 
-rm osm2pgsql.flatnodes
+
+connection_param="postgis://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
+for region in $regions; do
+    region=$(basename $region)
+    echo "Preparing $region…"
+    # only keep administrative boundaries and buildings
+    imposm import -config config.json -connection $connection_param -read $region.osm.pbf -appendcache
+done
+imposm import -config config.json -connection $connection_param -write -optimize
+imposm import -config config.json -connection $connection_param -deployproduction
 
 echo "Imports done!"

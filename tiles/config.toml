@@ -19,52 +19,51 @@ srid = 4326             # The default srid for this provider. If not provided it
 
 [[providers.layers]]
 name = "cities"
-geometry_fieldname = "way"
+geometry_fieldname = "geometry"
 id_fieldname = "osm_id"
 sql = """
   SELECT
-    ST_AsBinary(ST_Simplify(way, 0.002, true)) AS way,
-    c.name,
-    c.details,
-    insee,
-    date,
-    case when date_cadastre is null then '' else 'true' end as josm_ready,
-    osm_id
+    ST_AsBinary(ST_Simplify(geometry, 0.002, true)) AS geometry,
+    oa.osm_id,
+    cs.name,
+    cs.insee,
+    cs.details,
+    cs.date,
+    case when cs.date_cadastre is null then '' else 'true' end as josm_ready
   FROM
-    planet_osm_polygon, city_stats c
+    osm_admin oa,
+    city_stats cs
   WHERE
-    admin_level::int >= '8'
-    AND c.insee = "ref:INSEE"
-    AND "ref:INSEE" = insee
-    AND way && !BBOX!
+    oa.admin_level::int >= '7'
+    AND cs.insee = oa.insee
+    AND geometry && !BBOX!
 """
 
 [[providers.layers]]
 name = "cities-point"
-geometry_fieldname = "way"
+geometry_fieldname = "geometry"
 id_fieldname = "osm_id"
 sql = """
   SELECT
-    ST_AsBinary(ST_Centroid(way)) AS way,
-    c.name,
-    c.details,
-    insee,
-    date,
-    case when date_cadastre is null then '' else 'true' end as josm_ready,
-    osm_id
+    ST_AsBinary(ST_Centroid(oa.geometry)) AS geometry,
+    oa.osm_id,
+    cs.name,
+    cs.details,
+    cs.insee,
+    cs.date,
+    case when cs.date_cadastre is null then '' else 'true' end as josm_ready
   FROM
-    planet_osm_polygon,
-    city_stats c
+    osm_admin  oa,
+    city_stats cs
   WHERE
-    admin_level::int >= '8'
-    AND c.insee = "ref:INSEE"
-    AND "ref:INSEE" = insee
-    AND way && !BBOX!
+    oa.admin_level::int >= '7'
+    AND cs.insee = oa.insee
+    AND geometry && !BBOX!
 """
 
 [[providers.layers]]
 name = "departments"
-geometry_fieldname = "way"
+geometry_fieldname = "geometry"
 id_fieldname = "osm_id"
 sql = """
   WITH view_department_stats AS (
@@ -81,33 +80,33 @@ sql = """
       COUNT(date) DESC
   )
   SELECT
-    ST_AsBinary(ST_Simplify(way, 0.03, true)) AS way,
-    date,
-    p.name,
-    "ref:INSEE" AS insee,
-    osm_id
+    ST_AsBinary(ST_Simplify(oa.geometry, 0.03, true)) AS geometry,
+    vds.date,
+    oa.name,
+    oa.insee AS insee,
+    oa.osm_id
   FROM
-    planet_osm_polygon p,
-    view_department_stats
+    osm_admin oa,
+    view_department_stats  vds
   WHERE
-    admin_level = '6'
-    AND "ref:INSEE" LIKE department || '%'
-    AND way && !BBOX!
+    oa.admin_level = '6'
+    AND oa.insee LIKE vds.department || '%'
+    AND geometry && !BBOX!
 """
 
 [[maps]]
 name = "batimap"
-[[maps.layers]]
-provider_layer = "cadastre.cities"
-min_zoom = 9
-max_zoom = 13
+  [[maps.layers]]
+  provider_layer = "cadastre.cities"
+  min_zoom = 9
+  max_zoom = 13
 
-[[maps.layers]]
-provider_layer = "cadastre.cities-point"
-min_zoom = 8
-max_zoom = 8
+  [[maps.layers]]
+  provider_layer = "cadastre.cities-point"
+  min_zoom = 8
+  max_zoom = 8
 
-[[maps.layers]]
-provider_layer = "cadastre.departments"
-min_zoom = 0
-max_zoom = 7
+  [[maps.layers]]
+  provider_layer = "cadastre.departments"
+  min_zoom = 0
+  max_zoom = 7

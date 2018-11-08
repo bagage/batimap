@@ -1,21 +1,28 @@
 FROM debian:sid-slim
 
-RUN apt update && apt install --no-install-recommends -y axel postgresql postgresql-client osmctools osmium-tool && apt clean
+RUN apt update && apt install --no-install-recommends -y axel postgresql-client curl jq ca-certificates && apt clean
 
-# compile oms2psql manually for https://github.com/openstreetmap/osm2pgsql/pull/865
-RUN apt update \
-    && apt install -y git cmake libpq-dev g++ libproj-dev libosmium2-dev \
-                      libboost-system-dev libboost-filesystem-dev liblua5.3-dev \
-    && apt clean \
-    && cd /tmp/ \
-    && git clone https://github.com/bagage/osm2pgsql --depth 1 -b drop-old-style-mps \
-    && mkdir osm2pgsql/build \
-    && cd /tmp/osm2pgsql/build \
-    && cmake .. && make install \
-    && cd /tmp/ && rm -rf osm2pgsql
+# 0 == latest
+ARG VERSION="0"
+ARG FILE="imposm-latest.tar.gz"
 
+RUN curl -L -H 'Accept:application/octet-stream' \
+    `curl -H "Accept: application/vnd.github.v3.raw" -s https://api.github.com/repos/omniscale/imposm3/releases | jq -r ".[0].assets[0].browser_download_url"` --output /tmp/$FILE && \
+    cd /tmp && \
+    dir=$(tar --exclude="*/*" -tf $FILE) && \
+    tar xzf $FILE && \
+    cd $dir && \
+    mv imposm /usr/bin/imposm && \
+    mv lib/* /usr/lib && \
+    cd / && \
+    rm /tmp/$FILE && \
+    chmod +x /usr/bin/imposm
+
+RUN mkdir /app
+
+COPY config.json /app
+COPY mapping.json /app
 COPY import_from_geofabrik.sh /
-COPY osm2pgsql.style /
 COPY wait-for-it.sh /
 
 RUN chmod +x /import_from_geofabrik.sh
