@@ -57,7 +57,7 @@ export class JosmButtonComponent {
 
   onClick() {
     this.options.active = true;
-    const obs = this.city.josm_ready ? this.conflateCity() : this.prepareCity();
+    const obs = this._city.josm_ready ? this.conflateCity() : this.prepareCity();
     obs.subscribe(null, null, () => {
       this.options.active = false;
       this.changeDetector.detectChanges();
