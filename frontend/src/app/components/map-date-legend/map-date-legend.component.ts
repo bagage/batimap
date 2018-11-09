@@ -5,7 +5,7 @@ import {LegendService} from '../../services/legend.service';
 import * as L from 'leaflet';
 import {Observable} from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {MatDialog, MatDialogRef} from '@angular/material';
+import {MatDialog} from '@angular/material';
 import {AboutDialogComponent} from '../../pages/about-dialog/about-dialog.component';
 
 @Component({
@@ -27,13 +27,16 @@ export class MapDateLegendComponent implements OnInit {
   ngOnInit() {
     this.refreshLegend();
     this.map.on('moveend', () => {
-      this.refreshLegend();
+      this.zone.run(() => {
+        this.refreshLegend();
+      });
     });
   }
 
   refreshLegend() {
-    if (!this.bounds || this.bounds.toBBoxString() !== this.map.getBounds().toBBoxString()) {
-      this.bounds = this.map.getBounds();
+    const bounds = this.map.getBounds();
+    if (!this.bounds || this.bounds.toBBoxString() !== bounds.toBBoxString()) {
+      this.bounds = bounds;
       this.error = false;
       this.legendItems$ = this.batimapService.legendForBbox(this.bounds).pipe(catchError((err) => {
         this.error = true;
