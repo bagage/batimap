@@ -11,6 +11,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {JosmService} from './services/josm.service';
 import {HttpClientModule} from '@angular/common/http';
 import {MatProgressButtonsModule} from 'mat-progress-buttons';
+import {MAT_STEPPER_GLOBAL_OPTIONS} from '@angular/cdk/stepper';
 
 const appInitializerFn = (appConfig: AppConfigService) => {
   return () => {
@@ -45,6 +46,11 @@ const appRoutes: Routes = [
       useFactory: appInitializerFn,
       multi: true,
       deps: [AppConfigService]
+    },
+    // allow custom icons in howto stepper
+    {
+      provide: MAT_STEPPER_GLOBAL_OPTIONS,
+      useValue: { displayDefaultIndicatorType: false }
     },
     // {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {maxWidth: '700px'}},
     JosmService

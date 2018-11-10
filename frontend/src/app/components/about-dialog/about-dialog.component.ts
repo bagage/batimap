@@ -1,5 +1,7 @@
 import {Component, OnDestroy} from '@angular/core';
 import {environment} from '../../../environments/environment';
+import {MatDialog} from '@angular/material';
+import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
 
 @Component({
   selector: 'app-about-dialog',
@@ -9,7 +11,14 @@ import {environment} from '../../../environments/environment';
 export class AboutDialogComponent implements OnDestroy {
   version = environment.version;
 
+  constructor(private matDialog: MatDialog) {
+  }
+
   ngOnDestroy() {
     localStorage.setItem('first-time-help', 'false');
+  }
+
+  showHowto() {
+    this.matDialog.open(HowtoDialogComponent);
   }
 }
