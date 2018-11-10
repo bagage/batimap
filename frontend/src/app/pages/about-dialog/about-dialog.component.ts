@@ -1,4 +1,5 @@
 import {Component, OnDestroy} from '@angular/core';
+import {environment} from '../../../environments/environment';
 
 @Component({
   selector: 'app-about-dialog',
@@ -6,6 +7,8 @@ import {Component, OnDestroy} from '@angular/core';
   styleUrls: ['./about-dialog.component.css']
 })
 export class AboutDialogComponent implements OnDestroy {
+  version = environment.version;
+
   ngOnDestroy() {
     localStorage.setItem('first-time-help', 'false');
   }
