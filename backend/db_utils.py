@@ -440,7 +440,7 @@ class Postgis(object):
                     {table} p
                 WHERE
                     p.building is not null
-                    AND ST_Contains(c.geometry, p.geometry)
+                    AND ST_Intersects(c.geometry, p.geometry)
                 GROUP BY
                     c.insee, c.name, p.source, c.is_raster
                 ORDER BY
