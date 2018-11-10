@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {MatDialog} from '@angular/material';
-import {AboutDialogComponent} from './pages/about-dialog/about-dialog.component';
+import {AboutDialogComponent} from './components/about-dialog/about-dialog.component';
 import {Title} from '@angular/platform-browser';
 import {environment} from '../environments/environment';
 

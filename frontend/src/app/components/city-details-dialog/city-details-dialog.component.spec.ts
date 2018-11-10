@@ -2,7 +2,7 @@ import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {CityDetailsDialogComponent} from './city-details-dialog.component';
 import {MatLibModule} from '../../mat-lib.module';
-import {SharedComponentsModule} from '../../components/shared-components.module';
+import {SharedComponentsModule} from '../shared-components.module';
 import {MAT_DIALOG_DATA} from '@angular/material';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';

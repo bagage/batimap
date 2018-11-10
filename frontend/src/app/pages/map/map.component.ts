@@ -4,7 +4,7 @@ import { AppConfigService } from '../../services/app-config.service';
 import * as L from 'leaflet';
 import {latLng, tileLayer} from 'leaflet';
 import {MatDialog} from '@angular/material';
-import {CityDetailsDialogComponent} from '../city-details-dialog/city-details-dialog.component';
+import {CityDetailsDialogComponent} from '../../components/city-details-dialog/city-details-dialog.component';
 import {CityDTO} from '../../classes/city.dto';
 import {plainToClass} from 'class-transformer';
 import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-legend.component';

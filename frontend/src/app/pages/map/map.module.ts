@@ -7,9 +7,8 @@ import 'leaflet';
 import 'leaflet.vectorgrid';
 import 'leaflet.restoreview';
 import {MatLibModule} from '../../mat-lib.module';
-import {CityDetailsDialogModule} from '../city-details-dialog/city-details-dialog.module';
+import {CityDetailsDialogModule} from '../../components/city-details-dialog/city-details-dialog.module';
 import {CommonModule} from '@angular/common';
-import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-legend.component';
 import {SharedComponentsModule} from '../../components/shared-components.module';
 
 @NgModule({
@@ -21,7 +20,7 @@ import {SharedComponentsModule} from '../../components/shared-components.module'
     CityDetailsDialogModule,
     SharedComponentsModule
   ],
-  declarations: [MapComponent, MapDateLegendComponent],
+  declarations: [MapComponent],
 })
 export class MapModule {
 }
