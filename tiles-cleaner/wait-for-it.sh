@@ -20,6 +20,8 @@ USAGE
     exit 1
 }
 
+FILE="/app/data/outdated/initdb_is_done"
+
 wait_for()
 {
     echoerr "$cmdname: waiting for postgis to be initialized without a timeout"
@@ -27,19 +29,18 @@ wait_for()
     start_ts=$(date +%s)
     while :
     do
-        count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT \
-        -d $POSTGRES_DB -c "SELECT count(*) FROM city_stats where last_update is null and is_raster is false" 2>/dev/null`
-        result=$?
-        if [[ $result -eq 0 ]]; then
-            if [[ $count -lt 100 ]]; then
-                end_ts=$(date +%s)
-                echoerr "$cmdname: postgis is available after $((end_ts - start_ts)) seconds"
-                break
-            fi
+        if [[ -f $FILE ]]; then
+            end_ts=$(date +%s)
+            echoerr "$cmdname: initdb task is done after $((end_ts - start_ts)) seconds"
+            break
         fi
         sleep 15
     done
-    return $result
+
+    # We need to remove this file
+    rm $FILE
+
+    return 0
 }
 
 # process arguments
