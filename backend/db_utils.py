@@ -55,8 +55,8 @@ class Postgis(object):
         self.execute(req)
         LOG.debug('city_stats table created')
 
-        self.execute("CREATE INDEX IF NOT EXISTS way_gist ON planet_osm_polygon USING gist(way);")
-        self.execute("CREATE INDEX IF NOT EXISTS insee_idx ON planet_osm_polygon((\"ref:INSEE\"));")
+        # self.execute("CREATE INDEX IF NOT EXISTS way_gist ON planet_osm_polygon USING gist(way);")
+        # self.execute("CREATE INDEX IF NOT EXISTS insee_idx ON planet_osm_polygon((\"ref:INSEE\"));")
         self.connection.commit()
 
     def get_insee(self, insee: int) -> FeatureCollection:
@@ -65,14 +65,13 @@ class Postgis(object):
                     p.name,
                     c.insee,
                     c.date,
-                    ST_AsGeoJSON(p.way) AS geometry
+                    ST_AsGeoJSON(p.geometry) AS geometry
                 FROM
-                    planet_osm_polygon p,
+                    osm_admin  p,
                     city_stats c
                 WHERE
-                    p."ref:INSEE" = %s
-                AND
-                    p."ref:INSEE" = c.insee
+                    p.insee = %s
+                    AND p.insee = c.insee
         """
         self.execute(req, [insee])
         features = []
@@ -89,16 +88,15 @@ class Postgis(object):
     def get_cities_for_date(self, date):
         req = """
                 SELECT
-                    p.name, c.insee
+                    p.name,
+                    c.insee
                 FROM
-                    planet_osm_polygon p,
+                    osm_admin  p,
                     city_stats c
                 WHERE
                     p.admin_level::int >= 8
-                AND
-                    c.insee = p."ref:INSEE"
-                AND
-                    c.date = %s
+                    AND c.insee = p.insee
+                    AND c.date = %s
                 """
         self.execute(req, [date])
 
@@ -128,16 +126,14 @@ class Postgis(object):
                     c.details,
                     c.date_cadastre
                 FROM
-                    planet_osm_polygon p,
+                    osm_admin  p,
                     city_stats c
                 WHERE
                     p.admin_level::int >= 8
-                AND
-                    c.insee = p."ref:INSEE"
-                AND
-                    ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), %(distance)s)
+                    AND c.insee = p.insee
+                    AND ST_DWithin(p.geometry, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), %(distance)s)
                 ORDER BY
-                    ST_Distance(ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), p.way)
+                    ST_Distance(ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), p.geometry)
                """
 
         # we should fetch all cities within the view
@@ -171,14 +167,12 @@ class Postgis(object):
                     c.date,
                     count(c.date)
                 FROM
-                    planet_osm_polygon p,
+                    osm_admin  p,
                     city_stats c
                 WHERE
                     p.admin_level::int >= 8
-                AND
-                    c.insee = p."ref:INSEE"
-                AND
-                    ST_DWithin(way, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), %(distance)s)
+                    AND c.insee = p.insee
+                    AND ST_DWithin(p.geometry, ST_SetSRID(ST_MakePoint(%(lon)s, %(lat)s),4326), %(distance)s)
                 GROUP BY
                     c.date
                """
@@ -210,11 +204,13 @@ class Postgis(object):
     def get_departments(self):
         req = """
             SELECT
-                DISTINCT(SUBSTR("ref:INSEE", 1, CHAR_LENGTH("ref:INSEE") - 3)) as dept
+                DISTINCT(SUBSTR(p.insee, 1, CHAR_LENGTH(p.insee) - 3)) as dept
             FROM
-                planet_osm_polygon
+                osm_admin p
             WHERE
-                admin_level::int >= 8 AND "ref:INSEE" is not null
+                p.admin_level::int >= 7
+                AND p.insee is not null
+                AND CHAR_LENGTH(p.insee) >= 3
             ORDER BY dept
         """
         self.execute(req)
@@ -243,13 +239,11 @@ class Postgis(object):
                 SELECT DISTINCT
                     name
                 FROM
-                    planet_osm_polygon
+                    osm_admin  p
                 WHERE
-                    "ref:INSEE" = %s
-                AND
-                    admin_level::int >= 8
-                AND
-                    boundary = 'administrative'
+                    p.insee = %s
+                    AND p.admin_level::int >= 8
+                    AND p.boundary = 'administrative'
         """
         self.execute(req, [insee])
 
@@ -335,17 +329,15 @@ class Postgis(object):
         department = department.zfill(2)
         req = """
                 SELECT DISTINCT
-                    "ref:INSEE" AS insee
+                    p.insee as insee
                 FROM
-                    planet_osm_polygon, city_stats
+                    osm_admin  p,
+                    city_stats c
                 WHERE
-                    "ref:INSEE" = insee
-                AND
-                    admin_level::int >= 8
-                AND
-                    boundary='administrative'
-                AND
-                    "ref:INSEE" LIKE %s || '%%'
+                    p.insee = c.insee
+                    AND p.admin_level::int >= 8
+                    AND p.boundary='administrative'
+                    AND p.insee LIKE %s || '%%'
                 ORDER BY
                     insee
         """
@@ -356,15 +348,13 @@ class Postgis(object):
     def bbox_for_insee(self, insee):
         req = """
                 SELECT
-                    Box2D(way)
+                    Box2D(p.geometry)
                 FROM
-                    planet_osm_polygon
+                    osm_admin  p
                 WHERE
-                    "ref:INSEE" = %s
-                AND
-                    admin_level::int >= 8
-                AND
-                    boundary = 'administrative'
+                    p.insee = %s
+                    AND p.admin_level::int >= 8
+                    AND p.boundary = 'administrative'
         """
         self.execute(req, [insee])
 
@@ -425,20 +415,37 @@ class Postgis(object):
 
     def fetch_buildings_stats(self, table, department, buildings_count, insee_name):
             query = f"""
-                with cities as (
-                    select insee, p.name, way, is_raster
-                    from planet_osm_polygon p, city_stats
-                    where "ref:INSEE" like %s || '%%'
-                    and admin_level::int >= 8
-                    and "ref:INSEE" = insee
+                WITH cities AS (
+                    SELECT
+                        p.insee,
+                        p.name,
+                        p.geometry,
+                        c.is_raster
+                    FROM
+                        osm_admin  p,
+                        city_stats c
+                    WHERE
+                        p.insee like %s || '%%'
+                        AND p.admin_level::int >= 8
+                        AND p.insee = c.insee
                 )
-                select c.insee, c.name, p.source, count(p.*), c.is_raster
-                from cities c, {table} p
-                where p.building is not null and ST_Contains(c.way, p.way)
-                group by c.insee, c.name, p.source, c.is_raster
-                order by insee
+                SELECT
+                    c.insee,
+                    c.name,
+                    p.source,
+                    count(p.*),
+                    c.is_raster
+                FROM
+                    cities c,
+                    {table} p
+                WHERE
+                    p.building is not null
+                    AND ST_Intersects(c.geometry, p.geometry)
+                GROUP BY
+                    c.insee, c.name, p.source, c.is_raster
+                ORDER BY
+                    c.insee
             """
-            # fixme: search in planet_osm_point and planet_osm_line too!
 
             self.execute(query, [department.zfill(2)])
 
@@ -464,8 +471,8 @@ class Postgis(object):
             buildings_count = {}
             insee_name = {}
 
-            for table in ['polygon', 'point', 'line']:
-                self.fetch_buildings_stats(f'buildings_osm_{table}', department, buildings_count, insee_name)
+            # for table in ['polygon', 'point', 'line']:
+            self.fetch_buildings_stats(f'osm_buildings', department, buildings_count, insee_name)
 
             tuples = []
             for insee, counts in buildings_count.items():

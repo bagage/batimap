@@ -26,7 +26,9 @@ services:
     depends_on:
     - postgis
     volumes:
-    - ./initializer/data:/tmp/batimap-init
+    - ./initializer/data:/app
+    - ./initializer/config.json:/app/config.json:ro
+    - ./initializer/mapping.json:/app/mapping.json:ro
     networks:
       fixed_network:
         ipv4_address: 10.5.0.250

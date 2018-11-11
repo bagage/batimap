@@ -28,10 +28,10 @@ wait_for()
     while :
     do
         count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT \
-        -d $POSTGRES_DB -c "select COUNT(*) from pg_indexes where tablename = 'buildings_osm_polygon'" 2>/dev/null`
+        -d $POSTGRES_DB -c "select COUNT(*) from pg_indexes where schemaname = 'public' AND tablename = 'osm_buildings'" 2>/dev/null`
         result=$?
         if [[ $result -eq 0 ]]; then
-            if [[ $count == 2 ]]; then
+            if [[ $count == 4 ]]; then
                 end_ts=$(date +%s)
                 echoerr "$cmdname: postgis is available after $((end_ts - start_ts)) seconds"
                 break
