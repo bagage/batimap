@@ -3,7 +3,7 @@
   <h3>{{city.insee}} - {{city.name}}</h3>
   {{lastImport()}}
 
-  <div *ngIf="city.details && city.details.dates && Object.entries(city.details.dates).length > 0">
+  <div *ngIf="detailsEntry.length > 0">
     <h4>Bâtiments par date</h4>
     <ul>
       <li *ngFor="let k of detailsEntry">{{k[0]}} - {{k[1]}}</li>

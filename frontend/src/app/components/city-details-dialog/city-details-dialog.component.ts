@@ -1,3 +1,12 @@
+import {MatProgressButtonOptions} from 'mat-progress-buttons';
+import {Observable} from 'rxjs';
+import {CityDTO} from '../../classes/city.dto';
+import {Component, Inject, OnInit} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialog} from '@angular/material';
+import {JosmService} from '../../services/josm.service';
+import {BatimapService} from '../../services/batimap.service';
+import {LegendService} from '../../services/legend.service';
+import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
 
 @Component({
   templateUrl: './city-details-dialog.component.html',
