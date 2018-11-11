@@ -9,6 +9,18 @@ import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/
 import {CityDTO} from '../../classes/city.dto';
 import {AppConfigService} from '../../services/app-config.service';
 import {MockAppConfigService} from '../../services/app-config.service.mock';
+import {JosmButtonComponent} from '../josm-button/josm-button.component';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
+import {NgModule} from '@angular/core';
+
+@NgModule({
+  imports: [MatLibModule],
+  exports: [HowtoDialogComponent],
+  declarations: [HowtoDialogComponent],
+  entryComponents: [HowtoDialogComponent],
+})
+class DialogTestModule { }
 
 describe('CityDetailsDialogComponent', () => {
   let component: CityDetailsDialogComponent;
@@ -16,8 +28,8 @@ describe('CityDetailsDialogComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [CityDetailsDialogComponent],
-      imports: [MatLibModule, SharedComponentsModule, HttpModule, HttpClientTestingModule],
+      declarations: [CityDetailsDialogComponent, JosmButtonComponent],
+      imports: [MatLibModule, HttpModule, HttpClientTestingModule, DialogTestModule, NoopAnimationsModule],
       providers: [
         {provide: MAT_DIALOG_DATA, useValue: {}},
         {provide: AppConfigService, useClass: MockAppConfigService},

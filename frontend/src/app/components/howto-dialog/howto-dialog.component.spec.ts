@@ -1,6 +1,8 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { HowtoDialogComponent } from './howto-dialog.component';
+import {HowtoDialogComponent} from './howto-dialog.component';
+import {MatLibModule} from '../../mat-lib.module';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
 describe('HowtoDialogComponent', () => {
   let component: HowtoDialogComponent;
@@ -8,9 +10,10 @@ describe('HowtoDialogComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HowtoDialogComponent ]
+      declarations: [HowtoDialogComponent],
+      imports: [MatLibModule, NoopAnimationsModule]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
