@@ -3,15 +3,24 @@ var out = java.lang.System.out;
 // 1. We must ensure that we have our required layer "houses-simplifie" and OSM DATA
 var housesLayer = null;
 var osmLayer = null;
+// if a layer is already selected, assume it's on the city we want to work -
+// it allows to have multiple cities open at once
+var layerPattern = null;
+if (josm.layers.activeLayer !== null) {
+    var activeLayerName = josm.layers.activeLayer.name;
+    var index = activeLayerName.search(/\d{3}[^\d]/);
+    if (index !== -1) {
+        layerPattern = activeLayerName.substr(index, 3);
+    }
+}
 for (var i = 0; i < josm.layers.length; i++) {
     var layer = josm.layers.get(i);
-    if (layer.name.endsWith("-houses-simplifie.osm")) {
+    if ((!layerPattern || layer.name.contains(layerPattern)) && layer.name.endsWith("-houses-simplifie.osm")) {
         housesLayer = layer;
-    } else if (layer.name.startsWith("Données OSM pour ")) {
+    } else if ((!layerPattern || layer.name.contains(layerPattern)) && layer.name.startsWith("Données OSM pour ")) {
         osmLayer = layer;
     }
 }
-
 
 function getConflationDialog() {
     var map = org.openstreetmap.josm.gui.MainApplication.map;
