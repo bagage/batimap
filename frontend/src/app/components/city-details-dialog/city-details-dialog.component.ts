@@ -1,10 +1,12 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA} from '@angular/material';
-import {CityDTO} from '../../classes/city.dto';
-import {JosmService} from '../../services/josm.service';
-import {Observable} from 'rxjs';
-import {BatimapService} from '../../services/batimap.service';
 import {MatProgressButtonOptions} from 'mat-progress-buttons';
+import {Observable} from 'rxjs';
+import {CityDTO} from '../../classes/city.dto';
+import {Component, Inject, OnInit} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialog} from '@angular/material';
+import {JosmService} from '../../services/josm.service';
+import {BatimapService} from '../../services/batimap.service';
+import {LegendService} from '../../services/legend.service';
+import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
 
 @Component({
   templateUrl: './city-details-dialog.component.html',
@@ -30,12 +32,18 @@ export class CityDetailsDialogComponent implements OnInit {
 
   constructor(@Inject(MAT_DIALOG_DATA) private data: [CityDTO, any],
               public josmService: JosmService,
-              public batimapService: BatimapService) {
+              public batimapService: BatimapService,
+              private legendService: LegendService,
+              private matDialog: MatDialog) {
     this.city = data[0];
     this.cadastreLayer = data[1];
   }
 
   ngOnInit(): void {
+    if (localStorage.getItem('first-time-howto') !== 'false') {
+      this.matDialog.open(HowtoDialogComponent);
+    }
+
     this.josmIsStarted = this.josmService.isStarted();
   }
 
@@ -53,9 +61,9 @@ export class CityDetailsDialogComponent implements OnInit {
   lastImport(): string {
     const d = this.city.date;
     if (!d || d === 'never') {
-      return 'Le bâti n\'a jamais été importé';
+      return 'Le bâti n\'a jamais été importé.';
     } else if (d === 'raster') {
-      return 'Ville raster, pas d\'import possible';
+      return 'Ville raster, pas d\'import possible.';
     } else if (Number.isInteger(+d)) {
       return `Dernier import en ${d}.`;
     } else {

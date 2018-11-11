@@ -1,0 +1,11 @@
+<h2 mat-dialog-title>État du bâti ({{version}})</h2>
+<mat-dialog-content>
+  <p>Cette carte affiche l'état du bâti dans <a target="_blank" href="http://www.openstreetmap.fr/">OpenStreetMap</a>,
+    par rapport au
+    cadastre français. Il permet aussi de mettre à jour le bâti pour une commune donnée, via l'éditeur JOSM.</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <a target="_blank" mat-button href="https://gitlab.com/bagage/cadastre-conflation/issues">Reporter un bug</a>
+  <button mat-raised-button color="accent" [mat-dialog-close]="true" (click)="showHowto()">Mode d'emploi</button>
+  <button mat-raised-button color="primary" [mat-dialog-close]="true">J'ai compris, allons-y !</button>
+</mat-dialog-actions>

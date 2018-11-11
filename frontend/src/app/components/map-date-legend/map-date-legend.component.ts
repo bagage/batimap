@@ -5,8 +5,8 @@ import {LegendService} from '../../services/legend.service';
 import * as L from 'leaflet';
 import {Observable} from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {MatDialog} from '@angular/material';
-import {AboutDialogComponent} from '../../pages/about-dialog/about-dialog.component';
+import {MatDialog, MatDialogRef} from '@angular/material';
+import {AboutDialogComponent} from '../about-dialog/about-dialog.component';
 
 @Component({
   selector: 'app-map-date-legend',
