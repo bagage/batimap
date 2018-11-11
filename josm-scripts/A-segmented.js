@@ -3,11 +3,21 @@ var out = java.lang.System.out;
 // 1. We must ensure that we have our 2 required layers "predictions_segmente" and "houses-simplifie"
 var segmentedLayer = null;
 var housesLayer = null;
+// if a layer is already selected, assume it's on the city we want to work -
+// it allows to have multiple cities open at once
+var layerPattern = null;
+if (josm.layers.activeLayer !== null) {
+    var activeLayerName = josm.layers.activeLayer.name;
+    var index = activeLayerName.search(/\d{3}[^\d]/);
+    if (index !== -1) {
+        layerPattern = activeLayerName.substr(index, 3);
+    }
+}
 for (var i = 0; i < josm.layers.length; i++) {
     var layer = josm.layers.get(i);
-    if (!segmentedLayer && layer.name.endsWith("-houses-prediction_segmente.osm")) {
+    if (!segmentedLayer && (!layerPattern || layer.name.contains(layerPattern)) && layer.name.endsWith("-houses-prediction_segmente.osm")) {
         segmentedLayer = layer;
-    } else if (!housesLayer && layer.name.endsWith("-houses-simplifie.osm")) {
+    } else if (!housesLayer && (!layerPattern || layer.name.contains(layerPattern)) && layer.name.endsWith("-houses-simplifie.osm")) {
         housesLayer = layer;
     }
 }
