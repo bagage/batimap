@@ -52,9 +52,9 @@ export class CityDetailsDialogComponent implements OnInit {
   lastImport(): string {
     const d = this.city.date;
     if (!d || d === 'never') {
-      return 'Le bâti n\'a jamais été importé';
+      return 'Le bâti n\'a jamais été importé.';
     } else if (d === 'raster') {
-      return 'Ville raster, pas d\'import possible';
+      return 'Ville raster, pas d\'import possible.';
     } else if (Number.isInteger(+d)) {
       return `Dernier import en ${d}.`;
     } else {
