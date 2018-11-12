@@ -71,7 +71,7 @@ for region in $regions; do
     # only keep administrative boundaries and buildings
     imposm import -config config.json -connection $connection_param -read $region.osm.pbf -appendcache
 done
-imposm import -config config.json -connection $connection_param -write -optimize
+imposm import -config config.json -connection $connection_param -write
 imposm import -config config.json -connection $connection_param -deployproduction
 
 echo "Imports done!"
