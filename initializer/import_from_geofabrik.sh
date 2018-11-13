@@ -23,13 +23,15 @@ if [ -z $POSTGRES_PASSWORD ] || [ -z $POSTGRES_USER ] || [ -z $POSTGRES_HOST ] |
     exit 1
 fi
 
-count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select count(*) from buildings_osm_polygon where osm_id > 0" 2>/dev/null`
-result=$?
-if [[ $result -eq 0 ]]; then
-    if [[ $count -gt 0 ]]; then
-        # do not reimport if there is already something in database to avoid erasing it
-        echo "Database already ready, skipping!"
-        exit 0
+if [ -z $FORCE_IMPORT ] || [ "$FORCE_IMPORT" = "false" ]; then
+    count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select count(*) from osm_buildings where osm_id > 0" 2>/dev/null`
+    result=$?
+    if [[ $result -eq 0 ]]; then
+        if [[ $count -gt 0 ]]; then
+            # do not reimport if there is already something in database to avoid erasing it
+            echo "Database already ready, skipping!"
+            exit 0
+        fi
     fi
 fi
 
