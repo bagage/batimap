@@ -19,9 +19,10 @@ RUN cd /tmp/ && \
     chmod +x /usr/bin/imposm
 
 RUN mkdir /app
+RUN mkdir /config
 
-COPY config.json /app
-COPY mapping.json /app
+COPY config.json /config
+COPY mapping.json /config
 COPY import_from_geofabrik.sh /
 COPY wait-for-it.sh /
 
