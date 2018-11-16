@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {empty, Observable, of} from 'rxjs';
+import {empty, forkJoin, Observable, of} from 'rxjs';
 import {CityDTO} from '../classes/city.dto';
 import {catchError, flatMap, map, share, switchMap, tap} from 'rxjs/operators';
 import {BatimapService} from './batimap.service';
@@ -28,19 +28,23 @@ export class JosmService {
     return this.http.head(url).pipe(
       catchError((e) => {
         console.warn('OSM data at url', url, 'could not be found, not opening it in JOSM', e);
-        return empty();
+        return of('no segmentation');
       }),
-      switchMap(() => {
-        return this.http.get(this.JOSM_URL_BASE + 'import', {
-          responseType: 'text',
-          params: {
-            new_layer: 'true',
-            upload_policy: locked ? 'never' : 'true',
-            layer_locked: `${locked}`,
-            url
+      switchMap((a) => {
+          if (a !== 'no segmentation') {
+            return this.http.get(this.JOSM_URL_BASE + 'import', {
+              responseType: 'text',
+              params: {
+                new_layer: 'true',
+                upload_policy: locked ? 'never' : 'true',
+                layer_locked: `${locked}`,
+                url
+              }
+            });
+          } else {
+            return of('no segmentation');
           }
-        });
-      })
+        })
     );
   };
 
@@ -67,21 +71,20 @@ export class JosmService {
     return this.http.get(this.JOSM_URL_VERSION).pipe(map(() => true), catchError(() => of(false)), share());
   }
 
-  public conflateCity(city: CityDTO): Observable<string> {
+  public conflateCity(city: CityDTO): Observable<any> {
     // get city data
     return this.batimapService.cityData(city.insee)
-      .pipe(flatMap(dto => this.JOSM_URL_IMAGERY('BDOrtho IGN', 'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg')
-        .pipe(flatMap(() => this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false)
-          .pipe(flatMap(() =>
-            this.JOSM_URL_OPEN_FILE(dto.segmententationPredictionssUrl, false/*cannot be locked otherwise todo plugin wont work*/)
-              .pipe(flatMap(() => this.JOSM_URL_OSM_DATA_FOR_BBOX(`Données OSM pour ${city.insee} - ${city.name}`,
-                dto.bbox[0].toString(),
-                dto.bbox[1].toString(),
-                dto.bbox[2].toString(),
-                dto.bbox[3].toString()
-              )))
-          ))
-        ))
-      ));
+      .pipe(flatMap(dto => {
+        const imagery = this.JOSM_URL_IMAGERY('BDOrtho IGN', 'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg');
+        const buildings = this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false);
+        const segmented = this.JOSM_URL_OPEN_FILE(dto.segmententationPredictionssUrl, false/*cannot be locked otherwise todo plugin wont work*/);
+        const osm = this.JOSM_URL_OSM_DATA_FOR_BBOX(`Données OSM pour ${city.insee} - ${city.name}`,
+          dto.bbox[0].toString(),
+          dto.bbox[1].toString(),
+          dto.bbox[2].toString(),
+          dto.bbox[3].toString()
+        );
+        return forkJoin(imagery, buildings, segmented, osm);
+      }));
   }
 }
