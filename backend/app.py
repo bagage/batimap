@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 import click
@@ -22,86 +23,98 @@ from batimap.overpassw import Overpass
 from db_utils import Postgis
 
 app = Flask(__name__)
-app.config.from_pyfile(app.root_path + '/app.conf')
+app.config.from_pyfile(app.root_path + "/app.conf")
 CORS(app)
 
 LOG = logging.getLogger(__name__)
 
 verbosity = {
-    'DEBUG': logging.DEBUG,
-    'INFO': logging.INFO,
-    'WARNING': logging.WARNING,
-    'ERRROR': logging.ERROR,
-    'CRITICAL': logging.CRITICAL,
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO,
+    "WARNING": logging.WARNING,
+    "ERRROR": logging.ERROR,
+    "CRITICAL": logging.CRITICAL,
 }
 logging.basicConfig(
-    format='%(asctime)s %(message)s',
+    format="%(asctime)s %(message)s",
     datefmt="%H:%M:%S",
-    level=verbosity[os.environ.get('CONFLATION_VERBOSITY') or
-                    app.config['VERBOSITY'] or
-                    ('DEBUG' if app.config['DEBUG'] else 'CRITICAL')]
+    level=verbosity[
+        os.environ.get("CONFLATION_VERBOSITY")
+        or app.config["VERBOSITY"]
+        or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")
+    ],
 )
 
 db = Postgis(
-    app.config['DB_NAME'],
-    app.config['DB_USER'],
-    app.config['DB_PASSWORD'],
-    app.config['DB_PORT'],
-    app.config['DB_HOST'],
-    app.config['TILESERVER_URI'],
+    app.config["DB_NAME"],
+    app.config["DB_USER"],
+    app.config["DB_PASSWORD"],
+    app.config["DB_PORT"],
+    app.config["DB_HOST"],
+    app.config["TILESERVER_URI"],
 )
 
-op = Overpass(app.config['OVERPASS_URI'])
+op = Overpass(app.config["OVERPASS_URI"])
 
 # ROUTES
 
 
-@app.route('/status', methods=['GET'])
+@app.route("/status", methods=["GET"])
 def api_status() -> dict:
     return json.dumps(db.get_dates_count())
 
 
-@app.route('/status/<department>', methods=['GET'])
+@app.route("/status/<department>", methods=["GET"])
 def api_department_status(department) -> str:
-    return json.dumps([{x[0].insee: x[1]} for x in
-                      batimap.stats(db, op, department=department, force=request.args.get('force', False))])
+    return json.dumps(
+        [
+            {x[0].insee: x[1]}
+            for x in batimap.stats(
+                db, op, department=department, force=request.args.get("force", False)
+            )
+        ]
+    )
 
 
-@app.route('/status/<department>/<city>', methods=['GET'])
+@app.route("/status/<department>/<city>", methods=["GET"])
 def api_city_status(department, city) -> str:
-    for (city, date) in batimap.stats(db,
-                                      op,
-                                      cities=[city],
-                                      force=request.args.get('force', default=False, type=inputs.boolean)):
+    for (city, date) in batimap.stats(
+        db,
+        op,
+        cities=[city],
+        force=request.args.get("force", default=False, type=inputs.boolean),
+    ):
         return json.dumps({city.insee: date})
-    return ''
+    return ""
 
 
-@app.route('/status/by_date/<date>')
+@app.route("/status/by_date/<date>")
 def api_cities_for_date(date) -> str:
     return json.dumps(db.get_cities_for_date(date))
 
 
-@app.route('/insee/<insee>', methods=['GET'])
+@app.route("/insee/<insee>", methods=["GET"])
 def api_insee(insee) -> dict:
     color_city = db.get_insee(insee)
     return json.dumps(color_city)
 
 
-@app.route('/cities/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>', methods=['GET'])
+@app.route("/cities/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def api_color(lonNW, latNW, lonSE, latSE) -> dict:
     cities = db.get_cities_in_bbox(
-        float(lonNW), float(latNW), float(lonSE), float(latSE))
+        float(lonNW), float(latNW), float(lonSE), float(latSE)
+    )
     return json.dumps(cities, cls=CityEncoder)
 
 
-@app.route('/legend/<lonNW>/<latNW>/<lonSE>/<latSE>', methods=['GET'])
+@app.route("/legend/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
-    return json.dumps(db.get_legend_in_bbox(
-        float(lonNW), float(latNW), float(lonSE), float(latSE)))
+    return json.dumps(
+        db.get_legend_in_bbox(float(lonNW), float(latNW), float(lonSE), float(latSE))
+    )
 
 
-@app.route('/cities/<insee>/update', methods=['POST'])
+@app.route("/cities/<insee>/update", methods=["POST"])
 def api_update_insee_list(insee) -> dict:
     (_, date) = next(batimap.stats(db, op, cities=[insee], force=False))
     (city, date2) = next(batimap.stats(db, op, cities=[insee], force=True))
@@ -112,12 +125,12 @@ def api_update_insee_list(insee) -> dict:
     return json.dumps(CityDTO(city, date2), cls=CityEncoder)
 
 
-@app.route('/departments', methods=['GET'])
+@app.route("/departments", methods=["GET"])
 def api_departments() -> dict:
     return json.dumps(db.get_departments())
 
 
-@app.route('/cities/<insee>/josm', methods=['GET'])
+@app.route("/cities/<insee>/josm", methods=["GET"])
 def api_josm_data(insee) -> dict:
     c = City(db, insee)
     batimap.fetch_cadastre_data(c)
@@ -127,8 +140,8 @@ def api_josm_data(insee) -> dict:
 
 
 # CLI
-@app.cli.command('initdb')
-@click.argument('departments', nargs=-1)
+@app.cli.command("initdb")
+@click.argument("departments", nargs=-1)
 def initdb_command(departments):
     """
     Creates required tables in PostgreSQL server.
@@ -150,10 +163,10 @@ def initdb_command(departments):
     initdb_is_done_file.touch()
 
 
-@app.cli.command('stats')
-@click.argument('items', nargs=-1)
-@click.option('--region', type=click.Choice(['city', 'department', 'france']))
-@click.option('--fast', is_flag=True)
+@app.cli.command("stats")
+@click.argument("items", nargs=-1)
+@click.option("--region", type=click.Choice(["city", "department", "france"]))
+@click.option("--fast", is_flag=True)
 def get_city_stats(items, region, fast):
     _get_city_stats(items, region, fast)
 
@@ -163,10 +176,10 @@ def _get_city_stats(items, region, fast):
     Returns cadastral status of given items.
     If status is unknown, it is computed first.
     """
-    if region == 'france':
+    if region == "france":
         d = db.get_departments()
         c = None
-    elif region == 'department':
+    elif region == "department":
         d = items
         c = None
     else:
@@ -174,10 +187,12 @@ def _get_city_stats(items, region, fast):
         c = items
 
     for department in d:
-        for (city, date) in batimap.stats(db,
-                                          op,
-                                          department=department,
-                                          cities=c,
-                                          force=not fast,
-                                          refresh_cadastre_state=not fast):
-            click.echo('{}: date={}'.format(city, date))
+        for (city, date) in batimap.stats(
+            db,
+            op,
+            department=department,
+            cities=c,
+            force=not fast,
+            refresh_cadastre_state=not fast,
+        ):
+            click.echo("{}: date={}".format(city, date))
