@@ -64,16 +64,23 @@ do
     sleep 5
 done
 
-
+if [ -f "/config/config.json" ]; then
+    echo "Missing imposm config file, exitting!"
+    exit 1
+fi
+if [ -f "/config/mapping.json" ]; then
+    echo "Missing imposm mapping file, exitting!"
+    exit 1
+fi
 
 connection_param="postgis://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
 for region in $regions; do
     region=$(basename $region)
     echo "Preparing $region…"
     # only keep administrative boundaries and buildings
-    imposm import -config config.json -connection $connection_param -read $region.osm.pbf -appendcache
+    imposm import -config /config/config.json -mapping /config/mapping.json -connection $connection_param -read $region.osm.pbf -appendcache
 done
-imposm import -config config.json -connection $connection_param -write
-imposm import -config config.json -connection $connection_param -deployproduction
+imposm import -config /config/config.json -mapping /config/mapping.json -connection $connection_param -write
+imposm import -config /config/config.json -mapping /config/mapping.json -connection $connection_param -deployproduction
 
 echo "Imports done!"
