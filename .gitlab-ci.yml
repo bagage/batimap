@@ -21,6 +21,8 @@ test:
     - yarn
   script:
     - yarn test --karma-config src/karma-ci.conf.js
+  except:
+    - master
 
 build_tiles_cleaner:
   image: docker:stable
