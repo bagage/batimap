@@ -12,13 +12,14 @@ import requests
 from datetime import datetime
 from contextlib import closing
 import re
+import json
+from collections import Counter
 
 LOG = logging.getLogger(__name__)
+IGNORED_BUILDINGS = ["church"]
 
 
-def stats(
-    db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False
-):
+def stats(db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
     if refresh_cadastre_state:
         if department:
             update_departments_raster_state(db, department)
@@ -30,8 +31,7 @@ def stats(
         cities = db.within_department(department)
     for city in cities:
         c = City(db, city)
-        date = c.fetch_osm_data(overpass, force)
-        yield ((c, date))
+        yield fetch_osm_data(db, c, overpass, force)
 
 
 def update_departments_raster_state(db, departments):
@@ -66,20 +66,17 @@ def update_departments_raster_state(db, departments):
             nom_commune = commune_cp[:-9]
 
             dept = department.zfill(2)
-            insee = dept + code_commune[len(dept) - 5 :]
+            start = len(dept) - 5
+            insee = dept + code_commune[start:]
             is_raster = format_type == "IMAG"
 
             name = db.name_for_insee(insee)
             if not name:
-                LOG.error(
-                    f"Cannot find city with insee {insee}, did you import OSM data for this department?"
-                )
+                LOG.error(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
                 continue
 
             date = "raster" if is_raster else "never"
-            tuples.append(
-                (insee, dept, name, f"{code_commune}-{nom_commune}", is_raster, date)
-            )
+            tuples.append((insee, dept, name, f"{code_commune}-{nom_commune}", is_raster, date))
         db.insert_stats_for_insee(tuples)
 
 
@@ -98,17 +95,13 @@ def fetch_departments_osm_state(db, departments):
                 if not osm_data.endswith("simplifie.osm") or "-extrait-" in osm_data:
                     continue
                 name_cadastre = "-".join(osm_data.split("-")[:-2])
-                date = datetime.strptime(
-                    e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M"
-                )
+                date = datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
 
                 tuples.append((name_cadastre, date))
 
                 c = City(db, name_cadastre)
                 if c.insee and c.date_cadastre != date:
-                    LOG.debug(
-                        f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}"
-                    )
+                    LOG.debug(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
                     refresh_tiles.append(c.insee)
 
         db.upsert_city_status(tuples)
@@ -132,9 +125,7 @@ def josm_data(db, insee):
 
 
 def fetch_cadastre_data(city, force=False):
-    __total_pdfs_regex = re.compile(
-        r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$"
-    )
+    __total_pdfs_regex = re.compile(r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$")
     __pdf_progression_regex = re.compile(r".*\d+-(\d+)-(\d+).pdf$")
 
     if not city or not city.name_cadastre:
@@ -146,13 +137,9 @@ def fetch_cadastre_data(city, force=False):
     bs = BeautifulSoup(r.content, "lxml")
 
     for e in bs.find_all("tr"):
-        if f"{city.name_cadastre.upper()}.tar.bz2" in [
-            x.text for x in e.select("td:nth-of-type(2) a")
-        ]:
+        if f"{city.name_cadastre.upper()}.tar.bz2" in [x.text for x in e.select("td:nth-of-type(2) a")]:
             date = e.select("td:nth-of-type(3)")[0].text.strip()
-            LOG.info(
-                f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!"
-            )
+            LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
 
     data = {
         "dep": dept,
@@ -176,19 +163,11 @@ def fetch_cadastre_data(city, force=False):
                 x = int(match.groups()[0])
                 y = int(match.groups()[1])
                 current = x * total_y + y
-                msg = (
-                    f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)"
-                    if total > 0
-                    else f"{current}"
-                )
+                msg = f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
                 LOG.info(msg)
             if "Termin" in line:
                 current = total
-                msg = (
-                    f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)"
-                    if total > 0
-                    else f"{current}"
-                )
+                msg = f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
                 LOG.info(msg)
             elif "ERROR:" in line or "ERREUR:" in line:
                 LOG.error(line)
@@ -201,3 +180,51 @@ def clear_tiles(db, insee):
     bbox = db.bbox_for_insee(insee)
     with open("tiles/outdated.txt", "a") as fd:
         fd.write(str(bbox) + "\n")
+
+
+cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
+
+
+def fetch_osm_data(db, city, overpass, force):
+    date = city.get_last_import_date()
+    if force or date is None:
+        sources_date = []
+        if city.is_raster:
+            date = "raster"
+        else:
+            ignored_buildings = "".join(['[building!="' + x + '"]' for x in IGNORED_BUILDINGS])
+            request = f"""[out:json];
+                area[boundary='administrative'][admin_level~'8|9']['ref:INSEE'='{city.insee}']->.a;
+                (
+                  way['building']{ignored_buildings}(area.a);
+                  relation['building']{ignored_buildings}(area.a);
+                );
+                out tags qt meta;"""
+            try:
+                response = overpass.request_with_retries(request)
+            except Exception as e:
+                LOG.error(f"Failed to count buildings for {city}: {e}")
+                return (None, None)
+            # iterate on every building
+            buildings = response.get("elements")
+            for element in buildings:
+                tags = element.get("tags")
+                source = (tags.get("source") or "unknown").lower()
+                source_date = (tags.get("source:date") or "").lower()
+                date = re.sub(cadastre_src2date_regex, r"\2", source + source_date)
+                sources_date.append(date)
+
+            date = max(sources_date, key=sources_date.count) if len(sources_date) else "never"
+            if date != "never":
+                date_match = re.compile(r"^(\d{4})$").match(date)
+                date = date_match.groups()[0] if date_match and date_match.groups() else "unknown"
+                # assume that low number of buildings with no date is just no import:
+                # only church/school/townhall may have been manually created
+                if date == "unknown" and len(buildings) < 10:
+                    date = "never"
+
+            LOG.debug(f"City stats: {Counter(sources_date)}")
+        # only update date if we did not use cache files for buildings
+        city.details = {"dates": Counter(sources_date)}
+        db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details), True)])
+    return (city, date)

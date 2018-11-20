@@ -12,7 +12,7 @@ import operator
 from collections import defaultdict
 
 from batimap.bbox import Bbox
-from batimap.city import IGNORED_BUILDINGS
+from batimap.batimap import IGNORED_BUILDINGS
 from citydto import CityDTO
 
 LOG = logging.getLogger(__name__)
@@ -413,7 +413,7 @@ class Postgis(object):
                 SELECT
                     c.insee,
                     c.name,
-                    p.source,
+                    concat(p.source, p.source_date) as dated_source,
                     count(p.*),
                     c.is_raster
                 FROM
@@ -423,13 +423,18 @@ class Postgis(object):
                     p.building is not null and p.building not in (%s)
                     AND ST_Intersects(c.geometry, p.geometry)
                 GROUP BY
-                    c.insee, c.name, p.source, c.is_raster
+                    c.insee, c.name, dated_source, c.is_raster
                 ORDER BY
                     c.insee
             """
 
         self.execute(query, [department.zfill(2), ", ".join(IGNORED_BUILDINGS)])
 
+        # First case:
+        # source=Direction Générale des Finances Publiques - cadastre
+        # source:date=2017-02-24
+        # Second case:
+        # source=cadastre-dgi-fr source : Direction Générale des Finances Publiques - Cadastre. Mise à jour : 2017
         cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
         for (insee, name, source, count, is_raster) in self.cursor.fetchall():
             if is_raster:
@@ -458,5 +463,7 @@ class Postgis(object):
             for insee, counts in buildings_count.items():
                 date_match = re.compile(r"^(\d{4}|raster)$").match(max(counts.items(), key=operator.itemgetter(1))[0])
                 date = date_match.groups()[0] if date_match and date_match.groups() else "unknown"
+                if date == "unknown" and sum(counts.values()) < 10:
+                    date = "never"
                 tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
             self.update_stats_for_insee(tuples)

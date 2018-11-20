@@ -36,6 +36,11 @@
                     "key": "source"
                 },
                 {
+                    "type": "string",
+                    "name": "source_date",
+                    "key": "source:date"
+                },
+                {
                     "type": "mapping_value",
                     "name": "building",
                     "key": null
