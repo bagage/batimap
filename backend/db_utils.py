@@ -12,13 +12,13 @@ import operator
 from collections import defaultdict
 
 from batimap.bbox import Bbox
+from batimap.city import IGNORED_BUILDINGS
 from citydto import CityDTO
 
 LOG = logging.getLogger(__name__)
 
 
 class Postgis(object):
-
     def __init__(self, db, user, passw, port, host, tileserver):
         self.db = db
         self.user = user
@@ -33,7 +33,8 @@ class Postgis(object):
         except Exception as e:
             LOG.warning(f"Could not execute request, will retry due to: {e}")
             self.connection = psycopg2.connect(
-                database=self.db, user=self.user, password=self.passw, port=self.port, host=self.host)
+                database=self.db, user=self.user, password=self.passw, port=self.port, host=self.host
+            )
             self.cursor = self.connection.cursor()
             self.cursor.execute(req, args)
 
@@ -53,7 +54,7 @@ class Postgis(object):
                     )
         """
         self.execute(req)
-        LOG.debug('city_stats table created')
+        LOG.debug("city_stats table created")
 
         # self.execute("CREATE INDEX IF NOT EXISTS way_gist ON planet_osm_polygon USING gist(way);")
         # self.execute("CREATE INDEX IF NOT EXISTS insee_idx ON planet_osm_polygon((\"ref:INSEE\"));")
@@ -77,11 +78,9 @@ class Postgis(object):
         features = []
 
         for row in self.cursor.fetchall():
-            features.append(Feature(properties={
-                'name': "{} - {}".format(row[0], row[1]),
-                'date': row[2]
-            },
-                geometry=loads(row[3])))
+            features.append(
+                Feature(properties={"name": "{} - {}".format(row[0], row[1]), "date": row[2]}, geometry=loads(row[3]))
+            )
 
         return FeatureCollection(features)
 
@@ -137,27 +136,17 @@ class Postgis(object):
                """
 
         # we should fetch all cities within the view
-        maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2) / 2
+        maxDistance = sqrt((lonNW - lonSE) ** 2 + (latNW - latSE) ** 2) / 2
         # instead if we zoomed out too much, we limit to maximum 110km
         # radius circle
-        maxDistance = min(1., maxDistance)
+        maxDistance = min(1.0, maxDistance)
 
-        args = {
-            'distance': maxDistance,
-            'lon': (lonNW + lonSE) / 2.,
-            'lat': (latNW + latSE) / 2.,
-        }
+        args = {"distance": maxDistance, "lon": (lonNW + lonSE) / 2.0, "lat": (latNW + latSE) / 2.0}
         self.execute(req, args)
 
         results = []
         for row in self.cursor.fetchall():
-            results.append(CityDTO(
-                row[0],
-                row[1],
-                row[2],
-                row[3],
-                row[4] is not None)
-            )
+            results.append(CityDTO(row[0], row[1], row[2], row[3], row[4] is not None))
         return results
 
     def get_legend_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
@@ -178,23 +167,16 @@ class Postgis(object):
                """
 
         # we should fetch all cities within the view
-        maxDistance = sqrt((lonNW - lonSE)**2 + (latNW - latSE)**2) / 2
+        maxDistance = sqrt((lonNW - lonSE) ** 2 + (latNW - latSE) ** 2) / 2
 
-        args = {
-            'distance': maxDistance,
-            'lon': (lonNW + lonSE) / 2.,
-            'lat': (latNW + latSE) / 2.,
-        }
+        args = {"distance": maxDistance, "lon": (lonNW + lonSE) / 2.0, "lat": (latNW + latSE) / 2.0}
         self.execute(req, args)
 
         results = []
         total = 0
         for row in self.cursor.fetchall():
             if row[1] > 0:
-                results.append({
-                    'name': row[0],
-                    'count': row[1],
-                })
+                results.append({"name": row[0], "count": row[1]})
                 total += row[1]
         for r in results:
             r["percent"] = round(r["count"] * 100.0 / total, 2)
@@ -276,16 +258,15 @@ class Postgis(object):
             return results[0][0]
         elif len(results) > 30:
             LOG.error(
-                "Too many cities name starting with {} (total: {}). Please check name.".format(name, len(results)))
+                "Too many cities name starting with {} (total: {}). Please check name.".format(name, len(results))
+            )
             return None
         elif interactive:
-            user_input = ''
+            user_input = ""
             while user_input not in [x[0] for x in results]:
                 user_input = input(
                     "More than one city found. Please enter your desired one from the following list:\n\t{}\n".format(
-                        '\n\t'.join(
-                            ['{} - {}'.format(x[0], x[1]) for x in results]
-                        )
+                        "\n\t".join(["{} - {}".format(x[0], x[1]) for x in results])
                     )
                 )
             return user_input
@@ -305,7 +286,7 @@ class Postgis(object):
         self.execute(req, [insee])
 
         results = self.cursor.fetchall()
-        assert(len(results) <= 1)
+        assert len(results) <= 1
         return results[0][0] if len(results) else None
 
     def city_data(self, insee, data_queries):
@@ -322,7 +303,7 @@ class Postgis(object):
         self.execute(req, [insee])
 
         results = self.cursor.fetchall()
-        assert(len(results) <= 1)
+        assert len(results) <= 1
         return results[0] if len(results) else None
 
     def within_department(self, department: str):
@@ -361,8 +342,10 @@ class Postgis(object):
         results = self.cursor.fetchall()
         if len(results) > 1:
             # fixme: this may happen for multi polygons cities (76218 - Doudeauville for instance)
-            LOG.warning(f"Expected a single bbox for insee {insee} at most, "
-                        f"but found {len(results)} instead. Taking the first one.")
+            LOG.warning(
+                f"Expected a single bbox for insee {insee} at most, "
+                f"but found {len(results)} instead. Taking the first one."
+            )
 
         return Bbox(results[0][0]) if len(results) else None
 
@@ -392,8 +375,7 @@ class Postgis(object):
                     date = excluded.date
         """
         try:
-            psycopg2.extras.execute_values(
-                self.cursor, req, tuples)
+            psycopg2.extras.execute_values(self.cursor, req, tuples)
             self.connection.commit()
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
@@ -407,14 +389,13 @@ class Postgis(object):
         """
         try:
             LOG.debug(f"Updating cities date_cadastre for {tuples}")
-            psycopg2.extras.execute_values(
-                self.cursor, req, tuples)
+            psycopg2.extras.execute_values(self.cursor, req, tuples)
             self.connection.commit()
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
 
     def fetch_buildings_stats(self, table, department, buildings_count, insee_name):
-            query = f"""
+        query = f"""
                 WITH cities AS (
                     SELECT
                         p.insee,
@@ -439,7 +420,7 @@ class Postgis(object):
                     cities c,
                     {table} p
                 WHERE
-                    p.building is not null
+                    p.building is not null and p.building not in (%s)
                     AND ST_Intersects(c.geometry, p.geometry)
                 GROUP BY
                     c.insee, c.name, p.source, c.is_raster
@@ -447,21 +428,21 @@ class Postgis(object):
                     c.insee
             """
 
-            self.execute(query, [department.zfill(2)])
+        self.execute(query, [department.zfill(2), ", ".join(IGNORED_BUILDINGS)])
 
-            cadastre_src2date_regex = re.compile(r'.*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*')
-            for (insee, name, source, count, is_raster) in self.cursor.fetchall():
-                if is_raster:
-                    insee_name[insee] = name
-                    buildings_count[insee] = {}
-                    buildings_count[insee]['raster'] = 1
-                    continue
-
-                date = re.sub(cadastre_src2date_regex, r'\2', (source or 'unknown').lower())
-                if not buildings_count.get(insee):
-                    buildings_count[insee] = defaultdict(lambda: 0, {})
+        cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
+        for (insee, name, source, count, is_raster) in self.cursor.fetchall():
+            if is_raster:
                 insee_name[insee] = name
-                buildings_count[insee][date] += count
+                buildings_count[insee] = {}
+                buildings_count[insee]["raster"] = 1
+                continue
+
+            date = re.sub(cadastre_src2date_regex, r"\2", (source or "unknown").lower())
+            if not buildings_count.get(insee):
+                buildings_count[insee] = defaultdict(lambda: 0, {})
+            insee_name[insee] = name
+            buildings_count[insee][date] += count
 
     def import_city_stats_from_osmplanet(self, departments):
         LOG.info(f"Import buildings from db for departments {departments}…")
@@ -471,12 +452,11 @@ class Postgis(object):
             buildings_count = {}
             insee_name = {}
 
-            # for table in ['polygon', 'point', 'line']:
-            self.fetch_buildings_stats(f'osm_buildings', department, buildings_count, insee_name)
+            self.fetch_buildings_stats(f"osm_buildings", department, buildings_count, insee_name)
 
             tuples = []
             for insee, counts in buildings_count.items():
-                date_match = re.compile(r'^(\d{4}|raster)$').match(max(counts.items(), key=operator.itemgetter(1))[0])
-                date = date_match.groups()[0] if date_match and date_match.groups() else 'unknown'
-                tuples.append((insee, insee_name[insee], date, json.dumps({'dates': counts})))
+                date_match = re.compile(r"^(\d{4}|raster)$").match(max(counts.items(), key=operator.itemgetter(1))[0])
+                date = date_match.groups()[0] if date_match and date_match.groups() else "unknown"
+                tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
             self.update_stats_for_insee(tuples)
