@@ -69,9 +69,7 @@ def api_department_status(department) -> str:
     return json.dumps(
         [
             {x[0].insee: x[1]}
-            for x in batimap.stats(
-                db, op, department=department, force=request.args.get("force", False)
-            )
+            for x in batimap.stats(db, op, department=department, force=request.args.get("force", False))
         ]
     )
 
@@ -79,10 +77,7 @@ def api_department_status(department) -> str:
 @app.route("/status/<department>/<city>", methods=["GET"])
 def api_city_status(department, city) -> str:
     for (city, date) in batimap.stats(
-        db,
-        op,
-        cities=[city],
-        force=request.args.get("force", default=False, type=inputs.boolean),
+        db, op, cities=[city], force=request.args.get("force", default=False, type=inputs.boolean)
     ):
         return json.dumps({city.insee: date})
     return ""
@@ -101,17 +96,13 @@ def api_insee(insee) -> dict:
 
 @app.route("/cities/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def api_color(lonNW, latNW, lonSE, latSE) -> dict:
-    cities = db.get_cities_in_bbox(
-        float(lonNW), float(latNW), float(lonSE), float(latSE)
-    )
+    cities = db.get_cities_in_bbox(float(lonNW), float(latNW), float(lonSE), float(latSE))
     return json.dumps(cities, cls=CityEncoder)
 
 
 @app.route("/legend/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
-    return json.dumps(
-        db.get_legend_in_bbox(float(lonNW), float(latNW), float(lonSE), float(latSE))
-    )
+    return json.dumps(db.get_legend_in_bbox(float(lonNW), float(latNW), float(lonSE), float(latSE)))
 
 
 @app.route("/cities/<insee>/update", methods=["POST"])
@@ -188,11 +179,6 @@ def _get_city_stats(items, region, fast):
 
     for department in d:
         for (city, date) in batimap.stats(
-            db,
-            op,
-            department=department,
-            cities=c,
-            force=not fast,
-            refresh_cadastre_state=not fast,
+            db, op, department=department, cities=c, force=not fast, refresh_cadastre_state=not fast
         ):
             click.echo("{}: date={}".format(city, date))
