@@ -22,7 +22,7 @@ IGNORED_BUILDINGS = ["church"]
 def stats(db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
     if refresh_cadastre_state:
         if department:
-            update_departments_raster_state(db, department)
+            update_departments_raster_state(db, [department])
         else:
             depts = set([City(db, c).department for c in cities])
             update_departments_raster_state(db, depts)
