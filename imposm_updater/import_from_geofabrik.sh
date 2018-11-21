@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 POSTGRES_PORT=${POSTGRES_PORT:-5432}
 
@@ -88,4 +87,4 @@ if [ "$DO_IMPORT" = "true" ]; then
     echo "Imports done!"
 fi
 
-imposm run -config /config/config.json -mapping /config/mapping.json -connection $connection_param
+imposm run -config /config/config.json -mapping /config/mapping.json -expiretiles-zoom 10 -connection $connection_param
