@@ -43,13 +43,13 @@ export class BatimapService {
 
   public citiesInBbox(bbox: LatLngBounds): Observable<CityDTO[]> {
     return this.http.get<CityDTO[]>(
-      this.URL_CITIES_BBOX(bbox.getNorthWest().lng, bbox.getNorthWest().lat, bbox.getSouthEast().lng, bbox.getSouthEast().lat))
+      this.URL_CITIES_BBOX(bbox.getNorthWest().wrap().lng, bbox.getNorthWest().wrap().lat, bbox.getSouthEast().wrap().lng, bbox.getSouthEast().wrap().lat))
       .pipe(map(r => plainToClass(CityDTO, r)), debounceTime(3000));
   }
 
   public legendForBbox(bbox: LatLngBounds): Observable<LegendDTO[]> {
     return this.http.get<LegendDTO[]>(
-      this.URL_LEGEND(bbox.getNorthWest().lng, bbox.getNorthWest().lat, bbox.getSouthEast().lng, bbox.getSouthEast().lat))
+      this.URL_LEGEND(bbox.getNorthWest().wrap().lng, bbox.getNorthWest().wrap().lat, bbox.getSouthEast().wrap().lng, bbox.getSouthEast().wrap().lat))
       .pipe(map(r => plainToClass(LegendDTO, r)),
         switchMap((legends: LegendDTO[]) => {
           for (const l of legends) {
