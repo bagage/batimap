@@ -60,7 +60,7 @@ build_postgis:
     - docker push registry.gitlab.com/bagage/cadastre-conflation/postgis:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/postgis:$CI_COMMIT_REF_SLUG
 
-build_initializer:
+build_imposm_updater:
   image: docker:stable
   services:
     - docker:dind
@@ -71,12 +71,12 @@ build_initializer:
     refs:
       - master
     # changes:
-    #   - initializer/*
+    #   - imposm_updater/*
   script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/initializer:$CI_COMMIT_REF_SLUG initializer
-    - docker tag registry.gitlab.com/bagage/cadastre-conflation/initializer:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/initializer:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/initializer:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/initializer:$CI_COMMIT_REF_SLUG
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:$CI_COMMIT_REF_SLUG imposm_updater
+    - docker tag registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:latest
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:latest
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:$CI_COMMIT_REF_SLUG
 
 build_backend:
   image: docker:stable
