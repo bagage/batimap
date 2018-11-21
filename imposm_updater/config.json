@@ -1,0 +1,10 @@
+{
+    "cachedir": "./cache",
+    "diffdir": "./diff",
+    "expiretiles_dir": "./tiles",
+    "expiretiles_zoom": 10,
+    "mapping": "./mapping.json",
+    "replication_interval": "24h",
+    "replication_url": "http://download.geofabrik.de/europe/france-updates/",
+    "srid": 4326
+}

@@ -14,24 +14,23 @@ services:
       fixed_network:
         ipv4_address: 10.5.0.10
 
-  initializer:
-    build: initializer
+  imposm_updater:
+    build: imposm_updater
     environment:
     - POSTGRES_PASSWORD=batimap
     - POSTGRES_USER=docker
     - POSTGRES_DB=gis
     - POSTGRES_HOST=10.5.0.10
     # - REGIONS=france/rhone-alpes-latest
+    # - FORCE_IMPORT=true
     entrypoint: bash /wait-for-it.sh -- /import_from_geofabrik.sh $$REGIONS
     depends_on:
     - postgis
     volumes:
-    - ./initializer/data:/app
-    - ./initializer/config.json:/app/config.json:ro
-    - ./initializer/mapping.json:/app/mapping.json:ro
+    - ./imposm_updater/data:/app
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.250
+        ipv4_address: 10.5.0.11
 
   tiles:
     build: tiles
@@ -44,7 +43,7 @@ services:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.11
+        ipv4_address: 10.5.0.12
 
   tiles-cleaner:
     build: tiles-cleaner
@@ -57,7 +56,7 @@ services:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.14
+        ipv4_address: 10.5.0.13
 
   backend:
     build: backend
@@ -79,7 +78,7 @@ services:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.12
+        ipv4_address: 10.5.0.14
 
   frontend:
     build: frontend
@@ -92,7 +91,7 @@ services:
     - backend
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.13
+        ipv4_address: 10.5.0.15
 
 networks:
   fixed_network:
