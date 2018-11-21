@@ -5,3 +5,4 @@ initializer/data/
 postgis/data
 tiles/data
 .bash_history
+imposm_updater/data
