@@ -3,9 +3,9 @@ import {BatimapService} from '../../services/batimap.service';
 import {LegendDTO} from '../../classes/legend.dto';
 import {LegendService} from '../../services/legend.service';
 import * as L from 'leaflet';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {MatDialog} from '@angular/material';
+import {MatDialog, MatDialogRef} from '@angular/material';
 import {AboutDialogComponent} from '../about-dialog/about-dialog.component';
 import {CityDetailsDialogComponent} from '../city-details-dialog/city-details-dialog.component';
 import {ZoomPanOptions} from 'leaflet';
@@ -63,7 +63,8 @@ export class MapDateLegendComponent implements OnInit {
     this.batimapService.obsoleteCity().subscribe((obsoleteCity: ObsoleteCityDTO) => {
       this.map.setView(obsoleteCity.position, 10);
       this.dialogRef.closeAll();
-      this.dialogRef.open(CityDetailsDialogComponent, {data: [obsoleteCity.city, this.cadastreLayer]});
+      const dialog = this.dialogRef.open<CityDetailsDialogComponent>(CityDetailsDialogComponent, {data: [obsoleteCity.city, this.cadastreLayer]});
+      dialog.afterOpened().subscribe(() => dialog.componentInstance.updateCity());
     });
   }
 }
