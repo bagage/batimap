@@ -63,7 +63,7 @@ export class MapDateLegendComponent implements OnInit {
       this.map.setView(obsoleteCity.position, 10);
       this.dialogRef.closeAll();
       const dialog = this.dialogRef.open<CityDetailsDialogComponent>(CityDetailsDialogComponent, {data: [obsoleteCity.city, this.cadastreLayer]});
-      dialog.afterOpened().subscribe(() => dialog.componentInstance.updateCity());
+      // dialog.afterOpened().subscribe(() => dialog.componentInstance.updateCity());
     });
   }
 }
