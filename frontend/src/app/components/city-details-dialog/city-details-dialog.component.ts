@@ -1,8 +1,8 @@
 import {MatProgressButtonOptions} from 'mat-progress-buttons';
 import {Observable} from 'rxjs';
 import {CityDTO} from '../../classes/city.dto';
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog} from '@angular/material';
+import {Component, HostListener, Inject, OnInit} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material';
 import {JosmService} from '../../services/josm.service';
 import {BatimapService} from '../../services/batimap.service';
 import {LegendService} from '../../services/legend.service';
@@ -33,6 +33,7 @@ export class CityDetailsDialogComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) private data: [CityDTO, any],
               public josmService: JosmService,
               public batimapService: BatimapService,
+              private dialogRef: MatDialogRef<CityDetailsDialogComponent>,
               private legendService: LegendService,
               private matDialog: MatDialog) {
     this.city = data[0];
@@ -47,6 +48,12 @@ export class CityDetailsDialogComponent implements OnInit {
     this.josmIsStarted = this.josmService.isStarted();
   }
 
+  @HostListener('document:keydown.f')
+  close() {
+    this.dialogRef.close(0);
+  }
+
+  @HostListener('document:keydown.r')
   updateCity() {
     this.updateButtonOpts.active = true;
     this.batimapService.updateCity(this.city.insee)
