@@ -80,8 +80,13 @@ export class CityDetailsDialogComponent implements OnInit {
 
   get detailsEntry(): [string, string][] {
     if (this.city && this.city.details) {
-      const json = JSON.parse(this.city.details);
-      if (json) {
+      let json;
+      try {
+        json = JSON.parse(this.city.details);
+      } catch {
+        json = this.city.details;
+      }
+      if (json && json.dates) {
         return Object.entries(json.dates);
       }
     }
