@@ -3,12 +3,11 @@ import {BatimapService} from '../../services/batimap.service';
 import {LegendDTO} from '../../classes/legend.dto';
 import {LegendService} from '../../services/legend.service';
 import * as L from 'leaflet';
-import {Observable, Subject} from 'rxjs';
+import {Observable} from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {MatDialog, MatDialogRef} from '@angular/material';
+import {MatDialog} from '@angular/material';
 import {AboutDialogComponent} from '../about-dialog/about-dialog.component';
 import {CityDetailsDialogComponent} from '../city-details-dialog/city-details-dialog.component';
-import {ZoomPanOptions} from 'leaflet';
 import {ObsoleteCityDTO} from '../../classes/obsolete-city.dto';
 
 @Component({
