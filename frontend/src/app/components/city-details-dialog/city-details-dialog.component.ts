@@ -74,11 +74,17 @@ export class CityDetailsDialogComponent implements OnInit {
     } else if (Number.isInteger(+d)) {
       return `Dernier import en ${d}.`;
     } else {
-      return `Le bâti existant ne semble pas provenir du cadastre.`;
+      return 'Le bâti existant ne semble pas provenir du cadastre.';
     }
   }
 
   get detailsEntry(): [string, string][] {
-    return this.city && this.city.details ? Object.entries(this.city.details.dates) : [];
+    if (this.city && this.city.details) {
+      const json = JSON.parse(this.city.details);
+      if (json) {
+        return Object.entries(json.dates);
+      }
+    }
+    return [];
   }
 }
