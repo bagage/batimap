@@ -21,6 +21,7 @@ services:
     - POSTGRES_USER=docker
     - POSTGRES_DB=gis
     - POSTGRES_HOST=10.5.0.10
+    - POSTGRES_PORT=5432
     # - REGIONS=france/rhone-alpes-latest
     # - FORCE_IMPORT=true
     entrypoint: bash /wait-for-it.sh -- /import_from_geofabrik.sh $$REGIONS
@@ -34,7 +35,13 @@ services:
 
   tiles:
     build: tiles
-    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- tegola --config $$CONFIG serve
+    environment:
+    - POSTGRES_PASSWORD=batimap
+    - POSTGRES_USER=docker
+    - POSTGRES_DB=gis
+    - POSTGRES_HOST=10.5.0.10
+    - POSTGRES_PORT=5432
+    command: bash /wait-for-it.sh -- tegola --config $$CONFIG serve
     volumes:
     - ./tiles/:/app
     ports:
@@ -49,7 +56,12 @@ services:
     build: tiles-cleaner
     environment:
     - INITIAL_MAX_ZOOM=7
-    command: bash /wait-for-it.sh --host=10.5.0.10 --port=5432 --user=docker --password=batimap --db=gis -- /entrypoint.sh
+    - POSTGRES_PASSWORD=batimap
+    - POSTGRES_USER=docker
+    - POSTGRES_DB=gis
+    - POSTGRES_HOST=10.5.0.10
+    - POSTGRES_PORT=5432
+    command: bash /wait-for-it.sh -- /entrypoint.sh
     volumes:
     - ./tiles/:/app
     depends_on:
