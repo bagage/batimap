@@ -42,6 +42,7 @@ export class MapComponent {
   onMapReady(map) {
     this.map = map;
     map.restoreView();
+    L.hash(map);
     this.setupVectorTiles(map);
   }
 
