@@ -1,6 +1,6 @@
-import {Component, OnDestroy} from '@angular/core';
+import {Component, HostListener, OnDestroy} from '@angular/core';
 import {environment} from '../../../environments/environment';
-import {MatDialog} from '@angular/material';
+import {MatDialog, MatDialogRef} from '@angular/material';
 import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
 
 @Component({
@@ -11,14 +11,20 @@ import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
 export class AboutDialogComponent implements OnDestroy {
   version = environment.version;
 
-  constructor(private matDialog: MatDialog) {
+  constructor(private matDialog: MatDialog, private dialogRef: MatDialogRef<AboutDialogComponent>) {
   }
 
   ngOnDestroy() {
     localStorage.setItem('first-time-help', 'false');
   }
 
+  @HostListener('document:keydown.m')
   showHowto() {
     this.matDialog.open(HowtoDialogComponent);
+  }
+
+  @HostListener('document:keydown.g')
+  close() {
+    this.dialogRef.close(0);
   }
 }

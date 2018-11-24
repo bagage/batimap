@@ -1,12 +1,15 @@
-import {Component, Input, NgZone, OnInit} from '@angular/core';
+import {Component, HostListener, Input, NgZone, OnInit} from '@angular/core';
 import {BatimapService} from '../../services/batimap.service';
 import {LegendDTO} from '../../classes/legend.dto';
 import {LegendService} from '../../services/legend.service';
 import * as L from 'leaflet';
 import {Observable} from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {MatDialog, MatDialogRef} from '@angular/material';
+import {MatDialog} from '@angular/material';
 import {AboutDialogComponent} from '../about-dialog/about-dialog.component';
+import {CityDetailsDialogComponent} from '../city-details-dialog/city-details-dialog.component';
+import {ZoomPanOptions} from 'leaflet';
+import {ObsoleteCityDTO} from '../../classes/obsolete-city.dto';
 
 @Component({
   selector: 'app-map-date-legend',
@@ -50,7 +53,17 @@ export class MapDateLegendComponent implements OnInit {
     this.cadastreLayer.redraw();
   }
 
+  @HostListener('document:keydown.a')
   openHelp() {
     this.dialogRef.open(AboutDialogComponent);
+  }
+
+  @HostListener('document:keydown.c')
+  feelingLucky() {
+    this.batimapService.obsoleteCity().subscribe((obsoleteCity: ObsoleteCityDTO) => {
+      this.map.setView(obsoleteCity.position, 10);
+      this.dialogRef.closeAll();
+      this.dialogRef.open(CityDetailsDialogComponent, {data: [obsoleteCity.city, this.cadastreLayer]});
+    });
   }
 }

@@ -3,7 +3,7 @@ import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {CityDetailsDialogComponent} from './city-details-dialog.component';
 import {MatLibModule} from '../../mat-lib.module';
 import {SharedComponentsModule} from '../shared-components.module';
-import {MAT_DIALOG_DATA} from '@angular/material';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {HttpModule} from '@angular/http';
 import {HttpClientTestingModule} from '../../../../node_modules/@angular/common/http/testing';
 import {CityDTO} from '../../classes/city.dto';
@@ -32,6 +32,7 @@ describe('CityDetailsDialogComponent', () => {
       imports: [MatLibModule, HttpModule, HttpClientTestingModule, DialogTestModule, NoopAnimationsModule],
       providers: [
         {provide: MAT_DIALOG_DATA, useValue: {}},
+        {provide: MatDialogRef, useValue: {}},
         {provide: AppConfigService, useClass: MockAppConfigService},
       ]
     })

@@ -9,7 +9,6 @@ import {CityDTO} from '../../classes/city.dto';
 import {plainToClass} from 'class-transformer';
 import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-legend.component';
 import {LegendService} from '../../services/legend.service';
-import {CityDetailsDTO} from '../../classes/city-details.dto';
 
 @Component({
   selector: 'app-map',
@@ -92,9 +91,6 @@ export class MapComponent {
 
   openPopup(cityJson: any) {
     const city = plainToClass<CityDTO, object>(CityDTO, cityJson);
-    if (cityJson.details) {
-      city.details = plainToClass<CityDetailsDTO, object>(CityDetailsDTO, JSON.parse(cityJson.details));
-    }
     this.matDialog.open(CityDetailsDialogComponent, {data: [city, this.cadastreLayer]});
   }
 }

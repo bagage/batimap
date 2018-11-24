@@ -10,6 +10,7 @@ import {plainToClass} from 'class-transformer';
 import {debounceTime, map, switchMap, tap} from 'rxjs/operators';
 import {LegendDTO} from '../classes/legend.dto';
 import {LegendService} from './legend.service';
+import {ObsoleteCityDTO} from '../classes/obsolete-city.dto';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +31,10 @@ export class BatimapService {
 
   private URL_LEGEND(lonNW: number, latNW: number, lonSE: number, latSE: number) {
     return this.configService.getConfig().backendServerUrl + `legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
+  }
+
+  private URL_CITY_OBSOLETE() {
+    return this.configService.getConfig().backendServerUrl + `cities/obsolete`;
   }
 
   constructor(private http: HttpClient,
@@ -63,5 +68,9 @@ export class BatimapService {
   public updateCity(insee: string): Observable<CityDTO> {
     return this.http.post<CityDTO>(this.URL_CITY_UPDATE(insee), null)
       .pipe(tap(city => this.legendService.city2date.set(city.insee, city.date)));
+  }
+
+  public obsoleteCity(): Observable<ObsoleteCityDTO> {
+    return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE());
   }
 }

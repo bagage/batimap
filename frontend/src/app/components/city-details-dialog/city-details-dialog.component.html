@@ -11,7 +11,7 @@
   </div>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
-  <button mat-raised-button color="warn" cdkFocusInitial mat-dialog-close>Fermer</button>
-  <mat-bar-button [options]="updateButtonOpts" (click)="updateCity()"></mat-bar-button>
+  <button mat-raised-button color="warn" cdkFocusInitial mat-dialog-close matTooltip="Ferme la popup. [Raccourci : F]">Fermer</button>
+  <mat-bar-button [options]="updateButtonOpts" (click)="updateCity()" matTooltip="Rafraîchit les statistiques de la commune. [Raccourci : R]"></mat-bar-button>
   <app-josm-button [city]="city" [josmReady]="josmIsStarted | async"></app-josm-button>
 </mat-dialog-actions>

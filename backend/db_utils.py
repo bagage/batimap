@@ -12,6 +12,7 @@ import operator
 from collections import defaultdict
 
 from batimap.bbox import Bbox
+from batimap.point import Point
 from batimap.batimap import IGNORED_BUILDINGS
 from citydto import CityDTO
 
@@ -119,9 +120,9 @@ class Postgis(object):
 
         req = """
                 SELECT
+                    c.date,
                     p.name,
                     c.insee,
-                    c.date,
                     c.details,
                     c.date_cadastre
                 FROM
@@ -146,7 +147,7 @@ class Postgis(object):
 
         results = []
         for row in self.cursor.fetchall():
-            results.append(CityDTO(row[0], row[1], row[2], row[3], row[4] is not None))
+            results.append(CityDTO(row[0], None, row[1], row[2], row[3], row[4] is not None))
         return results
 
     def get_legend_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
@@ -467,3 +468,33 @@ class Postgis(object):
                     date = "never"
                 tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
             self.update_stats_for_insee(tuples)
+
+    def get_obsolete_city(self):
+        """
+            Find the city that has the most urging need of import (never > unknown > old import > raster).
+            Also privileges ready-to-work cities (cadastre data available) upon the others.
+            However we do NOT want this to be a fixed-order list (to avoid multiple users working on the
+            same city), so we finally randomize final list of matching cities.
+        """
+        req = """
+                SELECT
+                    c.date, c.name, c.insee, c.details, c.date_cadastre, ST_AsText(ST_Centroid(p.geometry))
+                FROM
+                    city_stats c,
+                    osm_admin p
+                WHERE
+                    c.insee = p.insee
+                ORDER BY
+                    date != 'never', date != 'unknown', date = 'raster', date,
+                    date_cadastre is null,
+                    random()
+                LIMIT
+                    1
+        """
+        self.execute(req)
+
+        row = self.cursor.fetchone()
+        print(row)
+        if row:
+            city = CityDTO(row[0], None, row[1], row[2], row[3], row[4] is not None)
+            return (city, Point(row[5]))

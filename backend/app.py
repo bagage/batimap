@@ -113,7 +113,7 @@ def api_update_insee_list(insee) -> dict:
     if date != date2:
         batimap.clear_tiles(db, insee)
 
-    return json.dumps(CityDTO(city, date2), cls=CityEncoder)
+    return json.dumps(CityDTO(date2, city), cls=CityEncoder)
 
 
 @app.route("/departments", methods=["GET"])
@@ -128,6 +128,12 @@ def api_josm_data(insee) -> dict:
     batimap.fetch_departments_osm_state(db, [c.department])
     batimap.clear_tiles(db, insee)
     return json.dumps(batimap.josm_data(db, insee))
+
+
+@app.route("/cities/obsolete", methods=["GET"])
+def api_obsolete_city() -> dict:
+    (city, position) = db.get_obsolete_city()
+    return json.dumps({"position": [position.x, position.y], "city": city}, cls=CityEncoder)
 
 
 # CLI
