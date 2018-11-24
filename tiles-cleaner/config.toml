@@ -1,1 +1,112 @@
-../tiles/config.toml
+[webserver]
+port = ":9999"
+
+[cache]
+type = "file"
+max_zoom = 13
+basepath = "/app/data/cache"
+
+# register data providers
+[[providers]]
+name = "cadastre"       # provider name is referenced from map layers
+type = "postgis"        # the type of data provider. currently only supports postgis
+host = "postgis"        # postgis database host
+port = 5432             # postgis database port
+database = "gis"        # postgis database name
+user = "docker"       # postgis database user
+password = "batimap"    # postgis database password
+srid = 4326             # The default srid for this provider. If not provided it will be WebMercator (3857)
+
+[[providers.layers]]
+name = "cities"
+geometry_fieldname = "geometry"
+id_fieldname = "osm_id"
+sql = """
+  SELECT
+    ST_AsBinary(ST_Simplify(geometry, 0.002, true)) AS geometry,
+    oa.osm_id,
+    cs.name,
+    cs.insee,
+    cs.details,
+    cs.date,
+    case when cs.date_cadastre is null then '' else 'true' end as josm_ready
+  FROM
+    osm_admin oa,
+    city_stats cs
+  WHERE
+    oa.admin_level::int >= '7'
+    AND cs.insee = oa.insee
+    AND geometry && !BBOX!
+"""
+
+[[providers.layers]]
+name = "cities-point"
+geometry_fieldname = "geometry"
+id_fieldname = "osm_id"
+sql = """
+  SELECT
+    ST_AsBinary(ST_Centroid(oa.geometry)) AS geometry,
+    oa.osm_id,
+    cs.name,
+    cs.details,
+    cs.insee,
+    cs.date,
+    case when cs.date_cadastre is null then '' else 'true' end as josm_ready
+  FROM
+    osm_admin  oa,
+    city_stats cs
+  WHERE
+    oa.admin_level::int >= '7'
+    AND cs.insee = oa.insee
+    AND geometry && !BBOX!
+"""
+
+[[providers.layers]]
+name = "departments"
+geometry_fieldname = "geometry"
+id_fieldname = "osm_id"
+sql = """
+  WITH view_department_stats AS (
+    SELECT DISTINCT ON (department)
+      department,
+      date
+    FROM
+      city_stats
+    GROUP BY
+      department,
+      date
+    ORDER BY
+      department,
+      COUNT(date) DESC
+  )
+  SELECT
+    ST_AsBinary(ST_Simplify(oa.geometry, 0.03, true)) AS geometry,
+    vds.date,
+    oa.name,
+    oa.insee AS insee,
+    oa.osm_id
+  FROM
+    osm_admin oa,
+    view_department_stats  vds
+  WHERE
+    oa.admin_level = '6'
+    AND oa.insee LIKE vds.department || '%'
+    AND geometry && !BBOX!
+"""
+
+[[maps]]
+name = "batimap"
+  [[maps.layers]]
+  provider_layer = "cadastre.cities"
+  min_zoom = 9
+  max_zoom = 13
+
+  [[maps.layers]]
+  provider_layer = "cadastre.cities-point"
+  min_zoom = 8
+  max_zoom = 8
+
+  [[maps.layers]]
+  provider_layer = "cadastre.departments"
+  min_zoom = 0
+  max_zoom = 7

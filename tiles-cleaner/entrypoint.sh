@@ -8,7 +8,7 @@ cd /app
 
 # cache whole world at start, if needed
 rm -rf data/cache/*
-tegola cache seed --max-zoom $INITIAL_MAX_ZOOM
+tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
 echo > $INPUT_FILE
 
 while true; do
@@ -17,8 +17,11 @@ while true; do
         cat $INPUT_FILE | sort | uniq > $WORK_FILE
         echo -n > $INPUT_FILE
         while read bbox; do
-            tegola cache purge --bounds "$bbox" --min-zoom 8 --max-zoom 13
-            tegola cache seed --bounds "$bbox" --min-zoom 8 --max-zoom 10
+            # if bbox not empty
+            if [ ! -z $bbox ]; then
+                tegola --config /app/config.toml cache purge --bounds "$bbox" --min-zoom 8 --max-zoom 13
+                tegola --config /app/config.toml cache seed --bounds "$bbox" --min-zoom 8 --max-zoom 10
+            fi
         done < $WORK_FILE
         rm $WORK_FILE
         echo "All tiles treated!"
