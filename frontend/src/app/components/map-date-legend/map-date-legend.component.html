@@ -1,8 +1,8 @@
 <mat-card>
   <mat-card-title id="title">Date de dernier import par commune</mat-card-title>
   <mat-card-content>
-    <button mat-mini-fab color="accent" (click)="feelingLucky()" matTooltip="J'ai de la chance ! Sélectionner automatiquement une commune qui a besoin d'un import. [Raccourci : c]"><mat-icon>extension</mat-icon></button>
-    <button mat-mini-fab color="primary" (click)="openHelp()" matTooltip="Afficher l'aide. [Raccourci : a]"><mat-icon>live_help</mat-icon></button>
+    <button mat-mini-fab color="accent" (click)="feelingLucky()" matTooltip="J'ai de la chance ! Sélectionner automatiquement une commune qui a besoin d'un import. [Raccourci : shift+c]"><mat-icon>extension</mat-icon></button>
+    <button mat-mini-fab color="primary" (click)="openHelp()" matTooltip="Afficher l'aide. [Raccourci : shift+a]"><mat-icon>live_help</mat-icon></button>
     <ng-container *ngIf="legendItems$ | async as legendItems; else dataHandler">
       <mat-checkbox *ngFor="let item of legendItems" [id]="'legend' + item.name" [(ngModel)]="item.checked"
                     (change)="legendChanges(item)"

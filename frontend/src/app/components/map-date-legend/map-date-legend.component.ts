@@ -52,12 +52,12 @@ export class MapDateLegendComponent implements OnInit {
     this.cadastreLayer.redraw();
   }
 
-  @HostListener('document:keydown.a')
+  @HostListener('document:keydown.shift.a')
   openHelp() {
     this.dialogRef.open(AboutDialogComponent);
   }
 
-  @HostListener('document:keydown.c')
+  @HostListener('document:keydown.shift.c')
   feelingLucky() {
     this.batimapService.obsoleteCity().subscribe((obsoleteCity: ObsoleteCityDTO) => {
       this.map.setView(obsoleteCity.position, 10);

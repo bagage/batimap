@@ -1,4 +1,4 @@
-  {
+{
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
@@ -24,7 +24,8 @@
             ],
             "styles": [
               "src/styles.css",
-              "node_modules/leaflet/dist/leaflet.css"
+              "node_modules/leaflet/dist/leaflet.css",
+              "node_modules/leaflet-geocoder-ban/dist/leaflet-geocoder-ban.min.css"
             ],
             "scripts": []
           },
