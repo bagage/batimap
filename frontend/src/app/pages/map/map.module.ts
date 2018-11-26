@@ -6,6 +6,7 @@ import {CitiesListModule} from '../cities-list/cities-list.module';
 import 'leaflet';
 import 'leaflet.vectorgrid';
 import 'leaflet-hash';
+import 'leaflet-geocoder-ban/dist/leaflet-geocoder-ban';
 import 'leaflet.restoreview';
 import {MatLibModule} from '../../mat-lib.module';
 import {CommonModule} from '@angular/common';

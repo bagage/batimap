@@ -1,14 +1,13 @@
-import {Component, NgZone, ViewChild} from '@angular/core';
-import { AppConfigService } from '../../services/app-config.service';
-
-import * as L from 'leaflet';
-import {latLng, tileLayer} from 'leaflet';
+import {Component, HostListener, NgZone, ViewChild} from '@angular/core';
+import {AppConfigService} from '../../services/app-config.service';
 import {MatDialog} from '@angular/material';
 import {CityDetailsDialogComponent} from '../../components/city-details-dialog/city-details-dialog.component';
 import {CityDTO} from '../../classes/city.dto';
 import {plainToClass} from 'class-transformer';
 import {MapDateLegendComponent} from '../../components/map-date-legend/map-date-legend.component';
 import {LegendService} from '../../services/legend.service';
+
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-map',
@@ -20,7 +19,7 @@ export class MapComponent {
 
   options = {
     layers: [
-      tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+      L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
         {
           maxZoom: 18,
           attribution: '© Contributeurs OpenStreetMap'
@@ -28,10 +27,11 @@ export class MapComponent {
     ],
     zoom: 5,
     maxZoom: 13,
-    center: latLng(46.111, 3.977)
+    center: L.latLng(46.111, 3.977)
   };
   map: L.Map;
   cadastreLayer: any;
+  private searchControl: L.Control;
 
   constructor(private matDialog: MatDialog,
               private zone: NgZone,
@@ -43,6 +43,9 @@ export class MapComponent {
     this.map = map;
     map.restoreView();
     L.hash(map);
+    this.searchControl = L.geocoderBAN({
+      placeholder: 'Rechercher une commune (shift+f)'
+    }).addTo(map);
     this.setupVectorTiles(map);
   }
 
@@ -93,5 +96,11 @@ export class MapComponent {
   openPopup(cityJson: any) {
     const city = plainToClass<CityDTO, object>(CityDTO, cityJson);
     this.matDialog.open(CityDetailsDialogComponent, {data: [city, this.cadastreLayer]});
+  }
+
+  @HostListener('document:keydown.shift.f', ['$event'])
+  search(event) {
+    event.preventDefault();
+    (<any>this.searchControl).toggle();
   }
 }

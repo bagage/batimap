@@ -24,7 +24,7 @@ test:
   except:
     - master
 
-build_tiles_cleaner:
+.build_docker_image: &build_docker_image
   image: docker:stable
   services:
     - docker:dind
@@ -34,100 +34,39 @@ build_tiles_cleaner:
   only:
     refs:
       - master
-    # changes:
-    #   - tiles-cleaner/*
   script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:$CI_COMMIT_REF_SLUG tiles-cleaner
-    - docker tag registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/tiles-cleaner:$CI_COMMIT_REF_SLUG
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG $CONTAINER
+    - docker tag registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
+    - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG
+  retry: 2
+
+build_tiles_cleaner:
+  <<: *build_docker_image
+  variables:
+    CONTAINER: tiles-cleaner
 
 build_postgis:
-  image: docker:stable
-  services:
-    - docker:dind
-  stage: build
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-  only:
-    refs:
-      - master
-    # changes:
-    #   - postgis/*
-  script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/postgis:$CI_COMMIT_REF_SLUG postgis
-    - docker tag registry.gitlab.com/bagage/cadastre-conflation/postgis:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/postgis:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/postgis:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/postgis:$CI_COMMIT_REF_SLUG
+  <<: *build_docker_image
+  variables:
+    CONTAINER: postgis
 
 build_imposm_updater:
-  image: docker:stable
-  services:
-    - docker:dind
-  stage: build
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-  only:
-    refs:
-      - master
-    # changes:
-    #   - imposm_updater/*
-  script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:$CI_COMMIT_REF_SLUG imposm_updater
-    - docker tag registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/imposm_updater:$CI_COMMIT_REF_SLUG
+  <<: *build_docker_image
+  variables:
+    CONTAINER: imposm_updater
 
 build_backend:
-  image: docker:stable
-  services:
-    - docker:dind
-  stage: build
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-  only:
-    refs:
-      - master
-    # changes:
-    #   - backend/*
-  script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/backend:$CI_COMMIT_REF_SLUG backend
-    - docker tag registry.gitlab.com/bagage/cadastre-conflation/backend:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/backend:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/backend:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/backend:$CI_COMMIT_REF_SLUG
+  <<: *build_docker_image
+  variables:
+    CONTAINER: backend
 
 build_tiles:
-  image: docker:stable
-  services:
-    - docker:dind
-  stage: build
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-  only:
-    refs:
-      - master
-    # changes:
-    #   - tiles/*
-  script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/tiles:$CI_COMMIT_REF_SLUG tiles
-    - docker tag registry.gitlab.com/bagage/cadastre-conflation/tiles:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/tiles:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/tiles:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/tiles:$CI_COMMIT_REF_SLUG
+  <<: *build_docker_image
+  variables:
+    CONTAINER: tiles
 
 build_frontend:
-  image: docker:stable
-  services:
-    - docker:dind
-  stage: build
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-  only:
-    refs:
-      - master
-    # changes:
-    #   - frontend/*
-  script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/frontend:$CI_COMMIT_REF_SLUG -f frontend/Dockerfile.prod frontend
-    - docker tag registry.gitlab.com/bagage/cadastre-conflation/frontend:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/frontend:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/frontend:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/frontend:$CI_COMMIT_REF_SLUG
+  <<: *build_docker_image
+  variables:
+    CONTAINER: frontend
