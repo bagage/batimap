@@ -80,7 +80,7 @@ services:
     - POSTGRES_PORT=5432
     - FLASK_APP=app.py
     # - CONFLATION_VERBOSITY=DEBUG
-    command: bash /wait-for-it.sh -- bash /entrypoint.sh
+    command: sh /wait-for-it.sh -- sh /entrypoint.sh
     ports:
     - "5000:5000"
     volumes:

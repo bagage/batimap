@@ -11,4 +11,4 @@ if [ $result != 0 ] || [ "$count" -lt 10 ]; then
 fi
 
 # start the backend
-flask run -h 0.0.0.0
+gunicorn -b ':5000' -w 4 app:app

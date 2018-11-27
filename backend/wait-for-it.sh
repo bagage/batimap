@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 cmdname=$(basename $0)
 POSTGRES_PORT=${POSTGRES_PORT:-5432}
@@ -47,7 +47,7 @@ while [[ $# -gt 0 ]]
 do
     case "$1" in
         *:* )
-        hostport=(${1//:/ })
+        hostport=${1//:/ }
         POSTGRES_HOST=${hostport[0]}
         POSTGRES_PORT=${hostport[1]}
         shift 1
@@ -92,7 +92,7 @@ do
         ;;
         --)
         shift
-        CLI=("$@")
+        CLI="$@"
         break
         ;;
         --help)
@@ -116,12 +116,12 @@ QUIET=${QUIET:-0}
 wait_for
 RESULT=$?
 
-if [[ $CLI != "" ]]; then
+if [[ "$CLI" != "" ]]; then
     if [[ $RESULT -ne 0 && $STRICT -eq 1 ]]; then
         echoerr "$cmdname: strict mode, refusing to execute subprocess"
         exit $RESULT
     fi
-    eval "${CLI[@]}"
+    eval "${CLI}"
 else
     exit $RESULT
 fi
