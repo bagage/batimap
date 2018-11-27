@@ -66,19 +66,6 @@ name = "departments"
 geometry_fieldname = "geometry"
 id_fieldname = "osm_id"
 sql = """
-  WITH view_department_stats AS (
-    SELECT DISTINCT ON (department)
-      department,
-      date
-    FROM
-      city_stats
-    GROUP BY
-      department,
-      date
-    ORDER BY
-      department,
-      COUNT(date) DESC
-  )
   SELECT
     ST_AsBinary(ST_Simplify(oa.geometry, 0.03, true)) AS geometry,
     vds.date,
@@ -87,7 +74,19 @@ sql = """
     oa.osm_id
   FROM
     osm_admin oa,
-    view_department_stats  vds
+    (
+      SELECT DISTINCT ON (department)
+        department,
+        date
+      FROM
+        city_stats
+      GROUP BY
+        department,
+        date
+      ORDER BY
+        department,
+        COUNT(date) DESC
+    ) vds
   WHERE
     oa.admin_level = '6'
     AND oa.insee LIKE vds.department || '%'
