@@ -80,6 +80,7 @@ services:
     - POSTGRES_PORT=5432
     - FLASK_APP=app.py
     # - CONFLATION_VERBOSITY=DEBUG
+    # - TIMEOUT_VALUE=90
     command: sh /wait-for-it.sh -- sh /entrypoint.sh
     ports:
     - "5000:5000"

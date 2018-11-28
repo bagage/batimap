@@ -10,5 +10,7 @@ if [ $result != 0 ] || [ "$count" -lt 10 ]; then
     flask initdb
 fi
 
+TIMEOUT_VALUE=${TIMEOUT_VALUE:=60}
+
 # start the backend
-gunicorn -b ':5000' -w 4 app:app
+gunicorn --bind ':5000' --timeout $TIMEOUT_VALUE --workers 4 app:app
