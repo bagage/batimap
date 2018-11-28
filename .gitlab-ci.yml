@@ -35,7 +35,7 @@ test:
     refs:
       - master
   script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG $CONTAINER
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG -f $CONTAINER/$DOCKERFILE $CONTAINER
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG
@@ -45,28 +45,34 @@ build_tiles_cleaner:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles-cleaner
+    DOCKERFILE: Dockerfile
 
 build_postgis:
   <<: *build_docker_image
   variables:
     CONTAINER: postgis
+    DOCKERFILE: Dockerfile
 
 build_imposm_updater:
   <<: *build_docker_image
   variables:
     CONTAINER: imposm_updater
+    DOCKERFILE: Dockerfile
 
 build_backend:
   <<: *build_docker_image
   variables:
     CONTAINER: backend
+    DOCKERFILE: Dockerfile
 
 build_tiles:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles
+    DOCKERFILE: Dockerfile
 
 build_frontend:
   <<: *build_docker_image
   variables:
     CONTAINER: frontend
+    DOCKERFILE: Dockerfile.prod
