@@ -372,8 +372,7 @@ class Postgis(object):
                 UPDATE SET
                     department = excluded.department,
                     name_cadastre = excluded.name_cadastre,
-                    is_raster = excluded.is_raster,
-                    date = excluded.date
+                    is_raster = excluded.is_raster
         """
         try:
             psycopg2.extras.execute_values(self.cursor, req, tuples)
