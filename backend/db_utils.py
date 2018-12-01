@@ -450,14 +450,14 @@ class Postgis(object):
             buildings_count[insee][date] += count
 
     def import_city_stats_from_osmplanet(self, departments):
-        LOG.info(f"Import buildings from db for departments {departments}…")
-        for department in departments:
-            LOG.info(f"Import buildings from db for department {department}…")
+        LOG.info(f"Calcul des statistiques du bâti pour les départements {departments}…")
+        for d in departments:
+            LOG.info(f"Calcul des statistiques du bâti pour le département {d}…")
 
             buildings_count = {}
             insee_name = {}
 
-            self.fetch_buildings_stats(f"osm_buildings", department, buildings_count, insee_name)
+            self.fetch_buildings_stats(f"osm_buildings", d, buildings_count, insee_name)
 
             tuples = []
             for insee, counts in buildings_count.items():

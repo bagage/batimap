@@ -42,13 +42,14 @@ def update_departments_raster_state(db, departments):
     csrf_token = r.read().split(b"CSRF_TOKEN=")[1].split(b'"')[0].decode("utf-8")
     op.addheaders = [("Accept-Encoding", "gzip")]
 
-    for department in departments:
-        LOG.info(f"Récupération des infos pour le département {department}")
+    LOG.info(f"Récupération des infos cadastrales pour les départements {departments}")
+    for d in departments:
+        LOG.info(f"Récupération des infos cadastrales pour le département {d}")
         tuples = []
-        department = f"{department}"
+        d = f"{d}"
         r2 = op.open(
             f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}"
-            f"&codeDepartement={department.zfill(3)}&libelle=&keepVolatileSession=&offset=5000"
+            f"&codeDepartement={d.zfill(3)}&libelle=&keepVolatileSession=&offset=5000"
         )
         fr = BeautifulSoup(zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS), "lxml")
         for e in fr.find_all("tbody", attrs={"class": "parcelles"}):
@@ -65,7 +66,7 @@ def update_departments_raster_state(db, departments):
             commune_cp = e.strong.string
             nom_commune = commune_cp[:-9]
 
-            dept = department.zfill(2)
+            dept = d.zfill(2)
             start = len(dept) - 5
             insee = dept + code_commune[start:]
             is_raster = format_type == "IMAG"
@@ -81,7 +82,9 @@ def update_departments_raster_state(db, departments):
 
 
 def fetch_departments_osm_state(db, departments):
+    LOG.info(f"Récupération du statut OSM pour les départements {departments}")
     for d in departments:
+        LOG.info(f"Récupération du statut OSM pour le département {d}")
         tuples = []
         url = "https://cadastre.openstreetmap.fr"
         dept = d.zfill(3)
