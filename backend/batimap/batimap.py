@@ -143,6 +143,7 @@ def fetch_cadastre_data(city, force=False):
         if f"{city.name_cadastre.upper()}.tar.bz2" in [x.text for x in e.select("td:nth-of-type(2) a")]:
             date = e.select("td:nth-of-type(3)")[0].text.strip()
             LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
+            return True
 
     data = {
         "dep": dept,
