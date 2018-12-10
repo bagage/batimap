@@ -72,7 +72,7 @@ export class JosmButtonComponent {
   private prepareCity(): Observable<any> {
     return this.batimapService.cityData(this._city.insee).pipe(tap((conflateDTO: ConflateCityDTO) => {
       if (conflateDTO.buildingsUrl) {
-        this._city.josm_ready = true;
+        this.city.josm_ready = true;
       }
     }));
   }
