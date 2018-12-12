@@ -2,10 +2,8 @@ version: '3'
 services:
   postgis:
     build: postgis
-    environment:
-    - POSTGRES_PASSWORD=batimap
-    - POSTGRES_USER=docker
-    - POSTGRES_DB=gis
+    env_file:
+    - ./.env
     ports:
     - "5432:5432"
     volumes:
@@ -16,14 +14,8 @@ services:
 
   imposm_updater:
     build: imposm_updater
-    environment:
-    - POSTGRES_PASSWORD=batimap
-    - POSTGRES_USER=docker
-    - POSTGRES_DB=gis
-    - POSTGRES_HOST=10.5.0.10
-    - POSTGRES_PORT=5432
-    # - REGIONS=france/rhone-alpes-latest
-    # - FORCE_IMPORT=true
+    env_file:
+    - ./.env
     entrypoint: bash /wait-for-it.sh -- /import_from_geofabrik.sh $$REGIONS
     depends_on:
     - postgis
@@ -35,12 +27,8 @@ services:
 
   tiles:
     build: tiles
-    environment:
-    - POSTGRES_PASSWORD=batimap
-    - POSTGRES_USER=docker
-    - POSTGRES_DB=gis
-    - POSTGRES_HOST=10.5.0.10
-    - POSTGRES_PORT=5432
+    env_file:
+    - ./.env
     command: bash /wait-for-it.sh -- tegola --config $$CONFIG serve
     volumes:
     - ./tiles/:/app
@@ -54,13 +42,8 @@ services:
 
   tiles-cleaner:
     build: tiles-cleaner
-    environment:
-    - INITIAL_MAX_ZOOM=7
-    - POSTGRES_PASSWORD=batimap
-    - POSTGRES_USER=docker
-    - POSTGRES_DB=gis
-    - POSTGRES_HOST=10.5.0.10
-    - POSTGRES_PORT=5432
+    env_file:
+    - ./.env
     command: bash /wait-for-it.sh -- /entrypoint.sh
     volumes:
     - ./tiles/:/app
@@ -84,14 +67,8 @@ services:
   celery:
     build: backend
     command: redis-server
-    environment:
-    - POSTGRES_PASSWORD=batimap
-    - POSTGRES_USER=docker
-    - POSTGRES_DB=gis
-    - POSTGRES_HOST=10.5.0.10
-    - POSTGRES_PORT=5432
-    - FLASK_APP=app.py
-    # - CONFLATION_VERBOSITY=DEBUG
+    env_file:
+    - ./.env
     command: sh /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
     volumes:
     - ./backend/:/code
@@ -104,15 +81,8 @@ services:
 
   backend:
     build: backend
-    environment:
-    - POSTGRES_PASSWORD=batimap
-    - POSTGRES_USER=docker
-    - POSTGRES_DB=gis
-    - POSTGRES_HOST=10.5.0.10
-    - POSTGRES_PORT=5432
-    - FLASK_APP=app.py
-    # - CONFLATION_VERBOSITY=DEBUG
-    # - TIMEOUT_VALUE=90
+    env_file:
+    - ./.env
     command: sh /wait-for-it.sh -- sh /entrypoint.sh
     ports:
     - "5000:5000"
