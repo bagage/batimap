@@ -3,23 +3,17 @@ stages:
   - build
 
 test:
-  image: node:8
+  image: registry.gitlab.com/bagage/cadastre-conflation/ci-test
   stage: test
-
   cache:
     untracked: true
     paths:
       - cache-ci/
-
   before_script:
     - yarn config set cache-folder cache-ci
-
-  before_script:
-    - apt-get update && apt-get install -yy chromium --no-install-recommends && apt-get clean
-    - export CHROME_BIN=/usr/bin/chromium
+  script:
     - cd frontend/
     - yarn
-  script:
     - yarn test --karma-config src/karma-ci.conf.js
   except:
     - master
@@ -35,44 +29,50 @@ test:
     refs:
       - master
   script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG -f $CONTAINER/$DOCKERFILE $CONTAINER
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG -f $DOCKERFILE .
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG
   retry: 2
 
+build_ci_test:
+  <<: *build_docker_image
+  variables:
+    CONTAINER: ci-test
+    DOCKERFILE: frontend/Dockerfile.ci
+
 build_tiles_cleaner:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles-cleaner
-    DOCKERFILE: Dockerfile
+    DOCKERFILE: $CONTAINER/Dockerfile
 
 build_postgis:
   <<: *build_docker_image
   variables:
     CONTAINER: postgis
-    DOCKERFILE: Dockerfile
+    DOCKERFILE: $CONTAINER/Dockerfile
 
 build_imposm_updater:
   <<: *build_docker_image
   variables:
     CONTAINER: imposm_updater
-    DOCKERFILE: Dockerfile
+    DOCKERFILE: $CONTAINER/Dockerfile
 
 build_backend:
   <<: *build_docker_image
   variables:
     CONTAINER: backend
-    DOCKERFILE: Dockerfile
+    DOCKERFILE: $CONTAINER/Dockerfile
 
 build_tiles:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles
-    DOCKERFILE: Dockerfile
+    DOCKERFILE: $CONTAINER/Dockerfile
 
 build_frontend:
   <<: *build_docker_image
   variables:
     CONTAINER: frontend
-    DOCKERFILE: Dockerfile.prod
+    DOCKERFILE: $CONTAINER/Dockerfile.prod
