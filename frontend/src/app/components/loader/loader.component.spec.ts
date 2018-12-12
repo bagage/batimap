@@ -1,9 +1,9 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import {LoaderComponent} from './loader.component';
-import {MatLibModule} from '../../mat-lib.module';
+import { LoaderComponent } from "./loader.component";
+import { MatLibModule } from "../../mat-lib.module";
 
-describe('LoaderComponent', () => {
+describe("LoaderComponent", () => {
   let component: LoaderComponent;
   let fixture: ComponentFixture<LoaderComponent>;
 
@@ -11,8 +11,7 @@ describe('LoaderComponent', () => {
     TestBed.configureTestingModule({
       declarations: [LoaderComponent],
       imports: [MatLibModule]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -21,7 +20,7 @@ describe('LoaderComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

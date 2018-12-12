@@ -1,6 +1,6 @@
-import * as L from 'leaflet';
+import * as L from "leaflet";
 
-declare module 'leaflet' {
+declare module "leaflet" {
   interface GeocoderBanOptions {
     position?: string; // 'topleft',
     style?: string; // 'control',

@@ -1,13 +1,13 @@
-import { PagesModule } from './pages.module';
+import { PagesModule } from "./pages.module";
 
-describe('PagesModule', () => {
+describe("PagesModule", () => {
   let pagesModule: PagesModule;
 
   beforeEach(() => {
     pagesModule = new PagesModule();
   });
 
-  it('should create an instance', () => {
+  it("should create an instance", () => {
     expect(pagesModule).toBeTruthy();
   });
 });

@@ -1,17 +1,32 @@
 <h2 mat-dialog-title>Détails commune</h2>
 <mat-dialog-content>
-  <h3>{{city.insee}} - {{city.name}}</h3>
-  {{lastImport()}}
+  <h3>{{ city.insee }} - {{ city.name }}</h3>
+  {{ lastImport() }}
 
   <div *ngIf="detailsEntry.length > 0">
     <h4>Bâtiments par date</h4>
     <ul>
-      <li *ngFor="let k of detailsEntry">{{k[0]}} - {{k[1]}}</li>
+      <li *ngFor="let k of detailsEntry">{{ k[0] }} - {{ k[1] }}</li>
     </ul>
   </div>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
-  <button mat-raised-button color="warn" cdkFocusInitial mat-dialog-close matTooltip="Ferme la popup. [Raccourci : F]">Fermer</button>
-  <mat-bar-button [options]="updateButtonOpts" (click)="updateCity()" matTooltip="Rafraîchit les statistiques de la commune. [Raccourci : R]"></mat-bar-button>
-  <app-josm-button [city]="city" [josmReady]="josmIsStarted | async"></app-josm-button>
+  <button
+    mat-raised-button
+    color="warn"
+    cdkFocusInitial
+    mat-dialog-close
+    matTooltip="Ferme la popup. [Raccourci : F]"
+  >
+    Fermer
+  </button>
+  <mat-bar-button
+    [options]="updateButtonOpts"
+    (click)="updateCity()"
+    matTooltip="Rafraîchit les statistiques de la commune. [Raccourci : R]"
+  ></mat-bar-button>
+  <app-josm-button
+    [city]="city"
+    [josmReady]="josmIsStarted | async"
+  ></app-josm-button>
 </mat-dialog-actions>
