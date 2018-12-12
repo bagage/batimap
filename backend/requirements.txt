@@ -1,9 +1,10 @@
 bs4
+celery
 click
 colour
 flask
-flask-cors
 flask_restful
+flask-cors
 geojson
 grequests
 gunicorn
@@ -12,6 +13,6 @@ mypy-lang
 overpass
 psycopg2
 pygeoj
+redis==2.10.6
 requests
 ujson
-lxml

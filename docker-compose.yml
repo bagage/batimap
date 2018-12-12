@@ -70,6 +70,38 @@ services:
       fixed_network:
         ipv4_address: 10.5.0.13
 
+  redis:
+    image: redis:4-alpine
+    command: redis-server
+    volumes:
+      - ./redis/data:/var/lib/redis/data
+    ports:
+      - '6379:6379'
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.114
+
+  celery:
+    build: backend
+    command: redis-server
+    environment:
+    - POSTGRES_PASSWORD=batimap
+    - POSTGRES_USER=docker
+    - POSTGRES_DB=gis
+    - POSTGRES_HOST=10.5.0.10
+    - POSTGRES_PORT=5432
+    - FLASK_APP=app.py
+    # - CONFLATION_VERBOSITY=DEBUG
+    command: sh /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
+    volumes:
+    - ./backend/:/code
+    - ./tiles/data/outdated:/code/tiles
+    depends_on:
+    - postgis
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.115
+
   backend:
     build: backend
     environment:

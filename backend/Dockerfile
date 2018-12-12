@@ -11,12 +11,12 @@ COPY requirements.txt /src/requirements.txt
 
 RUN pip install --install-option="--prefix=/install" -r requirements.txt
 
-
 FROM base
 
-RUN apk --update add postgresql-client libxml2 libxslt
+RUN apk --update add postgresql-client libxml2 libxslt redis
 
 COPY --from=builder /install /usr/local
+
 COPY . /code
 WORKDIR /code
 
