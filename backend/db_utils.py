@@ -150,6 +150,24 @@ class Postgis(object):
             results.append(CityDTO(row[0], None, row[1], row[2], row[3], row[4] is not None))
         return results
 
+    def get_departments_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
+        req = """
+                SELECT
+                    DISTINCT( c.department ) as department
+                FROM
+                    osm_admin  p,
+                    city_stats c
+                WHERE
+                    p.admin_level::int >= 7
+                    AND c.insee = p.insee
+                    AND p.geometry && ST_MakeEnvelope(%(latNW)s, %(lonNW)s, %(latSE)s, %(lonSE)s, 4326 )                
+               """
+
+        args = {"lonNW": lonNW, "lonSE": lonSE, "latNW": latNW, "latSE": latSE}
+        self.execute(req, args)
+
+        return self.cursor.fetchall()
+
     def get_legend_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
 
         req = """
