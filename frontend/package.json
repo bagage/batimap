@@ -4,10 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "yarn outdated & ng serve",
-    "build": "yarn outdated & ng build",
+    "build": "yarn outdated & ng build & yarn format",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "format": "prettier --write src/app/**/*"
   },
   "private": true,
   "dependencies": {
@@ -57,6 +58,7 @@
     "karma-firefox-launcher": "^1.1.0",
     "karma-jasmine": "~1.1.1",
     "karma-jasmine-html-reporter": "^0.2.2",
+    "prettier": "^1.15.3",
     "protractor": "~5.3.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",

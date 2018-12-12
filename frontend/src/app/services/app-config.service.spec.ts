@@ -1,9 +1,9 @@
-import { TestBed, inject } from '@angular/core/testing';
+import { TestBed, inject } from "@angular/core/testing";
 
-import { AppConfigService } from './app-config.service';
-import {HttpClientTestingModule} from '../../../node_modules/@angular/common/http/testing';
+import { AppConfigService } from "./app-config.service";
+import { HttpClientTestingModule } from "../../../node_modules/@angular/common/http/testing";
 
-describe('AppConfigService', () => {
+describe("AppConfigService", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [AppConfigService],
@@ -11,7 +11,10 @@ describe('AppConfigService', () => {
     });
   });
 
-  it('should be created', inject([AppConfigService], (service: AppConfigService) => {
-    expect(service).toBeTruthy();
-  }));
+  it("should be created", inject(
+    [AppConfigService],
+    (service: AppConfigService) => {
+      expect(service).toBeTruthy();
+    }
+  ));
 });

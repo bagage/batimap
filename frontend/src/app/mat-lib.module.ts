@@ -1,5 +1,5 @@
 ///<reference path="../../node_modules/@angular/cdk/tree/typings/tree-module.d.ts"/>
-import {NgModule} from '@angular/core';
+import { NgModule } from "@angular/core";
 import {
   MatAutocompleteModule,
   MatBadgeModule,
@@ -36,11 +36,11 @@ import {
   MatToolbarModule,
   MatTooltipModule,
   MatTreeModule
-} from '@angular/material';
-import {CdkTableModule} from '@angular/cdk/table';
-import {CdkTreeModule} from '@angular/cdk/tree';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatProgressButtonsModule} from 'mat-progress-buttons';
+} from "@angular/material";
+import { CdkTableModule } from "@angular/cdk/table";
+import { CdkTreeModule } from "@angular/cdk/tree";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatProgressButtonsModule } from "mat-progress-buttons";
 
 @NgModule({
   exports: [
@@ -86,5 +86,4 @@ import {MatProgressButtonsModule} from 'mat-progress-buttons';
     MatProgressButtonsModule
   ]
 })
-export class MatLibModule {
-}
+export class MatLibModule {}

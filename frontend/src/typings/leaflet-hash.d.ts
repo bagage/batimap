@@ -1,5 +1,5 @@
-import * as L from 'leaflet';
+import * as L from "leaflet";
 
-declare module 'leaflet' {
+declare module "leaflet" {
   export function hash(map: L.Map): any;
 }

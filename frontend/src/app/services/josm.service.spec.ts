@@ -1,23 +1,23 @@
-import { TestBed, inject } from '@angular/core/testing';
+import { TestBed, inject } from "@angular/core/testing";
 
-import { JosmService } from './josm.service';
-import {HttpClientTestingModule} from '../../../node_modules/@angular/common/http/testing';
-import {HttpModule} from '@angular/http';
-import {AppConfigService} from './app-config.service';
-import {MockAppConfigService} from './app-config.service.mock';
+import { JosmService } from "./josm.service";
+import { HttpClientTestingModule } from "../../../node_modules/@angular/common/http/testing";
+import { HttpModule } from "@angular/http";
+import { AppConfigService } from "./app-config.service";
+import { MockAppConfigService } from "./app-config.service.mock";
 
-describe('JosmService', () => {
+describe("JosmService", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         JosmService,
-        {provide: AppConfigService, useClass: MockAppConfigService}
+        { provide: AppConfigService, useClass: MockAppConfigService }
       ],
       imports: [HttpModule, HttpClientTestingModule]
     });
   });
 
-  it('should be created', inject([JosmService], (service: JosmService) => {
+  it("should be created", inject([JosmService], (service: JosmService) => {
     expect(service).toBeTruthy();
   }));
 });

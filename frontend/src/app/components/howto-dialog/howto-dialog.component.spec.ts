@@ -1,10 +1,10 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import {HowtoDialogComponent} from './howto-dialog.component';
-import {MatLibModule} from '../../mat-lib.module';
-import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import { HowtoDialogComponent } from "./howto-dialog.component";
+import { MatLibModule } from "../../mat-lib.module";
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
-describe('HowtoDialogComponent', () => {
+describe("HowtoDialogComponent", () => {
   let component: HowtoDialogComponent;
   let fixture: ComponentFixture<HowtoDialogComponent>;
 
@@ -12,8 +12,7 @@ describe('HowtoDialogComponent', () => {
     TestBed.configureTestingModule({
       declarations: [HowtoDialogComponent],
       imports: [MatLibModule, NoopAnimationsModule]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -22,7 +21,7 @@ describe('HowtoDialogComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });
