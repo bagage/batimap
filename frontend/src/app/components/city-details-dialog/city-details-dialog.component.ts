@@ -1,12 +1,13 @@
-import { MatProgressButtonOptions } from "mat-progress-buttons";
-import { Observable } from "rxjs";
-import { CityDTO } from "../../classes/city.dto";
-import { Component, HostListener, Inject, OnInit } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
-import { JosmService } from "../../services/josm.service";
-import { BatimapService } from "../../services/batimap.service";
-import { LegendService } from "../../services/legend.service";
-import { HowtoDialogComponent } from "../howto-dialog/howto-dialog.component";
+import {MatProgressButtonOptions} from 'mat-progress-buttons';
+import {Observable} from 'rxjs';
+import {CityDTO} from '../../classes/city.dto';
+import {Component, HostListener, Inject, OnInit} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material';
+import {JosmService} from '../../services/josm.service';
+import {BatimapService} from '../../services/batimap.service';
+import {LegendService} from '../../services/legend.service';
+import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
+import {filter} from 'rxjs/operators';
 
 @Component({
   templateUrl: "./city-details-dialog.component.html",
@@ -58,10 +59,13 @@ export class CityDetailsDialogComponent implements OnInit {
   @HostListener("document:keydown.r")
   updateCity() {
     this.updateButtonOpts.active = true;
-    this.batimapService.updateCity(this.city.insee).subscribe(
-      result => {
+    this.batimapService.updateCity(this.city.insee)
+      .pipe(
+        filter(x => x.result !== null))
+      .subscribe(
+      progress => {
         this.updateButtonOpts.active = false;
-        this.city = result;
+        this.city = progress.result;
         this.cadastreLayer.redraw();
       },
       () => (this.updateButtonOpts.active = false)

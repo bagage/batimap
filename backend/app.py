@@ -29,24 +29,25 @@ app = Flask(__name__)
 app.config.from_pyfile(app.root_path + "/app.conf")
 CORS(app)
 
+
 def make_celery(app):
-    celery = Celery( app.import_name,
-                     broker=app.config['CELERY_BROKER_URL'],
-                     backend=app.config['CELERY_BACKEND_URL'])
+    celery = Celery(app.import_name, broker=app.config["CELERY_BROKER_URL"], backend=app.config["CELERY_BACKEND_URL"])
     celery.conf.update(app.config)
 
     class ContextTask(celery.Task):
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return self.run(*args, **kwargs)
-    
+
     celery.Task = ContextTask
     return celery
 
-celery = make_celery( app )
+
+celery = make_celery(app)
+
 
 @celery.task
-def  task_initdb( departments ):
+def task_initdb(departments):
     if departments:
         initdb_is_done_file = Path("tiles/initdb_is_done")
         if initdb_is_done_file.exists():
@@ -59,16 +60,18 @@ def  task_initdb( departments ):
 
         initdb_is_done_file.touch()
 
+
 @celery.task
-def  task_josm_data( insee ):
+def task_josm_data(insee):
     c = City(db, insee)
     batimap.fetch_cadastre_data(c)
     batimap.fetch_departments_osm_state(db, [c.department])
     batimap.clear_tiles(db, insee)
     return json.dumps(batimap.josm_data(db, insee))
 
+
 @celery.task
-def  task_update_insee_list( insee ):
+def task_update_insee_list(insee):
     (_, date) = next(batimap.stats(db, op, cities=[insee], force=False))
     (city, date2) = next(batimap.stats(db, op, cities=[insee], force=True))
 
@@ -76,6 +79,7 @@ def  task_update_insee_list( insee ):
         batimap.clear_tiles(db, insee)
 
     return json.dumps(CityDTO(date2, city), cls=CityEncoder)
+
 
 LOG = logging.getLogger(__name__)
 
@@ -158,23 +162,6 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
     return json.dumps(db.get_legend_in_bbox(float(lonNW), float(latNW), float(lonSE), float(latSE)))
 
 
-@app.route("/cities/<insee>/update", methods=["POST"])
-def api_update_insee_list(insee) -> dict:
-    LOG.debug(f"Receive an update request for {insee}")
-
-    # To use celery =>
-    # new_task = task_update_insee_list.delay(insee)
-    # return Response(response=json.dumps({}), status=202, headers={'Location': url_for('api_tasks_status', task_id=new_task.id)})
-
-    (_, date) = next(batimap.stats(db, op, cities=[insee], force=False))
-    (city, date2) = next(batimap.stats(db, op, cities=[insee], force=True))
-
-    if date != date2:
-        batimap.clear_tiles(db, insee)
-
-    return json.dumps(CityDTO(date2, city), cls=CityEncoder)
-
-
 @app.route("/departments", methods=["GET"])
 def api_departments() -> dict:
     return json.dumps(db.get_departments())
@@ -186,42 +173,58 @@ def api_departments_in_bbox(lonNW, latNW, lonSE, latSE) -> dict:
     return json.dumps(departments)
 
 
-@app.route("/cities/<insee>/josm", methods=["GET"])
-def api_josm_data(insee) -> dict:
-    LOG.debug(f"Receive an josm request for {insee}")
-    new_task = task_josm_data.delay(insee)
-    return Response(response=json.dumps({"task_id": new_task.id}), status=202, headers={'Location': url_for('api_tasks_status', task_id=new_task.id)})
-
-
 @app.route("/cities/obsolete", methods=["GET"])
 def api_obsolete_city() -> dict:
     (city, position) = db.get_obsolete_city()
     return json.dumps({"position": [position.x, position.y], "city": city}, cls=CityEncoder)
 
 
+@app.route("/cities/<insee>/update", methods=["GET"])
+def api_update_insee_list(insee) -> dict:
+    LOG.debug(f"Receive an update request for {insee}")
+
+    new_task = task_update_insee_list.delay(insee)
+    return Response(
+        response=json.dumps({"task_id": new_task.id}),
+        status=202,
+        headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
+    )
+
+
+@app.route("/cities/<insee>/josm", methods=["GET"])
+def api_josm_data(insee) -> dict:
+    LOG.debug(f"Receive an josm request for {insee}")
+    new_task = task_josm_data.delay(insee)
+    return Response(
+        response=json.dumps({"task_id": new_task.id}),
+        status=202,
+        headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
+    )
+
+
 @app.route("/initdb", methods=["POST"])
 def api_initdb():
-    if request.method == 'POST':
-        departments = [k for k in request.args.keys()]
-        LOG.debug("Receive an initdb request for " + str(departments) )
-        if departments:
-            new_task = task_initdb.delay(departments)
-            return Response(response=json.dumps({"task_id": new_task.id}), status=202, headers={'Location': url_for('api_tasks_status', task_id=new_task.id)})
+    departments = [k for k in request.args.keys()]
+    LOG.debug("Receive an initdb request for " + str(departments))
+    if departments:
+        new_task = task_initdb.delay(departments)
+        return Response(
+            response=json.dumps({"task_id": new_task.id}),
+            status=202,
+            headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
+        )
     return Response(status=400)
 
 
 @app.route("/tasks/<task_id>", methods=["GET"])
 def api_tasks_status(task_id):
     # task_id could be wrong, but we can not check it
-    task = AsyncResult( task_id )
+    task = AsyncResult(task_id)
     LOG.debug(f"Check status of {task_id} => {task.status}")
 
-    response = {
-        'state': task.state,
-        'result': task.result
-    }
+    response = {"state": task.state, "result": json.loads(task.result) if task.result else None}
 
-    return  json.dumps(response)
+    return json.dumps(response, cls=CityEncoder)
 
 
 # CLI

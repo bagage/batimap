@@ -3,13 +3,13 @@ import { HttpClient } from "@angular/common/http";
 import { empty, forkJoin, Observable, of } from "rxjs";
 import { CityDTO } from "../classes/city.dto";
 import {
-  catchError,
+  catchError, filter,
   flatMap,
   map,
   share,
   switchMap,
   tap
-} from "rxjs/operators";
+} from 'rxjs/operators';
 import { BatimapService } from "./batimap.service";
 
 @Injectable({
@@ -96,7 +96,9 @@ export class JosmService {
   public conflateCity(city: CityDTO): Observable<any> {
     // get city data
     return this.batimapService.cityData(city.insee).pipe(
-      flatMap(dto => {
+      filter(progress => progress.result !== null),
+      flatMap(progress => {
+        const dto = progress.result;
         const imagery = this.JOSM_URL_IMAGERY(
           "BDOrtho IGN",
           "http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg"
