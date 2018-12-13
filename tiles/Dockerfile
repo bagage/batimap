@@ -1,13 +1,13 @@
 FROM debian
 RUN apt update && \
-    apt install -y unzip postgresql-client && \
+    apt install -y unzip postgresql-client wget && \
     apt autoremove && apt clean
 
 ARG VERSION="v0.8.1"
 ARG FILE="tegola_linux_amd64.zip"
 
-ADD https://github.com/go-spatial/tegola/releases/download/$VERSION/$FILE /tmp/$FILE
-RUN unzip /tmp/$FILE -d /usr/bin && \
+RUN wget https://github.com/go-spatial/tegola/releases/download/$VERSION/$FILE -O /tmp/$FILE && \
+    unzip /tmp/$FILE -d /usr/bin && \
     rm /tmp/$FILE && \
     chmod +x /usr/bin/tegola
 
