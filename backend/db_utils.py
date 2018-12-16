@@ -27,12 +27,14 @@ class Postgis(object):
         self.port = port
         self.host = host
         self.tileserver = tileserver
+        self.cursor = None
 
     def execute(self, req, args=None):
         try:
             self.cursor.execute(req, args)
         except Exception as e:
-            LOG.warning(f"Could not execute request, will retry due to: {e}")
+            if self.cursor:
+                LOG.warning(f"Could not execute request, will retry due to: {e}")
             self.connection = psycopg2.connect(
                 database=self.db, user=self.user, password=self.passw, port=self.port, host=self.host
             )
