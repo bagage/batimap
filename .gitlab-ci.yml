@@ -26,10 +26,9 @@ test:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
   only:
-    refs:
-      - master
+    - master
   script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG -f $DOCKERFILE $PATH
+    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG -f ${BASE_DIR:-$CONTAINER}/$DOCKERFILE ${BASE_DIR:-$CONTAINER}
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG
@@ -40,46 +39,40 @@ build_ci_test:
   variables:
     CONTAINER: ci-test
     DOCKERFILE: Dockerfile.ci
-    PATH: frontend
+    BASE_DIR: frontend
 
 build_tiles_cleaner:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles-cleaner
     DOCKERFILE: Dockerfile
-    PATH: $CONTAINER
 
 build_postgis:
   <<: *build_docker_image
   variables:
     CONTAINER: postgis
     DOCKERFILE: Dockerfile
-    PATH: $CONTAINER
 
 build_imposm_updater:
   <<: *build_docker_image
   variables:
     CONTAINER: imposm_updater
     DOCKERFILE: Dockerfile
-    PATH: $CONTAINER
 
 build_backend:
   <<: *build_docker_image
   variables:
     CONTAINER: backend
     DOCKERFILE: Dockerfile
-    PATH: $CONTAINER
 
 build_tiles:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles
     DOCKERFILE: Dockerfile
-    PATH: $CONTAINER
 
 build_frontend:
   <<: *build_docker_image
   variables:
     CONTAINER: frontend
     DOCKERFILE: Dockerfile.prod
-    PATH: $CONTAINER
