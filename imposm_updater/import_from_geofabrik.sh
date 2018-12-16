@@ -33,7 +33,7 @@ if [ ! -f "/config/mapping.json" ]; then
 fi
 
 DO_IMPORT=true
-if [ -z $FORCE_IMPORT ] || [ "$FORCE_IMPORT" = "false" ]; then
+if [ "$FORCE_IMPORT" != "true" ]; then
     count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select count(*) from osm_buildings where osm_id > 0"`
     result=$?
     if [[ $result -eq 0 ]]; then
@@ -60,6 +60,7 @@ if [ "$DO_IMPORT" = "true" ]; then
         file=$(basename $region).osm.pbf
         axel --no-clobber http://download.geofabrik.de/europe/$region.osm.pbf || test -f $file
         axel --no-clobber http://download.geofabrik.de/europe/$region.osm.pbf.md5 || test -f $file.md5
+        echo "checking $region.osm.pbf file integrity"
         md5sum -c $file.md5
     done
 
