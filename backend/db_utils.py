@@ -162,7 +162,7 @@ class Postgis(object):
                 WHERE
                     p.admin_level::int >= 7
                     AND c.insee = p.insee
-                    AND p.geometry && ST_MakeEnvelope(%(latNW)s, %(lonNW)s, %(latSE)s, %(lonSE)s, 4326 )                
+                    AND p.geometry && ST_MakeEnvelope(%(latNW)s, %(lonNW)s, %(latSE)s, %(lonSE)s, 4326 )
                """
 
         args = {"lonNW": lonNW, "lonSE": lonSE, "latNW": latNW, "latSE": latSE}
@@ -205,15 +205,16 @@ class Postgis(object):
         return results
 
     def get_departments(self):
+        # admin_level are departments, however some are handled differently by OSM and cadastre.
+        # for instance, 69 (Rhône) exists as 69D and 60M in OSM, so we remove letters to be compliant with cadastre
         req = """
             SELECT
-                DISTINCT(SUBSTR(p.insee, 1, CHAR_LENGTH(p.insee) - 3)) as dept
+                DISTINCT(regexp_replace(p.insee, '[^\\d]', '')) as dept
             FROM
                 osm_admin p
             WHERE
-                p.admin_level::int >= 7
+                p.admin_level::int = 6
                 AND p.insee is not null
-                AND CHAR_LENGTH(p.insee) >= 3
             ORDER BY dept
         """
         self.execute(req)
