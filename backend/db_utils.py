@@ -168,7 +168,7 @@ class Postgis(object):
         args = {"lonNW": lonNW, "lonSE": lonSE, "latNW": latNW, "latSE": latSE}
         self.execute(req, args)
 
-        return self.cursor.fetchall()
+        return [row[0] for row in self.cursor.fetchall()]
 
     def get_legend_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
 
