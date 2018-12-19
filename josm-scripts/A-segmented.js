@@ -66,6 +66,11 @@ function do_work() {
             var actAddField = dialog.class.getDeclaredField('actAdd');
             actAddField.setAccessible(true);
             actAddField.get(dialog).actionPerformed(null);
+
+            if (!dialog.isVisible()) {
+                dialog.unfurlDialog();
+                josm.alert("Veuillez maintenant réaliser la liste des tâches, passer ensuite à la seconde étape B-conflation.js...")
+            }
         }
     }
 

@@ -126,6 +126,11 @@ function do_work()  {
         var pm = dialog.getClass().getDeclaredMethod('performMatching');
         pm.setAccessible(true);
         pm.invoke(dialog);
+
+        if (!dialog.isVisible()) {
+            dialog.unfurlDialog();
+            josm.alert("Veuillez maintenant résoudre la conflation, passer enfin à la validation des erreurs potentielles.")
+        }
     }
     // remove wall=yes temporary attribute
     command.change(walls, {
