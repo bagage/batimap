@@ -8,12 +8,13 @@ import {BatimapService} from '../../services/batimap.service';
 import {LegendService} from '../../services/legend.service';
 import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
 import {filter} from 'rxjs/operators';
+import {Unsubscriber} from '../../classes/unsubscriber';
 
 @Component({
-  templateUrl: "./city-details-dialog.component.html",
-  styleUrls: ["./city-details-dialog.component.css"]
+  templateUrl: './city-details-dialog.component.html',
+  styleUrls: ['./city-details-dialog.component.css']
 })
-export class CityDetailsDialogComponent implements OnInit {
+export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
   city: CityDTO;
   josmIsStarted: Observable<boolean>;
 
@@ -21,12 +22,12 @@ export class CityDetailsDialogComponent implements OnInit {
 
   updateButtonOpts: MatProgressButtonOptions = {
     active: false,
-    text: "Rafraîchir",
-    buttonColor: "primary",
-    barColor: "primary",
+    text: 'Rafraîchir',
+    buttonColor: 'primary',
+    barColor: 'primary',
     raised: true,
     stroked: false,
-    mode: "indeterminate",
+    mode: 'indeterminate',
     value: 0,
     disabled: false
   };
@@ -39,49 +40,51 @@ export class CityDetailsDialogComponent implements OnInit {
     private legendService: LegendService,
     private matDialog: MatDialog
   ) {
+    super();
     this.city = data[0];
     this.cadastreLayer = data[1];
   }
 
   ngOnInit(): void {
-    if (localStorage.getItem("first-time-howto") !== "false") {
+    if (localStorage.getItem('first-time-howto') !== 'false') {
       this.matDialog.open(HowtoDialogComponent);
     }
 
     this.josmIsStarted = this.josmService.isStarted();
   }
 
-  @HostListener("document:keydown.f")
+  @HostListener('document:keydown.f')
   close() {
     this.dialogRef.close(0);
   }
 
-  @HostListener("document:keydown.r")
+  @HostListener('document:keydown.r')
   updateCity() {
     this.updateButtonOpts.active = true;
-    this.batimapService.updateCity(this.city.insee)
-      .pipe(
-        filter(x => x.result !== null))
-      .subscribe(
-      progress => {
-        this.updateButtonOpts.active = false;
-        this.city = progress.result;
-        this.cadastreLayer.redraw();
-      },
-      () => (this.updateButtonOpts.active = false)
-    );
+    this.autoUnsubscribe(
+      this.batimapService.updateCity(this.city.insee)
+        .pipe(
+          filter(x => x.result !== null))
+        .subscribe(
+          progress => {
+            this.updateButtonOpts.active = false;
+            this.city = progress.result;
+            this.cadastreLayer.redraw();
+          },
+          () => (this.updateButtonOpts.active = false)
+        ));
   }
 
   lastImport(): string {
     const d = this.city.date;
-    if (!d || d === "never") {
+    if (!d || d === 'never') {
       return 'Le bâti n\'a jamais été importé.';
-    } else if (d === "raster") {
+    } else if (d === 'raster') {
       return 'Ville raster, pas d\'import possible.';
     } else if (Number.isInteger(+d)) {
       return `Dernier import en ${d}.`;
     } else {
-      return "Le bâti existant ne semble pas provenir du cadastre.";
+      return 'Le bâti existant ne semble pas provenir du cadastre.';
     }
   }
 
