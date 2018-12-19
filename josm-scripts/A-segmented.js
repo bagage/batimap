@@ -58,7 +58,7 @@ function do_work() {
 
         var todoClassloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("todo");
         if (todoClassloader == null) {
-            josm.alert("Le plugin Todo ne semble pas installé : " + e.message);
+            josm.alert("Le plugin Todo ne semble pas installé");
             return;
         }
         var dialog = getTodoDialog();

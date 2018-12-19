@@ -49,7 +49,7 @@ function do_work()  {
 
     var utils2Classloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("utilsplugin2");
     if (utils2Classloader == null) {
-        josm.alert("Le plugin utilsplugin2 ne semble pas installé : " + e.message);
+        josm.alert("Le plugin utilsplugin2 ne semble pas installé");
         return;
     }
     var utils2Plugin = utils2Classloader.loadClass("org.openstreetmap.josm.plugins.utilsplugin2.selection.NodeWayUtils");
