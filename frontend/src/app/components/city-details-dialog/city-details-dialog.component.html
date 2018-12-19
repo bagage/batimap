@@ -1,4 +1,13 @@
-<h2 mat-dialog-title>Détails commune</h2>
+<h2 mat-dialog-title>Détails commune
+  <button
+    mat-mini-fab
+    color="primary"
+    (click)="openHelp()"
+    matTooltip="Afficher l'aide. [Raccourci : shift+a]"
+  >
+    <mat-icon>live_help</mat-icon>
+  </button>
+</h2>
 <mat-dialog-content>
   <h3>{{ city.insee }} - {{ city.name }}</h3>
   {{ lastImport() }}

@@ -9,6 +9,7 @@ import {LegendService} from '../../services/legend.service';
 import {HowtoDialogComponent} from '../howto-dialog/howto-dialog.component';
 import {filter} from 'rxjs/operators';
 import {Unsubscriber} from '../../classes/unsubscriber';
+import {AboutDialogComponent} from '../about-dialog/about-dialog.component';
 
 @Component({
   templateUrl: './city-details-dialog.component.html',
@@ -51,6 +52,11 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     this.josmIsStarted = this.josmService.isStarted();
+  }
+
+  // no need to add hostListener here, there is already one present for help
+  openHelp() {
+    this.matDialog.open(AboutDialogComponent);
   }
 
   @HostListener('document:keydown.f')

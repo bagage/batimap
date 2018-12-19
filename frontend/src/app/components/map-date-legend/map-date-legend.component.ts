@@ -28,7 +28,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     private zone: NgZone,
     private batimapService: BatimapService,
     public legendService: LegendService,
-    private dialogRef: MatDialog
+    private matDialog: MatDialog
   ) {
     super();
   }
@@ -63,7 +63,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
 
   @HostListener('document:keydown.shift.a')
   openHelp() {
-    this.dialogRef.open(AboutDialogComponent);
+    this.matDialog.open(AboutDialogComponent);
   }
 
   @HostListener('document:keydown.shift.c')
@@ -73,8 +73,8 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         .obsoleteCity()
         .subscribe((obsoleteCity: ObsoleteCityDTO) => {
           this.map.setView(obsoleteCity.position, 10);
-          this.dialogRef.closeAll();
-          const dialog = this.dialogRef.open<CityDetailsDialogComponent>(
+          this.matDialog.closeAll();
+          const dialog = this.matDialog.open<CityDetailsDialogComponent>(
             CityDetailsDialogComponent,
             {data: [obsoleteCity.city, this.cadastreLayer]}
           );
