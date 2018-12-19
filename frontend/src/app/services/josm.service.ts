@@ -3,13 +3,14 @@ import { HttpClient } from "@angular/common/http";
 import { empty, forkJoin, Observable, of } from "rxjs";
 import { CityDTO } from "../classes/city.dto";
 import {
-  catchError, filter,
+  catchError,
+  filter,
   flatMap,
   map,
   share,
   switchMap,
   tap
-} from 'rxjs/operators';
+} from "rxjs/operators";
 import { BatimapService } from "./batimap.service";
 
 @Injectable({

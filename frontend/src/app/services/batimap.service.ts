@@ -1,17 +1,17 @@
-import {Injectable} from '@angular/core';
-import {AppConfigService} from './app-config.service';
+import { Injectable } from "@angular/core";
+import { AppConfigService } from "./app-config.service";
 
-import {HttpClient} from '../../../node_modules/@angular/common/http';
-import {Observable, of, timer} from 'rxjs';
-import {ConflateCityDTO} from '../classes/conflate-city.dto';
-import {CityDTO} from '../classes/city.dto';
-import {LatLngBounds} from 'leaflet';
-import {plainToClass} from 'class-transformer';
-import {debounceTime, map, switchMap, takeWhile, tap} from 'rxjs/operators';
-import {LegendDTO} from '../classes/legend.dto';
-import {LegendService} from './legend.service';
-import {ObsoleteCityDTO} from '../classes/obsolete-city.dto';
-import {ClassType} from '../../../node_modules/class-transformer/ClassTransformer';
+import { HttpClient } from "../../../node_modules/@angular/common/http";
+import { Observable, of, timer } from "rxjs";
+import { ConflateCityDTO } from "../classes/conflate-city.dto";
+import { CityDTO } from "../classes/city.dto";
+import { LatLngBounds } from "leaflet";
+import { plainToClass } from "class-transformer";
+import { debounceTime, map, switchMap, takeWhile, tap } from "rxjs/operators";
+import { LegendDTO } from "../classes/legend.dto";
+import { LegendService } from "./legend.service";
+import { ObsoleteCityDTO } from "../classes/obsolete-city.dto";
+import { ClassType } from "../../../node_modules/class-transformer/ClassTransformer";
 
 export interface Progression<T> {
   state: string;
@@ -23,7 +23,7 @@ export interface Task {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class BatimapService {
   private URL_TASK(task: Task): string {
@@ -76,28 +76,33 @@ export class BatimapService {
     private http: HttpClient,
     private legendService: LegendService,
     private configService: AppConfigService
-  ) {
-  }
+  ) {}
 
-  private longRunningAPI<T>(url, cls: ClassType<T>): Observable<Progression<T>> {
+  private longRunningAPI<T>(
+    url,
+    cls: ClassType<T>
+  ): Observable<Progression<T>> {
     let hasFinished = false;
-    return this.http
-      .get<Task>(url)
-      .pipe(
-        switchMap(task =>
-          timer(0, 3000).pipe(switchMap(() => this.http.get<Progression<T>>(this.URL_TASK(task))),
-            takeWhile(x => x.state === 'PENDING' || !hasFinished), // takeWhile is not inclusive, so workaround it with a boolean cf https://github.com/ReactiveX/rxjs/issues/4000
-            tap(x => hasFinished = x.state !== 'PENDING'),
-            map(r => {
-              r.result = plainToClass(cls, r.result)
-              return r;
-            })
-          )));
+    return this.http.get<Task>(url).pipe(
+      switchMap(task =>
+        timer(0, 3000).pipe(
+          switchMap(() => this.http.get<Progression<T>>(this.URL_TASK(task))),
+          takeWhile(x => x.state === "PENDING" || !hasFinished), // takeWhile is not inclusive, so workaround it with a boolean cf https://github.com/ReactiveX/rxjs/issues/4000
+          tap(x => (hasFinished = x.state !== "PENDING")),
+          map(r => {
+            r.result = plainToClass(cls, r.result);
+            return r;
+          })
+        )
+      )
+    );
   }
-
 
   public cityData(insee: string): Observable<Progression<ConflateCityDTO>> {
-    return this.longRunningAPI<ConflateCityDTO>(this.URL_CITY_DATA(insee), ConflateCityDTO);
+    return this.longRunningAPI<ConflateCityDTO>(
+      this.URL_CITY_DATA(insee),
+      ConflateCityDTO
+    );
   }
 
   public citiesInBbox(bbox: LatLngBounds): Observable<CityDTO[]> {
@@ -139,13 +144,19 @@ export class BatimapService {
   }
 
   public updateCity(insee: string): Observable<Progression<CityDTO>> {
-    return this.longRunningAPI<CityDTO>(this.URL_CITY_UPDATE(insee), CityDTO)
-      .pipe(tap((progress) => {
+    return this.longRunningAPI<CityDTO>(
+      this.URL_CITY_UPDATE(insee),
+      CityDTO
+    ).pipe(
+      tap(progress => {
         if (progress.result) {
-          this.legendService.city2date.set(progress.result.insee, progress.result.date);
+          this.legendService.city2date.set(
+            progress.result.insee,
+            progress.result.date
+          );
         }
       })
-      );
+    );
   }
 
   public obsoleteCity(): Observable<ObsoleteCityDTO> {
