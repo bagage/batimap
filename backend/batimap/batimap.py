@@ -52,6 +52,7 @@ def update_departments_raster_state(db, departments):
             f"&codeDepartement={d.zfill(3)}&libelle=&keepVolatileSession=&offset=5000"
         )
         fr = BeautifulSoup(zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS), "lxml")
+        LOG.debug(f"Query result: {fr}")
         for e in fr.find_all("tbody", attrs={"class": "parcelles"}):
             y = e.find(title="Ajouter au panier")
             if not y:
