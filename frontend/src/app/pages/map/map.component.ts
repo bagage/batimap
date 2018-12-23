@@ -53,7 +53,7 @@ export class MapComponent {
     const date =
       this.legendService.city2date.get(properties.insee) || properties.date;
     const color = this.legendService.date2color(date);
-    if (!this.legendService.isActive(date)) {
+    if (properties.insee.length > 3 && !this.legendService.isActive(date)) {
       return [];
     }
     return {

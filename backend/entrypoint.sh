@@ -8,6 +8,9 @@ result=$?
 # initialize database if no record can be found
 if [ $result != 0 ] || [ "$count" -lt 10 ]; then
     flask initdb
+else
+    # create ready file
+    touch tiles/initdb_is_done
 fi
 
 GUNICORN_TIMEOUT_VALUE=${GUNICORN_TIMEOUT_VALUE:=60}

@@ -67,7 +67,7 @@ def task_josm_data(insee):
     batimap.fetch_cadastre_data(c)
     batimap.fetch_departments_osm_state(db, [c.department])
     batimap.clear_tiles(db, insee)
-    return json.dumps(batimap.josm_data(db, insee))
+    return json.dumps(batimap.josm_data(db, insee, op))
 
 
 @celery.task
