@@ -149,7 +149,7 @@ class Postgis(object):
 
         results = []
         for row in self.cursor.fetchall():
-            results.append(CityDTO(row[0], None, row[1], row[2], row[3], row[4] is not None))
+            results.append(CityDTO(row[0], None, row[1], row[2], row[3], row[4]))
         return results
 
     def get_departments_in_bbox(self, lonNW: float, latNW: float, lonSE: float, latSE: float):
@@ -506,7 +506,7 @@ class Postgis(object):
                     c.insee = p.insee
                 ORDER BY
                     date != 'never', date != 'unknown', date = 'raster', date,
-                    date_cadastre is null,
+                    date_cadastre > NOW() - INTERVAL '30 days',
                     random()
                 LIMIT
                     1
@@ -516,5 +516,5 @@ class Postgis(object):
         row = self.cursor.fetchone()
         print(row)
         if row:
-            city = CityDTO(row[0], None, row[1], row[2], row[3], row[4] is not None)
+            city = CityDTO(row[0], None, row[1], row[2], row[3], row[4])
             return (city, Point(row[5]))

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
+import datetime
+from dateutil import parser
 
 LOG = logging.getLogger(__name__)
 
@@ -46,3 +48,9 @@ class City(object):
 
     def get_bbox(self):
         return self.__db.bbox_for_insee(self.insee)
+
+    def is_josm_ready(self):
+        return (
+            self.date_cadastre is not None
+            and (datetime.datetime.now() - parser.parse(str(self.date_cadastre))).days < 30
+        )
