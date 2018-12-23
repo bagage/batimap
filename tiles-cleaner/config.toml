@@ -29,7 +29,7 @@ sql = """
     cs.insee,
     cs.details,
     cs.date,
-    case when cs.date_cadastre is null then '' else 'true' end as josm_ready
+    case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready
   FROM
     osm_admin oa,
     city_stats cs
@@ -51,7 +51,7 @@ sql = """
     cs.details,
     cs.insee,
     cs.date,
-    case when cs.date_cadastre is null then '' else 'true' end as josm_ready
+    case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready
   FROM
     osm_admin  oa,
     city_stats cs

@@ -13,6 +13,7 @@ mypy-lang
 overpass
 psycopg2
 pygeoj
+python-dateutil
 redis==2.10.6
 requests
 ujson
