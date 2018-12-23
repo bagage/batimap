@@ -1,16 +1,25 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input} from '@angular/core';
-import {CityDTO} from '../../classes/city.dto';
-import {JosmService} from '../../services/josm.service';
-import {BatimapService} from '../../services/batimap.service';
-import {Observable} from 'rxjs';
-import {tap} from 'rxjs/operators';
-import {Unsubscriber} from '../../classes/unsubscriber';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output
+} from "@angular/core";
+import { CityDTO } from "../../classes/city.dto";
+import { JosmService } from "../../services/josm.service";
+import { BatimapService } from "../../services/batimap.service";
+import { Observable } from "rxjs";
+import {filter, map, switchMap} from 'rxjs/operators';
+import { Unsubscriber } from "../../classes/unsubscriber";
+import { ConflateCityDTO } from "../../classes/conflate-city.dto";
 
 @Component({
-  selector: 'app-josm-button',
+  selector: "app-josm-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './josm-button.component.html',
-  styleUrls: ['./josm-button.component.css']
+  templateUrl: "./josm-button.component.html",
+  styleUrls: ["./josm-button.component.css"]
 })
 export class JosmButtonComponent extends Unsubscriber {
   private _city: CityDTO;
@@ -20,15 +29,15 @@ export class JosmButtonComponent extends Unsubscriber {
     this._city = value;
     if (value.josm_ready) {
       this.options.tooltip =
-        'Ouvre JOSM avec les calques préconfigurés pour la commune sélectionnée. ' +
-        'Si le bouton n\'est pas actif, JOSM n\'est probablement pas démarré. [Raccourci : J]';
-      this.options.text = 'JOSM';
-      this.options.barColor = this.options.buttonColor = 'primary';
+        "Ouvre JOSM avec les calques préconfigurés pour la commune sélectionnée. " +
+        "Si le bouton n'est pas actif, JOSM n'est probablement pas démarré. [Raccourci : J]";
+      this.options.text = "JOSM";
+      this.options.barColor = this.options.buttonColor = "primary";
     } else {
       this.options.tooltip =
-        'Prépare les données pour pouvoir être ensuite éditer avec JOSM. [Raccourci : P]';
-      this.options.text = 'Préparer';
-      this.options.barColor = this.options.buttonColor = 'secondary';
+        "Prépare les données pour pouvoir être ensuite éditer avec JOSM. [Raccourci : P]";
+      this.options.text = "Préparer";
+      this.options.barColor = this.options.buttonColor = "secondary";
     }
   }
 
@@ -37,17 +46,19 @@ export class JosmButtonComponent extends Unsubscriber {
     this.options.disabled = this._city.josm_ready && !value;
   }
 
+  @Output() newestDate = new EventEmitter<string>();
+
   options = {
     active: false,
-    text: '',
-    buttonColor: 'primary',
-    barColor: 'primary',
+    text: "",
+    buttonColor: "primary",
+    barColor: "primary",
     raised: true,
     stroked: false,
-    mode: 'indeterminate',
+    mode: "indeterminate",
     value: 0,
     disabled: false,
-    tooltip: ''
+    tooltip: ""
   };
 
   constructor(
@@ -58,8 +69,8 @@ export class JosmButtonComponent extends Unsubscriber {
     super();
   }
 
-  @HostListener('document:keydown.j')
-  @HostListener('document:keydown.p')
+  @HostListener("document:keydown.j")
+  @HostListener("document:keydown.p")
   onClick() {
     this.options.active = true;
     const obs = this._city.josm_ready
@@ -69,20 +80,28 @@ export class JosmButtonComponent extends Unsubscriber {
       obs.subscribe(null, null, () => {
         this.options.active = false;
         this.changeDetector.detectChanges();
-      }));
+      })
+    );
   }
 
   private conflateCity(): Observable<any> {
-    return this.josmService.conflateCity(this._city);
+    return this.prepareCity().pipe(
+      switchMap(dto => this.josmService.openCityInJosm(this._city, dto))
+    );
   }
 
-  private prepareCity(): Observable<any> {
+  private prepareCity(): Observable<ConflateCityDTO> {
     return this.batimapService.cityData(this._city.insee).pipe(
-      tap(conflateDTO => {
-        if (conflateDTO.result && conflateDTO.result.buildingsUrl) {
+      filter(c => c.result !== null),
+      map(conflateDTO => {
+        if (this._city.date !== conflateDTO.result.date) {
+          this.newestDate.emit(conflateDTO.result.date);
+          return null;
+        } else if (conflateDTO.result.buildingsUrl) {
           const c = this._city;
           c.josm_ready = true;
           this.city = c;
+          return conflateDTO.result;
         }
       })
     );

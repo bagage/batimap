@@ -1,4 +1,5 @@
-<h2 mat-dialog-title>Détails commune
+<h2 mat-dialog-title>
+  Détails commune
   <button
     mat-mini-fab
     color="primary"
@@ -10,13 +11,17 @@
 </h2>
 <mat-dialog-content>
   <h3>{{ city.insee }} - {{ city.name }}</h3>
-  {{ lastImport() }}
+  {{ lastImport(city.date) }}
 
   <div *ngIf="detailsEntry.length > 0">
     <h4>Bâtiments par date</h4>
     <ul>
       <li *ngFor="let k of detailsEntry">{{ k[0] }} - {{ k[1] }}</li>
     </ul>
+  </div>
+
+  <div *ngIf="moreRecentDate">
+    La date d'import du bâti a été mise à jour !<br />
   </div>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
@@ -37,5 +42,6 @@
   <app-josm-button
     [city]="city"
     [josmReady]="josmIsStarted | async"
+    (newestDate)="cityDateChanged($event)"
   ></app-josm-button>
 </mat-dialog-actions>

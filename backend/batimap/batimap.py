@@ -113,7 +113,7 @@ def fetch_departments_osm_state(db, departments):
             clear_tiles(db, insee)
 
 
-def josm_data(db, insee):
+def josm_data(db, insee, overpass):
     c = City(db, insee)
     if not c:
         return None
@@ -121,10 +121,12 @@ def josm_data(db, insee):
     base_url = f"https://cadastre.openstreetmap.fr/data/{c.department.zfill(3)}/{c.name_cadastre}-houses-"
     bbox = c.get_bbox()
 
+    (_, date) = fetch_osm_data(db, c, overpass, True)
     return {
         "buildingsUrl": base_url + "simplifie.osm",
         "segmententationPredictionssUrl": base_url + "prediction_segmente.osm",
         "bbox": [bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax],
+        "date": date
     }
 
 
