@@ -24,7 +24,7 @@ FILE="/app/data/outdated/initdb_is_done"
 
 wait_for()
 {
-    echoerr "$cmdname: waiting for postgis to be initialized without a timeout"
+    echoerr "$cmdname: waiting for backend to be initialized without a timeout (waiting for $FILE file)"
 
     start_ts=$(date +%s)
     while :
