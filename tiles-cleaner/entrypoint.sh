@@ -14,6 +14,7 @@ while true; do
         rm -rf data/cache/*
         tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
         echo > $UPDATE_FILE
+        rm $INIT_FILE
     elif [ -s $UPDATE_FILE ]; then
         echo "There is $(wc -l $UPDATE_FILE) outdated tiles to treat..."
         cat $UPDATE_FILE | sort | uniq > $WORK_FILE
