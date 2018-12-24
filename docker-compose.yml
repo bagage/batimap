@@ -44,11 +44,9 @@ services:
     build: tiles-cleaner
     env_file:
     - ./.env
-    command: bash /wait-for-it.sh -- /entrypoint.sh
+    command: bash /entrypoint.sh
     volumes:
     - ./tiles/:/app
-    depends_on:
-    - postgis
     networks:
       fixed_network:
         ipv4_address: 10.5.0.13

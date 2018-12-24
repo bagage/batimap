@@ -16,7 +16,6 @@ RUN curl -L -H 'Accept:application/octet-stream' \
 RUN mkdir /app
 COPY config.toml /app/config.toml
 
-COPY wait-for-it.sh /
 COPY entrypoint.sh /
 
 CMD /entrypoint.sh
