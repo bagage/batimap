@@ -234,19 +234,7 @@ def initdb_command(departments):
     """
     Creates required tables in PostgreSQL server.
     """
-    if not departments:
-        departments = db.get_departments()
-
-    initdb_is_done_file = Path("tiles/initdb_is_done")
-    if initdb_is_done_file.exists():
-        initdb_is_done_file.unlink()
-
-    # fill table with cities from cadastre website
-    batimap.update_departments_raster_state(db, departments)
-    batimap.fetch_departments_osm_state(db, departments)
-    db.import_city_stats_from_osmplanet(departments)
-
-    initdb_is_done_file.touch()
+    task_initdb(departments or db.get_departments())
 
 
 @app.cli.command("stats")
