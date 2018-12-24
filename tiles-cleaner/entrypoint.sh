@@ -13,7 +13,7 @@ while true; do
         # cache whole world at start, if needed
         rm -rf data/cache/*
         tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
-        echo > $UPDATE_FILE
+        echo -n > $UPDATE_FILE
         rm $INIT_FILE
     elif [ -s $UPDATE_FILE ]; then
         echo "There is $(wc -l $UPDATE_FILE) outdated tiles to treat..."
