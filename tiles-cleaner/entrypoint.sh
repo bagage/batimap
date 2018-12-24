@@ -1,21 +1,23 @@
 #!/bin/sh
 
-INPUT_FILE=/app/data/outdated/outdated.txt
+INIT_FILE="/app/data/outdated/initdb_is_done"
+UPDATE_FILE=/app/data/outdated/outdated.txt
 WORK_FILE=/app/data/outdated/inprogress.txt
 INITIAL_MAX_ZOOM=${INITIAL_MAX_ZOOM:-10}
 
 cd /app
 
-# cache whole world at start, if needed
-rm -rf data/cache/*
-tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
-echo > $INPUT_FILE
-
 while true; do
-    if [ -s $INPUT_FILE ]; then
-        echo "There is $(wc -l $INPUT_FILE) outdated tiles to treat..."
-        cat $INPUT_FILE | sort | uniq > $WORK_FILE
-        echo -n > $INPUT_FILE
+    if [ -f $INIT_FILE ]; then
+        echo "Resetting all tiles!"
+        # cache whole world at start, if needed
+        rm -rf data/cache/*
+        tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
+        echo > $UPDATE_FILE
+    elif [ -s $UPDATE_FILE ]; then
+        echo "There is $(wc -l $UPDATE_FILE) outdated tiles to treat..."
+        cat $UPDATE_FILE | sort | uniq > $WORK_FILE
+        echo -n > $UPDATE_FILE
         while read bbox; do
             # if bbox not empty
             if [ ! -z $bbox ]; then
@@ -27,4 +29,4 @@ while true; do
         echo "All tiles treated!"
     fi
     sleep 30
-done
+ done

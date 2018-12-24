@@ -98,6 +98,7 @@ export class JosmService {
 
   public openCityInJosm(city: CityDTO, dto: ConflateCityDTO): Observable<any> {
     if (!dto) {
+      console.log(`Asked to open ${city.name} in JOSM, but no data. Ignoring`);
       return EMPTY;
     }
     const imagery = this.JOSM_URL_IMAGERY(
