@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>Mise à jour disponible</h2>
+<mat-dialog-content>
+  <p>
+    Une nouvelle version des scripts JOSM est disponible. Cliquer pour les télécharger :
+  </p>
+  <ol>
+    <li>
+      <b
+      ><a
+        target="_blank"
+        href="https://gitlab.com/bagage/cadastre-conflation/raw/master/josm-scripts/A-segmented.js"
+      >A-segmented.js</a
+      ></b
+      >
+      : crée une todolist, via le plugin
+      <a
+        target="_blank"
+        href="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/TODO_list"
+      >
+        Todo</a
+      >, des bâtiments segmentés nécessitant une revue humaine avant
+      intégration dans OSM,
+    </li>
+    <li>
+      <b
+      ><a
+        target="_blank"
+        href="https://gitlab.com/bagage/cadastre-conflation/raw/master/josm-scripts/B-conflation.js"
+      >B-conflation.js</a
+      ></b
+      >
+      : configure le plugin Conflation.
+    </li>
+  </ol>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button
+    mat-raised-button
+    color="primary"
+    [mat-dialog-close]="true"
+  >
+    OK
+  </button>
+</mat-dialog-actions>

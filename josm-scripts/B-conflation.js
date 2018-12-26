@@ -22,6 +22,41 @@ for (var i = 0; i < josm.layers.length; i++) {
     }
 }
 
+function startTodo() {
+    var todoClassloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("todo");
+    if (todoClassloader == null) {
+        josm.alert("Le plugin Todo ne semble pas installé");
+        return;
+    }
+
+    var map = org.openstreetmap.josm.gui.MainApplication.map;
+    var dialogsField = map.getClass().getDeclaredField('allDialogs');
+
+    var todoDialog = null;
+    dialogsField.setAccessible(true);
+    var dialogs = dialogsField.get(map);
+    for (var dialogIdx = 0; dialogIdx < dialogs.size(); dialogIdx++) {
+        var dialog = dialogs.get(dialogIdx);
+        if (dialog.getClass().toString() == "class org.openstreetmap.josm.plugins.todo.TodoDialog") {
+            todoDialog = dialog;
+        }
+    }
+
+    if (todoDialog) {
+        var actAddField = todoDialog.class.getDeclaredField('actAdd');
+        actAddField.setAccessible(true);
+        actAddField.get(todoDialog).actionPerformed(null);
+
+        if (!todoDialog.isVisible()) {
+            todoDialog.unfurlDialog();
+            josm.alert("Veuillez maintenant réaliser la liste des tâches, passer ensuite à la seconde étape B-conflation.js...")
+        }
+    } else {
+        josm.alert("Impossible de trouver l'onglet Todo. Est-ce que le plugin est installé ?")
+        return null;
+    }
+}
+
 function getConflationDialog() {
     var map = org.openstreetmap.josm.gui.MainApplication.map;
     var dialogsField = map.getClass().getDeclaredField('allDialogs');
@@ -37,6 +72,69 @@ function getConflationDialog() {
 
     josm.alert("Impossible de trouver l'onglet Conflation. Est-ce que le plugin est installé ?")
     return null;
+}
+
+function startConflation(referenceDataSet, subjectDataSet) {
+    var conflationClassLoader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("conflation");
+    if (conflationClassLoader == null) {
+        josm.alert("Le plugin Conflation ne semble pas installé : " + e.message);
+        return;
+    }
+    var settingsClass = conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.SimpleMatchSettings");
+    var settings = settingsClass.newInstance();
+    settings.subjectLayer = osmLayer;
+    settings.subjectDataSet = osmLayer.data;
+    settings.subjectSelection = new java.util.ArrayList();
+    settings.subjectSelection.addAll(subjectDataSet.getSelected());
+    settings.referenceLayer = housesLayer;
+    settings.referenceDataSet = housesLayer.data;
+    settings.referenceSelection = new java.util.ArrayList();
+    settings.referenceSelection.addAll(referenceDataSet.getSelected());
+
+    const prefs = org.openstreetmap.josm.data.Preferences.main();
+    conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MatchingPanel")
+        .getConstructor(
+            org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
+            org.openstreetmap.josm.spi.preferences.IPreferences,
+            java.lang.Runnable)
+        .newInstance(
+            null,
+            prefs,
+            null)
+       .fillSettings(settings);
+    const mergingPanel = conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MergingPanel")
+        .getConstructor(
+            org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
+            org.openstreetmap.josm.spi.preferences.IPreferences)
+        .newInstance(
+            null,
+            prefs);
+    mergingPanel.restoreFromPreferences(prefs);
+    mergingPanel.fillSettings(settings);
+
+    var dialog = getConflationDialog();
+    if (dialog != null) {
+        var s = dialog.getClass().getDeclaredField('settings');
+        s.setAccessible(true);
+        s.set(dialog, settings);
+
+        var pm = dialog.getClass().getDeclaredMethod('performMatching');
+        pm.setAccessible(true);
+        pm.invoke(dialog);
+
+        if (!dialog.isVisible()) {
+            dialog.unfurlDialog();
+            josm.alert("Veuillez maintenant résoudre la conflation, passer enfin à la validation des erreurs potentielles.")
+        }
+    }
+}
+
+function addRelationBuildingsTodo(layer) {
+    var ds = layer.data;
+    josm.layers.activeLayer = layer;
+    ds.selection.clearAll();
+    ds.selection.add(ds.query('type:relation building'));
+    startTodo();
 }
 
 function do_work()  {
@@ -80,58 +178,13 @@ function do_work()  {
     josm.layers.activeLayer = osmLayer;
 
     // 5. configure conflation
-    var conflationClassLoader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("conflation");
-    if (conflationClassLoader == null) {
-        josm.alert("Le plugin Conflation ne semble pas installé : " + e.message);
-        return;
-    }
-    var settingsClass = conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.SimpleMatchSettings");
-    var settings = settingsClass.newInstance();
-    settings.subjectLayer = osmLayer;
-    settings.subjectDataSet = osmLayer.data;
-    settings.subjectSelection = new java.util.ArrayList();
-    settings.subjectSelection.addAll(ds2.getSelected());
-    settings.referenceLayer = housesLayer;
-    settings.referenceDataSet = housesLayer.data;
-    settings.referenceSelection = new java.util.ArrayList();
-    settings.referenceSelection.addAll(ds1.getSelected());
+    startConflation(ds1, ds2);
 
-    const prefs = org.openstreetmap.josm.data.Preferences.main();
-    conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MatchingPanel")
-        .getConstructor(
-            org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
-            org.openstreetmap.josm.spi.preferences.IPreferences,
-            java.lang.Runnable)
-        .newInstance(
-            null,
-            prefs,
-            null)
-       .fillSettings(settings);
-    const mergingPanel = conflationClassLoader.loadClass("org.openstreetmap.josm.plugins.conflation.config.MergingPanel")
-        .getConstructor(
-            org.openstreetmap.josm.gui.tagging.ac.AutoCompletionList,
-            org.openstreetmap.josm.spi.preferences.IPreferences)
-        .newInstance(
-            null,
-            prefs);
-    mergingPanel.restoreFromPreferences(prefs);
-    mergingPanel.fillSettings(settings);
+    // 6. add in todo-list buildings of type relation (multipolygon), because
+    //    conflation plugin does not handle them
+    addRelationBuildingsTodo(housesLayer);
+    // addRelationBuildingsTodo(osmLayer);
 
-    var dialog = getConflationDialog();
-    if (dialog != null) {
-        var s = dialog.getClass().getDeclaredField('settings');
-        s.setAccessible(true);
-        s.set(dialog, settings);
-
-        var pm = dialog.getClass().getDeclaredMethod('performMatching');
-        pm.setAccessible(true);
-        pm.invoke(dialog);
-
-        if (!dialog.isVisible()) {
-            dialog.unfurlDialog();
-            josm.alert("Veuillez maintenant résoudre la conflation, passer enfin à la validation des erreurs potentielles.")
-        }
-    }
     // remove wall=yes temporary attribute
     command.change(walls, {
        tags: {"wall": null}
