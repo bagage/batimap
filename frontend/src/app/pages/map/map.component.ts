@@ -87,10 +87,13 @@ export class MapComponent {
     );
     this.cadastreLayer.on("click", e => {
       this.zone.run(() => {
-        // do not open popup when clicking depts
-        if (e.layer.properties.insee.length > 3) {
-          this.openPopup(e.layer.properties);
+        if (e.layer.options.opacity !== 1) {
+          return;
+          // do not open popup when clicking depts
+        } else if (e.layer.properties.insee.length <= 3) {
+          return;
         }
+        this.openPopup(e.layer.properties);
       });
     });
     this.cadastreLayer.addTo(map);
