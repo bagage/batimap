@@ -22,21 +22,39 @@ for (var i = 0; i < josm.layers.length; i++) {
     }
 }
 
-function getTodoDialog() {
+function startTodo() {
+    var todoClassloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("todo");
+    if (todoClassloader == null) {
+        josm.alert("Le plugin Todo ne semble pas installé");
+        return;
+    }
+
     var map = org.openstreetmap.josm.gui.MainApplication.map;
     var dialogsField = map.getClass().getDeclaredField('allDialogs');
 
+    var todoDialog = null;
     dialogsField.setAccessible(true);
     var dialogs = dialogsField.get(map);
     for (var dialogIdx = 0; dialogIdx < dialogs.size(); dialogIdx++) {
         var dialog = dialogs.get(dialogIdx);
         if (dialog.getClass().toString() == "class org.openstreetmap.josm.plugins.todo.TodoDialog") {
-            return dialog;
+            todoDialog = dialog;
         }
     }
 
-    josm.alert("Impossible de trouver l'onglet Todo. Est-ce que le plugin est installé ?")
-    return null;
+    if (todoDialog) {
+        var actAddField = todoDialog.class.getDeclaredField('actAdd');
+        actAddField.setAccessible(true);
+        actAddField.get(todoDialog).actionPerformed(null);
+
+        if (!todoDialog.isVisible()) {
+            todoDialog.unfurlDialog();
+            josm.alert("Veuillez maintenant réaliser la liste des tâches, passer ensuite à la seconde étape B-conflation.js...")
+        }
+    } else {
+        josm.alert("Impossible de trouver l'onglet Todo. Est-ce que le plugin est installé ?")
+        return null;
+    }
 }
 
 function do_work() {
@@ -56,22 +74,7 @@ function do_work() {
         ds.selection.clearAll();
         ds.selection.add(segmented);
 
-        var todoClassloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("todo");
-        if (todoClassloader == null) {
-            josm.alert("Le plugin Todo ne semble pas installé");
-            return;
-        }
-        var dialog = getTodoDialog();
-        if (dialog != null) {
-            var actAddField = dialog.class.getDeclaredField('actAdd');
-            actAddField.setAccessible(true);
-            actAddField.get(dialog).actionPerformed(null);
-
-            if (!dialog.isVisible()) {
-                dialog.unfurlDialog();
-                josm.alert("Veuillez maintenant réaliser la liste des tâches, passer ensuite à la seconde étape B-conflation.js...")
-            }
-        }
+        startTodo();
     }
 
     // 3. select work layer
