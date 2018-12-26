@@ -4,6 +4,7 @@ import { AppComponent } from "./app.component";
 import { MatLibModule } from "./mat-lib.module";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { PagesModule } from "./pages/pages.module";
+import {SharedComponentsModule} from './components/shared-components.module';
 describe("AppComponent", () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -11,7 +12,8 @@ describe("AppComponent", () => {
         RouterTestingModule,
         MatLibModule,
         NoopAnimationsModule,
-        PagesModule
+        PagesModule,
+        SharedComponentsModule
       ],
       declarations: [AppComponent]
     }).compileComponents();

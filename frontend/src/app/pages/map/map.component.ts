@@ -53,13 +53,14 @@ export class MapComponent {
     const date =
       this.legendService.city2date.get(properties.insee) || properties.date;
     const color = this.legendService.date2color(date);
+    let opacity = 1;
     if (properties.insee.length > 3 && !this.legendService.isActive(date)) {
-      return [];
+      opacity = 0.1;
     }
     return {
       weight: 2,
       color: color,
-      opacity: 1,
+      opacity: opacity,
       fill: true,
       radius: type === "point" ? zoom / 2 : 1,
       fillOpacity: 0.7
