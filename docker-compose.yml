@@ -51,6 +51,15 @@ services:
       fixed_network:
         ipv4_address: 10.5.0.13
 
+  initdb_worker:
+    build: initdb_worker
+    volumes:
+    - ./initdb_worker/:/code
+    - ./imposm_updater/data/tiles:/tiles
+    networks:
+      fixed_network:
+        ipv4_address: 10.5.0.14
+
   redis:
     image: redis:4-alpine
     command: redis-server
@@ -60,11 +69,10 @@ services:
       - '6379:6379'
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.114
+        ipv4_address: 10.5.0.15
 
   celery:
     build: backend
-    command: redis-server
     env_file:
     - ./.env
     command: sh /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
@@ -75,7 +83,7 @@ services:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.115
+        ipv4_address: 10.5.0.16
 
   backend:
     build: backend
@@ -91,7 +99,7 @@ services:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.14
+        ipv4_address: 10.5.0.17
 
   frontend:
     build: frontend
@@ -104,7 +112,7 @@ services:
     - backend
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.15
+        ipv4_address: 10.5.0.18
 
 networks:
   fixed_network:
