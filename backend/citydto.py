@@ -22,8 +22,11 @@ class CityDTO:
             self.name = name
             self.insee = insee
             self.details = details
+            # this check should be useless...
+            if isinstance(date_cadastre, str):
+                date_cadastre = parser.parse(date_cadastre)
             self.josm_ready = (
-                date_cadastre is not None and (datetime.datetime.now() - parser.parse(date_cadastre)).days < 30
+                date_cadastre is not None and (datetime.datetime.now() - date_cadastre).days < 30
             )
 
     @property
