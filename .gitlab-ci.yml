@@ -59,6 +59,12 @@ build_imposm_updater:
     CONTAINER: imposm_updater
     DOCKERFILE: Dockerfile
 
+build_initdb_worker:
+  <<: *build_docker_image
+  variables:
+    CONTAINER: initdb_worker
+    DOCKERFILE: Dockerfile
+
 build_backend:
   <<: *build_docker_image
   variables:
