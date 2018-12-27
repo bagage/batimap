@@ -87,7 +87,7 @@ verbosity = {
     "DEBUG": logging.DEBUG,
     "INFO": logging.INFO,
     "WARNING": logging.WARNING,
-    "ERRROR": logging.ERROR,
+    "ERROR": logging.ERROR,
     "CRITICAL": logging.CRITICAL,
 }
 logging.basicConfig(
