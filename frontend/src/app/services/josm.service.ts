@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {EMPTY, empty, forkJoin, Observable, of} from 'rxjs';
-import {CityDTO} from '../classes/city.dto';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { EMPTY, empty, forkJoin, Observable, of } from "rxjs";
+import { CityDTO } from "../classes/city.dto";
 import {
   catchError,
   filter,
@@ -10,23 +10,23 @@ import {
   share,
   switchMap,
   tap
-} from 'rxjs/operators';
-import {BatimapService} from './batimap.service';
-import {ConflateCityDTO} from '../classes/conflate-city.dto';
+} from "rxjs/operators";
+import { BatimapService } from "./batimap.service";
+import { ConflateCityDTO } from "../classes/conflate-city.dto";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class JosmService {
-  private JOSM_URL_BASE = 'http://127.0.0.1:8111/';
-  private JOSM_URL_VERSION = this.JOSM_URL_BASE + 'version';
+  private JOSM_URL_BASE = "http://127.0.0.1:8111/";
+  private JOSM_URL_VERSION = this.JOSM_URL_BASE + "version";
 
   private JOSM_URL_IMAGERY(title: string, url: string): Observable<string> {
-    return this.http.get(this.JOSM_URL_BASE + 'imagery', {
-      responseType: 'text',
+    return this.http.get(this.JOSM_URL_BASE + "imagery", {
+      responseType: "text",
       params: {
         title,
-        type: 'tms',
+        type: "tms",
         url
       }
     });
@@ -37,26 +37,26 @@ export class JosmService {
     return this.http.head(url).pipe(
       catchError(e => {
         console.warn(
-          'OSM data at url',
+          "OSM data at url",
           url,
-          'could not be found, not opening it in JOSM',
+          "could not be found, not opening it in JOSM",
           e
         );
-        return of('no segmentation');
+        return of("no segmentation");
       }),
       switchMap(a => {
-        if (a !== 'no segmentation') {
-          return this.http.get(this.JOSM_URL_BASE + 'import', {
-            responseType: 'text',
+        if (a !== "no segmentation") {
+          return this.http.get(this.JOSM_URL_BASE + "import", {
+            responseType: "text",
             params: {
-              new_layer: 'true',
-              upload_policy: locked ? 'never' : 'true',
+              new_layer: "true",
+              upload_policy: locked ? "never" : "true",
               layer_locked: `${locked}`,
               url
             }
           });
         } else {
-          return of('no segmentation');
+          return of("no segmentation");
         }
       })
     );
@@ -69,10 +69,10 @@ export class JosmService {
     bottom: string,
     top: string
   ): Observable<string> {
-    return this.http.get(this.JOSM_URL_BASE + 'load_and_zoom', {
-      responseType: 'text',
+    return this.http.get(this.JOSM_URL_BASE + "load_and_zoom", {
+      responseType: "text",
       params: {
-        new_layer: 'true',
+        new_layer: "true",
         layer_name: layerName,
         left,
         right,
@@ -85,8 +85,7 @@ export class JosmService {
   constructor(
     private http: HttpClient,
     private batimapService: BatimapService
-  ) {
-  }
+  ) {}
 
   public isStarted(): Observable<boolean> {
     return this.http.get(this.JOSM_URL_VERSION).pipe(
@@ -102,8 +101,8 @@ export class JosmService {
       return EMPTY;
     }
     const imagery = this.JOSM_URL_IMAGERY(
-      'BDOrtho IGN',
-      'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg'
+      "BDOrtho IGN",
+      "http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg"
     );
     const buildings = this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false);
     const segmented = this.JOSM_URL_OPEN_FILE(
