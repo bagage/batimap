@@ -72,13 +72,15 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
       this.batimapService
         .obsoleteCity()
         .subscribe((obsoleteCity: ObsoleteCityDTO) => {
-          this.map.setView(obsoleteCity.position, 10);
-          this.matDialog.closeAll();
-          const dialog = this.matDialog.open<CityDetailsDialogComponent>(
-            CityDetailsDialogComponent,
-            {data: [obsoleteCity.city, this.cadastreLayer]}
-          );
-          // dialog.afterOpened().subscribe(() => dialog.componentInstance.updateCity());
+          this.map.setView(obsoleteCity.position, 10, {animate: false});
+          setTimeout(() => {
+              this.matDialog.closeAll();
+              const dialog = this.matDialog.open<CityDetailsDialogComponent>(
+                CityDetailsDialogComponent,
+                {data: [obsoleteCity.city, this.cadastreLayer]}
+              );
+              dialog.afterOpened().subscribe(() => dialog.componentInstance.updateCity());
+          }, 0);
         }));
   }
 }
