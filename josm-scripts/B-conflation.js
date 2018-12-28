@@ -183,7 +183,10 @@ function do_work()  {
     // 6. add in todo-list buildings of type relation (multipolygon), because
     //    conflation plugin does not handle them
     addRelationBuildingsTodo(housesLayer);
-    // addRelationBuildingsTodo(osmLayer);
+    addRelationBuildingsTodo(osmLayer);
+
+    // 7. select work layer
+    josm.layers.activeLayer = osmLayer;
 
     // remove wall=yes temporary attribute
     command.change(walls, {
