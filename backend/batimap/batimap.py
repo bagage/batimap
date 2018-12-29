@@ -234,5 +234,5 @@ def fetch_osm_data(db, city, overpass, force):
             LOG.debug(f"City stats: {Counter(sources_date)}")
         # only update date if we did not use cache files for buildings
         city.details = {"dates": Counter(sources_date)}
-        db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details), True)])
+        db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details))])
     return (city, date)
