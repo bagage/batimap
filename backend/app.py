@@ -65,18 +65,22 @@ def task_initdb(departments):
 
         initdb_is_done_file.touch()
 
-
 @celery.task(bind=True)
 def task_josm_data(self, insee):
     task_progress(self, 0)
     c = City(db, insee)
-    batimap.fetch_cadastre_data(c)
-    task_progress(self, 33)
-    batimap.fetch_departments_osm_state(db, [c.department])
-    task_progress(self, 66)
-    batimap.clear_tiles(db, insee)
+    if not c.is_josm_ready():
+        # first, generate cadastre data for that city
+        batimap.fetch_cadastre_data(c)
+        task_progress(self, 25)
+        batimap.fetch_departments_osm_state(db, [c.department])
+    task_progress(self, 50)
+    result = batimap.josm_data(db, insee, op)
+    task_progress(self, 75)
+    if c.get_last_import_date() != result['date']:
+        batimap.clear_tiles(db, insee)
     task_progress(self, 99)
-    return json.dumps(batimap.josm_data(db, insee, op))
+    return json.dumps(result)
 
 
 @celery.task
