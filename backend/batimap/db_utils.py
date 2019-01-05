@@ -11,10 +11,10 @@ import re
 import operator
 from collections import defaultdict
 
-from bbox import Bbox
-from point import Point
-from batimap import IGNORED_BUILDINGS
-from citydto import CityDTO
+from .bbox import Bbox
+from .point import Point
+from .batimap import IGNORED_BUILDINGS
+from .citydto import CityDTO
 
 LOG = logging.getLogger(__name__)
 
