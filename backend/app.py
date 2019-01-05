@@ -46,7 +46,12 @@ def make_celery(app):
 celery = make_celery(app)
 
 
-@celery.task
+def task_progress(task, current):
+    task.update_state(state='PROGRESS',
+                      meta=json.dumps({'current': current, 'total': 100}))
+
+
+@celery.task()
 def task_initdb(departments):
     if departments:
         initdb_is_done_file = Path("tiles/initdb_is_done")
@@ -61,12 +66,16 @@ def task_initdb(departments):
         initdb_is_done_file.touch()
 
 
-@celery.task
-def task_josm_data(insee):
+@celery.task(bind=True)
+def task_josm_data(self, insee):
+    task_progress(self, 0)
     c = City(db, insee)
     batimap.fetch_cadastre_data(c)
+    task_progress(self, 33)
     batimap.fetch_departments_osm_state(db, [c.department])
+    task_progress(self, 66)
     batimap.clear_tiles(db, insee)
+    task_progress(self, 99)
     return json.dumps(batimap.josm_data(db, insee, op))
 
 
