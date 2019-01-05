@@ -2,6 +2,17 @@ import time
 
 
 def timeit(method):
+    """
+    Compute the time a given method takes to compute its result
+    Add @timeit annotation on method to investigate, for instance:
+
+    @timeit
+    def my_function():
+        ...
+
+    :param method: function to benchmark
+    :return: time method took to compute
+    """
     def timed(*args, **kw):
         ts = time.time()
         result = method(*args, **kw)
