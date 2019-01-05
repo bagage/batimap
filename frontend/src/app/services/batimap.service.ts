@@ -1,17 +1,17 @@
-import { Injectable } from "@angular/core";
-import { AppConfigService } from "./app-config.service";
+import {Injectable} from "@angular/core";
+import {AppConfigService} from "./app-config.service";
 
-import { HttpClient } from "../../../node_modules/@angular/common/http";
-import { Observable, of, timer } from "rxjs";
-import { ConflateCityDTO } from "../classes/conflate-city.dto";
-import { CityDTO } from "../classes/city.dto";
-import { LatLngBounds } from "leaflet";
-import { plainToClass } from "class-transformer";
-import { debounceTime, map, switchMap, takeWhile, tap } from "rxjs/operators";
-import { LegendDTO } from "../classes/legend.dto";
-import { LegendService } from "./legend.service";
-import { ObsoleteCityDTO } from "../classes/obsolete-city.dto";
-import { ClassType } from "../../../node_modules/class-transformer/ClassTransformer";
+import {HttpClient} from "../../../node_modules/@angular/common/http";
+import {Observable, of, timer} from "rxjs";
+import {ConflateCityDTO} from "../classes/conflate-city.dto";
+import {CityDTO} from "../classes/city.dto";
+import {LatLngBounds} from "leaflet";
+import {plainToClass} from "class-transformer";
+import {debounceTime, map, switchMap, takeWhile, tap} from "rxjs/operators";
+import {LegendDTO} from "../classes/legend.dto";
+import {LegendService} from "./legend.service";
+import {ObsoleteCityDTO} from "../classes/obsolete-city.dto";
+import {ClassType} from "../../../node_modules/class-transformer/ClassTransformer";
 
 export interface Progression<T> {
   state: string;
@@ -76,7 +76,8 @@ export class BatimapService {
     private http: HttpClient,
     private legendService: LegendService,
     private configService: AppConfigService
-  ) {}
+  ) {
+  }
 
   private longRunningAPI<T>(
     url,
@@ -87,8 +88,9 @@ export class BatimapService {
       switchMap(task =>
         timer(0, 3000).pipe(
           switchMap(() => this.http.get<Progression<T>>(this.URL_TASK(task))),
-          takeWhile(x => x.state === "PENDING" || !hasFinished), // takeWhile is not inclusive, so workaround it with a boolean cf https://github.com/ReactiveX/rxjs/issues/4000
-          tap(x => (hasFinished = x.state !== "PENDING")),
+          // takeWhile is not inclusive, so workaround it with a boolean cf https://github.com/ReactiveX/rxjs/issues/4000
+          takeWhile(x => x.state === "PENDING" || x.state === "PROGRESS" || !hasFinished),
+          tap(x => (hasFinished = x.state !== "PENDING" && x.state !== "PROGRESS")),
           map(r => {
             r.result = plainToClass(cls, r.result);
             return r;
