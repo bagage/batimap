@@ -246,6 +246,12 @@ def initdb_command(departments):
     task_initdb(departments or db.get_departments())
 
 
+@app.cli.command("update")
+@click.argument("insee")
+def update_command(insee):
+    click.echo(task_update_insee_list(insee))
+
+
 @app.cli.command("stats")
 @click.argument("items", nargs=-1)
 @click.option("--region", type=click.Choice(["city", "department", "france"]))
