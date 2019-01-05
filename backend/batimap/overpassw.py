@@ -14,6 +14,7 @@ class Overpass(object):
     def request_with_retries(self, request, output_format='json'):
         for retry in range(9, 0, -1):
             try:
+                LOG.debug(f"Executing Overpass request:\n{request}")
                 return self.__api.Get(
                     request, responseformat=output_format, build=False)
             except (o.errors.MultipleRequestsError, o.errors.ServerLoadError) as e:

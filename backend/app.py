@@ -8,22 +8,21 @@ gevent.monkey.patch_all()
 import click
 import logging
 import os
+from pathlib import Path
+import json
 
 from flask import Flask, request, Response, url_for
 from flask_restful import inputs
 from flask_cors import CORS
-from pathlib import Path
-
-import json
 
 from celery import Celery
 from celery.result import AsyncResult
 
 from batimap import batimap
 from batimap.city import City
-from citydto import CityEncoder, CityDTO
+from batimap.citydto import CityEncoder, CityDTO
 from batimap.overpassw import Overpass
-from db_utils import Postgis
+from batimap.db_utils import Postgis
 
 app = Flask(__name__)
 app.config.from_pyfile(app.root_path + "/app.conf")
@@ -46,7 +45,12 @@ def make_celery(app):
 celery = make_celery(app)
 
 
-@celery.task
+def task_progress(task, current):
+    task.update_state(state='PROGRESS',
+                      meta=json.dumps({'current': current, 'total': 100}))
+
+
+@celery.task()
 def task_initdb(departments):
     if departments:
         initdb_is_done_file = Path("tiles/initdb_is_done")
@@ -60,14 +64,22 @@ def task_initdb(departments):
 
         initdb_is_done_file.touch()
 
-
-@celery.task
-def task_josm_data(insee):
+@celery.task(bind=True)
+def task_josm_data(self, insee):
+    task_progress(self, 0)
     c = City(db, insee)
-    batimap.fetch_cadastre_data(c)
-    batimap.fetch_departments_osm_state(db, [c.department])
-    batimap.clear_tiles(db, insee)
-    return json.dumps(batimap.josm_data(db, insee, op))
+    if not c.is_josm_ready():
+        # first, generate cadastre data for that city
+        batimap.fetch_cadastre_data(c)
+        task_progress(self, 25)
+        batimap.fetch_departments_osm_state(db, [c.department])
+    task_progress(self, 50)
+    result = batimap.josm_data(db, insee, op)
+    task_progress(self, 75)
+    if c.get_last_import_date() != result['date']:
+        batimap.clear_tiles(db, insee)
+    task_progress(self, 99)
+    return json.dumps(result)
 
 
 @celery.task
@@ -237,15 +249,17 @@ def initdb_command(departments):
     task_initdb(departments or db.get_departments())
 
 
+@app.cli.command("update")
+@click.argument("insee")
+def update_command(insee):
+    click.echo(task_update_insee_list(insee))
+
+
 @app.cli.command("stats")
 @click.argument("items", nargs=-1)
 @click.option("--region", type=click.Choice(["city", "department", "france"]))
 @click.option("--fast", is_flag=True)
 def get_city_stats(items, region, fast):
-    _get_city_stats(items, region, fast)
-
-
-def _get_city_stats(items, region, fast):
     """
     Returns cadastral status of given items.
     If status is unknown, it is computed first.

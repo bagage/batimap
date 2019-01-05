@@ -121,6 +121,7 @@ def josm_data(db, insee, overpass):
     base_url = f"https://cadastre.openstreetmap.fr/data/{c.department.zfill(3)}/{c.name_cadastre}-houses-"
     bbox = c.get_bbox()
 
+    # force refreshing city latest import date
     (_, date) = fetch_osm_data(db, c, overpass, True)
     return {
         "buildingsUrl": base_url + "simplifie.osm",
@@ -152,7 +153,6 @@ def fetch_cadastre_data(city, force=False):
     data = {
         "dep": dept,
         "type": "bati",
-        # fixme: if data is too old, we should ask for new generation
         "force": "true" if force else "false",
         "ville": city.name_cadastre,
     }
@@ -194,6 +194,9 @@ cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre)
 
 
 def fetch_osm_data(db, city, overpass, force):
+    """
+    Compute the latest import date for given city
+    """
     date = city.get_last_import_date()
     if force or date is None:
         sources_date = []
