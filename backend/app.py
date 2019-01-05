@@ -257,10 +257,6 @@ def update_command(insee):
 @click.option("--region", type=click.Choice(["city", "department", "france"]))
 @click.option("--fast", is_flag=True)
 def get_city_stats(items, region, fast):
-    _get_city_stats(items, region, fast)
-
-
-def _get_city_stats(items, region, fast):
     """
     Returns cadastral status of given items.
     If status is unknown, it is computed first.
