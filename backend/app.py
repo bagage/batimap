@@ -8,22 +8,21 @@ gevent.monkey.patch_all()
 import click
 import logging
 import os
+from pathlib import Path
+import json
 
 from flask import Flask, request, Response, url_for
 from flask_restful import inputs
 from flask_cors import CORS
-from pathlib import Path
-
-import json
 
 from celery import Celery
 from celery.result import AsyncResult
 
 from batimap import batimap
 from batimap.city import City
-from citydto import CityEncoder, CityDTO
+from batimap.citydto import CityEncoder, CityDTO
 from batimap.overpassw import Overpass
-from db_utils import Postgis
+from batimap.db_utils import Postgis
 
 app = Flask(__name__)
 app.config.from_pyfile(app.root_path + "/app.conf")
