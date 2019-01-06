@@ -1,19 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  HostListener,
-  Input,
-  Output
-} from "@angular/core";
-import { CityDTO } from "../../classes/city.dto";
-import { JosmService } from "../../services/josm.service";
-import { BatimapService } from "../../services/batimap.service";
-import { Observable } from "rxjs";
-import {filter, map, switchMap} from 'rxjs/operators';
-import { Unsubscriber } from "../../classes/unsubscriber";
-import { ConflateCityDTO } from "../../classes/conflate-city.dto";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, Input, Output} from "@angular/core";
+import {CityDTO} from "../../classes/city.dto";
+import {JosmService} from "../../services/josm.service";
+import {BatimapService} from "../../services/batimap.service";
+import {Observable} from "rxjs";
+import {filter, map, switchMap} from "rxjs/operators";
+import {Unsubscriber} from "../../classes/unsubscriber";
+import {ConflateCityDTO} from "../../classes/conflate-city.dto";
 
 @Component({
   selector: "app-josm-button",
@@ -92,16 +84,17 @@ export class JosmButtonComponent extends Unsubscriber {
 
   private prepareCity(): Observable<ConflateCityDTO> {
     return this.batimapService.cityData(this._city.insee).pipe(
-      filter(c => c.result !== null),
-      map(conflateDTO => {
-        if (this._city.date !== conflateDTO.result.date) {
-          this.newestDate.emit(conflateDTO.result.date);
+      filter(c => c.state === "SUCCESS"),
+      map(response => {
+        const progressConflateDTO = response.result;
+        if (this._city.date !== progressConflateDTO.date) {
+          this.newestDate.emit(progressConflateDTO.date);
           return null;
-        } else if (conflateDTO.result.buildingsUrl) {
+        } else if (progressConflateDTO.buildingsUrl) {
           const c = this._city;
           c.josm_ready = true;
           this.city = c;
-          return conflateDTO.result;
+          return progressConflateDTO;
         }
       })
     );
