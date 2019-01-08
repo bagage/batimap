@@ -9,7 +9,7 @@ cd /app
 
 while true; do
     if [ -f $INIT_FILE ]; then
-        echo "Resetting all tiles!"
+        echo "Removing all tiles, regenerating up to level $INITIAL_MAX_ZOOM!"
         # cache whole world at start, if needed
         rm -rf data/cache/*
         tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
