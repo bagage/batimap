@@ -46,8 +46,7 @@ celery = make_celery(app)
 
 
 def task_progress(task, current):
-    task.update_state(state='PROGRESS',
-                      meta=json.dumps({'current': current, 'total': 100}))
+    task.update_state(state="PROGRESS", meta=json.dumps({"current": current, "total": 100}))
 
 
 @celery.task()
@@ -76,7 +75,7 @@ def task_josm_data(self, insee):
     task_progress(self, 50)
     result = batimap.josm_data(db, insee, op)
     task_progress(self, 75)
-    if c.get_last_import_date() != result['date']:
+    if c.get_last_import_date() != result["date"]:
         batimap.clear_tiles(db, insee)
     task_progress(self, 99)
     return json.dumps(result)

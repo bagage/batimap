@@ -9,7 +9,7 @@ import http.cookiejar
 import urllib.request
 import zlib
 import requests
-from datetime import datetime
+import datetime
 from contextlib import closing
 import re
 import json
@@ -17,6 +17,7 @@ from collections import Counter
 
 LOG = logging.getLogger(__name__)
 IGNORED_BUILDINGS = ["church"]
+NO_BUILDING_CITIES = ["55139"]
 
 
 def stats(db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
@@ -52,7 +53,7 @@ def update_departments_raster_state(db, departments):
             f"&codeDepartement={d.zfill(3)}&libelle=&keepVolatileSession=&offset=5000"
         )
         fr = BeautifulSoup(zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS), "lxml")
-        LOG.debug(f"Query result: {fr}")
+        LOG.debug(f"Query result: {fr.prettify()}")
         for e in fr.find_all("tbody", attrs={"class": "parcelles"}):
             y = e.find(title="Ajouter au panier")
             if not y:
@@ -79,6 +80,7 @@ def update_departments_raster_state(db, departments):
 
             date = "raster" if is_raster else "never"
             tuples.append((insee, dept, name, f"{code_commune}-{nom_commune}", is_raster, date))
+        LOG.debug(f"Inserting {len(tuples)} cities in database…")
         db.insert_stats_for_insee(tuples)
 
 
@@ -99,7 +101,7 @@ def fetch_departments_osm_state(db, departments):
                 if not osm_data.endswith("simplifie.osm") or "-extrait-" in osm_data:
                     continue
                 name_cadastre = "-".join(osm_data.split("-")[:-2])
-                date = datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
+                date = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
 
                 tuples.append((name_cadastre, date))
 
@@ -217,25 +219,43 @@ def fetch_osm_data(db, city, overpass, force):
                 LOG.error(f"Failed to count buildings for {city}: {e}")
                 return (None, None)
             # iterate on every building
-            buildings = response.get("elements")
-            for element in buildings:
+            elements = response.get("elements")
+            buildings = []
+            for element in elements:
                 tags = element.get("tags")
-                source = (tags.get("source") or "unknown").lower()
-                source_date = (tags.get("source:date") or "").lower()
-                date = re.sub(cadastre_src2date_regex, r"\2", source + source_date)
-                sources_date.append(date)
-
-            date = max(sources_date, key=sources_date.count) if len(sources_date) else "never"
-            if date != "never":
-                date_match = re.compile(r"^(\d{4})$").match(date)
-                date = date_match.groups()[0] if date_match and date_match.groups() else "unknown"
-                # assume that low number of buildings with no date is just no import:
-                # only church/school/townhall may have been manually created
-                if date == "unknown" and len(buildings) < 10:
-                    date = "never"
-
-            LOG.debug(f"City stats: {Counter(sources_date)}")
+                buildings.append((tags.get("source") or "") + (tags.get("source:date") or ""))
+            (date, sources_date) = date_for_buildings(city.insee, buildings)
         # only update date if we did not use cache files for buildings
-        city.details = {"dates": Counter(sources_date)}
+        city.details = {"dates": sources_date}
         db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details))])
     return (city, date)
+
+
+def date_for_buildings(insee, buildings):
+    """
+    Returns the computed import data, given a list of buildings with their indiviual import date
+    """
+
+    if insee in NO_BUILDING_CITIES:
+        LOG.info(f"City {insee} is a no-buildings city. Assuming it was imported this year.")
+        return (str(datetime.date.today().year), [])
+
+    sources_date = []
+    for b in buildings:
+        source = (b or "unknown").lower()
+        date = re.sub(cadastre_src2date_regex, r"\2", source)
+        sources_date.append(date)
+    counter = Counter(sources_date)
+    LOG.debug(f"City {insee} stats: {counter}")
+
+    date = max(counter, key=sources_date.count) if len(sources_date) else "never"
+    if date != "never" and date != "raster":
+        date_match = re.compile(r"^(\d{4})$").match(date)
+        date = date_match.groups()[0] if date_match and date_match.groups() else "unknown"
+        # If a city has a few buildings, and **even if a date could be computed**, we assume
+        # it was never imported (sometime only 1 building on the boundary is wrongly computed)
+        # Almost all cities have at least church/school/townhall manually mapped
+        if len(buildings) < 10:
+            LOG.info(f"City {insee}: few buildings found ({len(buildings)}), assuming it was never imported!")
+            date = "never"
+    return (date, counter)

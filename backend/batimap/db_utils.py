@@ -7,13 +7,9 @@ import psycopg2
 import psycopg2.extras
 import logging
 from geojson import Feature, FeatureCollection, loads
-import re
-import operator
-from collections import defaultdict
-
 from .bbox import Bbox
 from .point import Point
-from .batimap import IGNORED_BUILDINGS
+from .batimap import IGNORED_BUILDINGS, date_for_buildings
 from .citydto import CityDTO
 
 LOG = logging.getLogger(__name__)
@@ -415,7 +411,7 @@ class Postgis(object):
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
 
-    def fetch_buildings_stats(self, table, department, buildings_count, insee_name):
+    def fetch_buildings_stats(self, table, department, buildings, insee_name):
         query = f"""
                 WITH cities AS (
                     SELECT
@@ -451,41 +447,29 @@ class Postgis(object):
 
         self.execute(query, [department.zfill(2), ", ".join(IGNORED_BUILDINGS)])
 
-        # First case:
-        # source=Direction Générale des Finances Publiques - cadastre
-        # source:date=2017-02-24
-        # Second case:
-        # source=cadastre-dgi-fr source : Direction Générale des Finances Publiques - Cadastre. Mise à jour : 2017
-        cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
         for (insee, name, source, count, is_raster) in self.cursor.fetchall():
             if is_raster:
                 insee_name[insee] = name
-                buildings_count[insee] = {}
-                buildings_count[insee]["raster"] = 1
-                continue
-
-            date = re.sub(cadastre_src2date_regex, r"\2", (source or "unknown").lower())
-            if not buildings_count.get(insee):
-                buildings_count[insee] = defaultdict(lambda: 0, {})
-            insee_name[insee] = name
-            buildings_count[insee][date] += count
+                buildings[insee] = ["raster"]
+            else:
+                if not buildings.get(insee):
+                    buildings[insee] = []
+                insee_name[insee] = name
+                buildings[insee] += [source] * count
 
     def import_city_stats_from_osmplanet(self, departments):
         LOG.info(f"Calcul des statistiques du bâti pour les départements {departments}…")
         for d in departments:
             LOG.info(f"Calcul des statistiques du bâti pour le département {d}…")
 
-            buildings_count = {}
+            buildings = {}
             insee_name = {}
 
-            self.fetch_buildings_stats(f"osm_buildings", d, buildings_count, insee_name)
+            self.fetch_buildings_stats(f"osm_buildings", d, buildings, insee_name)
 
             tuples = []
-            for insee, counts in buildings_count.items():
-                date_match = re.compile(r"^(\d{4}|raster)$").match(max(counts.items(), key=operator.itemgetter(1))[0])
-                date = date_match.groups()[0] if date_match and date_match.groups() else "unknown"
-                if date == "unknown" and sum(counts.values()) < 10:
-                    date = "never"
+            for insee, buildings in buildings.items():
+                (date, counts) = date_for_buildings(insee, buildings)
                 tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
             self.update_stats_for_insee(tuples)
 
@@ -514,7 +498,6 @@ class Postgis(object):
         self.execute(req)
 
         row = self.cursor.fetchone()
-        print(row)
         if row:
             city = CityDTO(row[0], None, row[1], row[2], row[3], row[4])
             return (city, Point(row[5]))
