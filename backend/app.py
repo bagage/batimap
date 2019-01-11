@@ -63,6 +63,7 @@ def task_initdb(departments):
 
         initdb_is_done_file.touch()
 
+
 @celery.task(bind=True)
 def task_josm_data(self, insee):
     task_progress(self, 0)

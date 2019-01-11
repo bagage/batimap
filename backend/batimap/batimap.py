@@ -4,7 +4,7 @@ import logging
 
 from .city import City
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, SoupStrainer
 import http.cookiejar
 import urllib.request
 import zlib
@@ -46,23 +46,25 @@ def update_departments_raster_state(db, departments):
     LOG.info(f"Récupération des infos cadastrales pour les départements {departments}")
     for d in departments:
         LOG.info(f"Récupération des infos cadastrales pour le département {d}")
+        if len(db.within_department_raster(d)) == 0:
+            LOG.info(f"Le département {d} ne contient que des communes vectorisées, rien à faire")
+            continue
         tuples = []
         d = f"{d}"
         r2 = op.open(
             f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}"
             f"&codeDepartement={d.zfill(3)}&libelle=&keepVolatileSession=&offset=5000"
         )
-        fr = BeautifulSoup(zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS), "lxml")
+        cities = SoupStrainer("tbody", attrs={"class": "parcelles"})
+        fr = BeautifulSoup(zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS), "lxml", parse_only=cities)
         LOG.debug(f"Query result: {fr.prettify()}")
-        for e in fr.find_all("tbody", attrs={"class": "parcelles"}):
+        for e in fr.find_all("tbody"):
             y = e.find(title="Ajouter au panier")
             if not y:
                 continue
 
             # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
-            split = y.get("onclick").split("'")
-            code_commune = split[1]
-            format_type = split[3]
+            (_, code_commune, _, format_type) = y.get("onclick").split("'")
 
             # e.strong.string structure: "COBONNE (26400) "
             commune_cp = e.strong.string
@@ -129,7 +131,7 @@ def josm_data(db, insee, overpass):
         "buildingsUrl": base_url + "simplifie.osm",
         "segmententationPredictionssUrl": base_url + "prediction_segmente.osm",
         "bbox": [bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax],
-        "date": date
+        "date": date,
     }
 
 
@@ -152,12 +154,7 @@ def fetch_cadastre_data(city, force=False):
             LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
             return True
 
-    data = {
-        "dep": dept,
-        "type": "bati",
-        "force": "true" if force else "false",
-        "ville": city.name_cadastre,
-    }
+    data = {"dep": dept, "type": "bati", "force": "true" if force else "false", "ville": city.name_cadastre}
 
     # otherwise we invoke Cadastre generation
     with closing(requests.post(url, data=data, stream=True)) as r:
@@ -233,7 +230,7 @@ def fetch_osm_data(db, city, overpass, force):
 
 def date_for_buildings(insee, buildings):
     """
-    Returns the computed import data, given a list of buildings with their indiviual import date
+    Computes the city buildings import date, given a list of buildings with their indiviual import date
     """
 
     if insee in NO_BUILDING_CITIES:

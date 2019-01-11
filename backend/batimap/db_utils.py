@@ -344,7 +344,24 @@ class Postgis(object):
 
         return [x[0] for x in self.cursor.fetchall()]
 
+    def within_department_raster(self, department: str):
+        department = department.zfill(2)
+        req = """
+                SELECT DISTINCT
+                    insee
+                FROM
+                    city_stats
+                WHERE
+                    department = %s and is_raster = true
+                ORDER BY
+                    insee
+        """
+        self.execute(req, [department])
+
+        return [x[0] for x in self.cursor.fetchall()]
+
     def bbox_for_insee(self, insee):
+
         req = """
                 SELECT
                     Box2D(p.geometry)
