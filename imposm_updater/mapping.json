@@ -46,11 +46,23 @@
                     "key": null
                 }
             ],
-            "type": "polygon",
-            "mapping": {
-                "building": [
-                    "__any__"
-                ]
+            "type": "geometry",
+            "type_mappings": {
+                "points": {
+                    "building": [
+                        "__any__"
+                    ]
+                },
+                "linestrings": {
+                    "building": [
+                        "__any__"
+                    ]
+                },
+                "polygons": {
+                    "building": [
+                        "__any__"
+                    ]
+                }
             }
         },
         "admin": {
