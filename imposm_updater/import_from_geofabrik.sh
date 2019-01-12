@@ -82,7 +82,9 @@ if [ "$DO_IMPORT" = "true" ]; then
         # only keep administrative boundaries and buildings
         imposm import -config /config/config.json -mapping /config/mapping.json -connection $connection_param -read $region.osm.pbf -appendcache -diff
     done
+    echo "Writing to database…"
     imposm import -config /config/config.json -mapping /config/mapping.json -connection $connection_param -write
+    echo "Deploying to database…"
     imposm import -config /config/config.json -mapping /config/mapping.json -connection $connection_param -deployproduction
 
     echo "Imports done!"
