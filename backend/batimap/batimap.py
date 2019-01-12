@@ -46,7 +46,7 @@ def update_departments_raster_state(db, departments):
     LOG.info(f"Récupération des infos cadastrales pour les départements {departments}")
     for d in departments:
         LOG.info(f"Récupération des infos cadastrales pour le département {d}")
-        if len(db.within_department_raster(d)) == 0:
+        if len(db.within_department(d)) > 0 and len(db.within_department_raster(d)) == 0:
             LOG.info(f"Le département {d} ne contient que des communes vectorisées, rien à faire")
             continue
         tuples = []
@@ -64,7 +64,7 @@ def update_departments_raster_state(db, departments):
                 continue
 
             # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
-            (_, code_commune, _, format_type) = y.get("onclick").split("'")
+            (_, code_commune, _, format_type, _, _, _) = y.get("onclick").split("'")
 
             # e.strong.string structure: "COBONNE (26400) "
             commune_cp = e.strong.string
