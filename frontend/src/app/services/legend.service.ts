@@ -48,6 +48,8 @@ export class LegendService {
       return "black";
     } else if (yearStr === "never") {
       return "pink";
+    } else if (yearStr === "unfinished") {
+      return "orange";
     }
     // unknown
     return "gray";
@@ -58,6 +60,8 @@ export class LegendService {
       return "jamais import";
     } else if (yearStr === "raster") {
       return "non dispo.";
+    } else if (yearStr === "unfinished") {
+      return "simplifié";
     } else if (Number.isInteger(+yearStr)) {
       return yearStr;
     } else {

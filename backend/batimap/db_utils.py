@@ -456,6 +456,7 @@ class Postgis(object):
                     osm_buildings p
                 WHERE
                     p.building is not null and p.building not in (%s)
+                    AND ST_GeometryType(p.geometry) != 'ST_Point'
                     AND ST_Intersects(c.geometry, p.geometry)
                 GROUP BY
                     c.insee, c.name, dated_source, c.is_raster
@@ -475,50 +476,6 @@ class Postgis(object):
                 insee_name[insee] = name
                 buildings[insee] += [source] * count
 
-        # citie containing specific buildings (church, school, …) with Point geometry have probably
-        # never been imported
-        point_buildings_query = f"""
-                WITH cities AS (
-                    SELECT
-                        p.insee,
-                        p.name,
-                        p.geometry,
-                        c.is_raster
-                    FROM
-                        osm_admin  p,
-                        city_stats c
-                    WHERE
-                        p.insee like %s || '%%'
-                        AND p.admin_level::int >= 8
-                        AND p.insee = c.insee
-                )
-                SELECT
-                    c.insee,
-                    c.name
-                FROM
-                    cities c,
-                    osm_buildings p
-                WHERE
-                    p.building is not null and p.building != 'yes'
-                    AND c.is_raster = false
-                    AND ST_GeometryType(p.geometry) = 'ST_Point'
-                    AND ST_Intersects(c.geometry, p.geometry)
-                GROUP BY
-                    c.insee, c.name
-                ORDER BY
-                    c.insee
-        """
-        self.execute(point_buildings_query, [department.zfill(2)])
-        cities = self.cursor.fetchall()
-        if len(cities):
-            LOG.info(
-                f"Les villes {cities} contiennent des bâtiments "
-                "avec une géométrie simplifée, import probablement jamais réalisé"
-            )
-        for (insee, name) in cities:
-            insee_name[insee] = name
-            buildings[insee] = []
-
     def import_city_stats_from_osmplanet(self, departments):
         LOG.info(f"Calcul des statistiques du bâti pour les départements {departments}…")
         for d in departments:
@@ -529,9 +486,49 @@ class Postgis(object):
 
             self.fetch_buildings_stats(d, buildings, insee_name)
 
+            # cities containing specific buildings (church, school, …) with Point geometry have probably
+            # never been imported
+            point_buildings_query = f"""
+                    WITH cities AS (
+                        SELECT
+                            p.insee,
+                            p.name,
+                            p.geometry,
+                            c.is_raster
+                        FROM
+                            osm_admin  p,
+                            city_stats c
+                        WHERE
+                            p.insee like %s || '%%'
+                            AND p.admin_level::int >= 8
+                            AND p.insee = c.insee
+                    )
+                    SELECT
+                        c.insee
+                    FROM
+                        cities c,
+                        osm_buildings p
+                    WHERE
+                        p.building is not null and p.building != 'ruins'
+                        AND c.is_raster = false
+                        AND ST_GeometryType(p.geometry) = 'ST_Point'
+                        AND ST_Intersects(c.geometry, p.geometry)
+                    GROUP BY
+                        c.insee
+                    ORDER BY
+                        c.insee
+            """
+            self.execute(point_buildings_query, [d.zfill(2)])
+            simplified_cities = [x[0] for x in self.cursor.fetchall()]
+            if len(simplified_cities):
+                LOG.info(
+                    f"Les villes {simplified_cities} contiennent des bâtiments "
+                    "avec une géométrie simplifée, import à vérifier"
+                )
+
             tuples = []
             for insee, buildings in buildings.items():
-                (date, counts) = date_for_buildings(insee, buildings)
+                (date, counts) = date_for_buildings(insee, buildings, insee in simplified_cities)
                 tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
             self.update_stats_for_insee(tuples)
 
