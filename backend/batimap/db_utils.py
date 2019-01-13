@@ -202,14 +202,15 @@ class Postgis(object):
 
     def get_departments(self):
         # admin_level are departments, however some are handled differently by OSM and cadastre.
-        # for instance, 69 (Rhône) exists as 69D and 60M in OSM, so we remove letters to be compliant with cadastre
+        # for instance, 69 (Rhône) exists as 69D and 60M in OSM at level6, so we also take level 5
         req = """
             SELECT
-                DISTINCT(regexp_replace(p.insee, '[^\\d]', '')) as dept
+                DISTINCT(p.insee) as dept
             FROM
                 osm_admin p
             WHERE
-                p.admin_level::int = 6
+                (p.admin_level::int = 6
+                OR p.admin_level::int = 5)
                 AND p.insee is not null
             ORDER BY dept
         """
