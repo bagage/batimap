@@ -17,7 +17,7 @@ from collections import Counter
 
 LOG = logging.getLogger(__name__)
 IGNORED_BUILDINGS = ["church"]
-NO_BUILDING_CITIES = ["55139"]
+NO_BUILDING_CITIES = ["55139", "55039"]
 
 
 def stats(db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
