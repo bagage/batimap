@@ -206,7 +206,7 @@ def fetch_osm_data(db, city, overpass, force):
             request = f"""[out:json];
                 area[boundary='administrative'][admin_level~'8|9']['ref:INSEE'='{city.insee}']->.a;
                 (
-                  node['building']['building'!='ruins'](area.a);
+                  node['building'='church'](area.a);
                   way['building']{ignored_buildings}(area.a);
                   relation['building']{ignored_buildings}(area.a);
                 );

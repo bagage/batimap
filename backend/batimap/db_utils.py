@@ -509,7 +509,7 @@ class Postgis(object):
                         cities c,
                         osm_buildings p
                     WHERE
-                        p.building is not null and p.building != 'ruins'
+                        p.building is not null and p.building = 'church'
                         AND c.is_raster = false
                         AND ST_GeometryType(p.geometry) = 'ST_Point'
                         AND ST_Intersects(c.geometry, p.geometry)
