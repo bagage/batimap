@@ -17,7 +17,7 @@ from collections import Counter
 
 LOG = logging.getLogger(__name__)
 IGNORED_BUILDINGS = ["church"]
-NO_BUILDING_CITIES = ["55139"]
+NO_BUILDING_CITIES = ["55139", "55039"]
 
 
 def stats(db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
@@ -46,7 +46,7 @@ def update_departments_raster_state(db, departments):
     LOG.info(f"Récupération des infos cadastrales pour les départements {departments}")
     for d in departments:
         LOG.info(f"Récupération des infos cadastrales pour le département {d}")
-        if len(db.within_department_raster(d)) == 0:
+        if len(db.within_department(d)) > 0 and len(db.within_department_raster(d)) == 0:
             LOG.info(f"Le département {d} ne contient que des communes vectorisées, rien à faire")
             continue
         tuples = []
@@ -64,7 +64,7 @@ def update_departments_raster_state(db, departments):
                 continue
 
             # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
-            (_, code_commune, _, format_type) = y.get("onclick").split("'")
+            (_, code_commune, _, format_type, _, _, _) = y.get("onclick").split("'")
 
             # e.strong.string structure: "COBONNE (26400) "
             commune_cp = e.strong.string
@@ -206,6 +206,7 @@ def fetch_osm_data(db, city, overpass, force):
             request = f"""[out:json];
                 area[boundary='administrative'][admin_level~'8|9']['ref:INSEE'='{city.insee}']->.a;
                 (
+                  node['building'='church'](area.a);
                   way['building']{ignored_buildings}(area.a);
                   relation['building']{ignored_buildings}(area.a);
                 );
@@ -218,17 +219,25 @@ def fetch_osm_data(db, city, overpass, force):
             # iterate on every building
             elements = response.get("elements")
             buildings = []
+            has_simplified_buildings = False
             for element in elements:
+                if element.get("type") == "node":
+                    LOG.info(
+                        f"{city} contient des bâtiments "
+                        f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
+                    )
+                    has_simplified_buildings = True
+
                 tags = element.get("tags")
                 buildings.append((tags.get("source") or "") + (tags.get("source:date") or ""))
-            (date, sources_date) = date_for_buildings(city.insee, buildings)
+            (date, sources_date) = date_for_buildings(city.insee, buildings, has_simplified_buildings)
         # only update date if we did not use cache files for buildings
         city.details = {"dates": sources_date}
         db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details))])
     return (city, date)
 
 
-def date_for_buildings(insee, buildings):
+def date_for_buildings(insee, buildings, has_simplified_buildings):
     """
     Computes the city buildings import date, given a list of buildings with their indiviual import date
     """
@@ -255,4 +264,6 @@ def date_for_buildings(insee, buildings):
         if len(buildings) < 10:
             LOG.info(f"City {insee}: few buildings found ({len(buildings)}), assuming it was never imported!")
             date = "never"
+        elif has_simplified_buildings:
+            date = "unfinished"
     return (date, counter)

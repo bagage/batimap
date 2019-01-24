@@ -202,14 +202,15 @@ class Postgis(object):
 
     def get_departments(self):
         # admin_level are departments, however some are handled differently by OSM and cadastre.
-        # for instance, 69 (Rhône) exists as 69D and 60M in OSM, so we remove letters to be compliant with cadastre
+        # for instance, 69 (Rhône) exists as 69D and 60M in OSM at level6, so we also take level 5
         req = """
             SELECT
-                DISTINCT(regexp_replace(p.insee, '[^\\d]', '')) as dept
+                DISTINCT(p.insee) as dept
             FROM
                 osm_admin p
             WHERE
-                p.admin_level::int = 6
+                (p.admin_level::int = 6
+                OR p.admin_level::int = 5)
                 AND p.insee is not null
             ORDER BY dept
         """
@@ -428,7 +429,7 @@ class Postgis(object):
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
 
-    def fetch_buildings_stats(self, table, department, buildings, insee_name):
+    def fetch_buildings_stats(self, department, buildings, insee_name):
         query = f"""
                 WITH cities AS (
                     SELECT
@@ -452,9 +453,10 @@ class Postgis(object):
                     c.is_raster
                 FROM
                     cities c,
-                    {table} p
+                    osm_buildings p
                 WHERE
                     p.building is not null and p.building not in (%s)
+                    AND ST_GeometryType(p.geometry) != 'ST_Point'
                     AND ST_Intersects(c.geometry, p.geometry)
                 GROUP BY
                     c.insee, c.name, dated_source, c.is_raster
@@ -482,11 +484,51 @@ class Postgis(object):
             buildings = {}
             insee_name = {}
 
-            self.fetch_buildings_stats(f"osm_buildings", d, buildings, insee_name)
+            self.fetch_buildings_stats(d, buildings, insee_name)
+
+            # cities containing specific buildings (church, school, …) with Point geometry have probably
+            # never been imported
+            point_buildings_query = f"""
+                    WITH cities AS (
+                        SELECT
+                            p.insee,
+                            p.name,
+                            p.geometry,
+                            c.is_raster
+                        FROM
+                            osm_admin  p,
+                            city_stats c
+                        WHERE
+                            p.insee like %s || '%%'
+                            AND p.admin_level::int >= 8
+                            AND p.insee = c.insee
+                    )
+                    SELECT
+                        c.insee
+                    FROM
+                        cities c,
+                        osm_buildings p
+                    WHERE
+                        p.building is not null and p.building = 'church'
+                        AND c.is_raster = false
+                        AND ST_GeometryType(p.geometry) = 'ST_Point'
+                        AND ST_Intersects(c.geometry, p.geometry)
+                    GROUP BY
+                        c.insee
+                    ORDER BY
+                        c.insee
+            """
+            self.execute(point_buildings_query, [d.zfill(2)])
+            simplified_cities = [x[0] for x in self.cursor.fetchall()]
+            if len(simplified_cities):
+                LOG.info(
+                    f"Les villes {simplified_cities} contiennent des bâtiments "
+                    "avec une géométrie simplifée, import à vérifier"
+                )
 
             tuples = []
             for insee, buildings in buildings.items():
-                (date, counts) = date_for_buildings(insee, buildings)
+                (date, counts) = date_for_buildings(insee, buildings, insee in simplified_cities)
                 tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
             self.update_stats_for_insee(tuples)
 

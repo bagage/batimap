@@ -47,6 +47,17 @@ function startTodo() {
         actAddField.setAccessible(true);
         actAddField.get(todoDialog).actionPerformed(null);
 
+        // autozoom on first issue
+        var model = todoDialog.class.getDeclaredField('model');
+        model.setAccessible(true);
+        var first = model.get(todoDialog).getSelected();
+        var primitive = first.class.getDeclaredField('primitive');
+        primitive.setAccessible(true);
+        var autoScaleAction = org.openstreetmap.josm.actions.AutoScaleAction;
+        segmentedLayer.data.selection.clearAll();
+        segmentedLayer.data.selection.add(primitive.get(first));
+        autoScaleAction.zoomToSelection();
+
         if (!todoDialog.isVisible()) {
             todoDialog.unfurlDialog();
             josm.alert("Veuillez maintenant réaliser la liste des tâches, passer ensuite à la seconde étape B-conflation.js...")
@@ -64,12 +75,6 @@ function do_work() {
     var ds = segmentedLayer.data;
     var segmented = ds.query('type:way name="Est-ce que les bâtiments ne sont pas segmentés ici par le cadastre ?"');
     if (segmented.length > 0) {
-        // autozoom on first issue
-        var autoScaleAction = org.openstreetmap.josm.actions.AutoScaleAction;
-        ds.selection.clearAll();
-        ds.selection.add(segmented[0]);
-        autoScaleAction.zoomToSelection();
-
         // select in todo
         ds.selection.clearAll();
         ds.selection.add(segmented);

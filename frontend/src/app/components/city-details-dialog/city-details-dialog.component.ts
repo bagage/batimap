@@ -88,6 +88,8 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
       return 'Le bâti n\'a jamais été importé.';
     } else if (d === "raster") {
       return 'Ville raster, pas d\'import possible.';
+    } else if (d === "unfinished") {
+      return 'Des bâtiments sont de géométrie simple, à vérifier.';
     } else if (Number.isInteger(+d)) {
       return `Dernier import en ${d}.`;
     } else {
