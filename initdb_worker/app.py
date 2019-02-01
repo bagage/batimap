@@ -51,6 +51,7 @@ class Watcher:
     def run(self):
         event_handler = Handler()
         self.observer.schedule(event_handler, self.DIRECTORY_TO_WATCH, recursive=True)
+        LOG.info(f"starting watch directory {self.DIRECTORY_TO_WATCH}")
         self.observer.start()
         try:
             while True:
@@ -82,7 +83,7 @@ class Handler(FileSystemEventHandler):
                 r = requests.get(url=BACKEND_DEPARTMENTS_IN_BBOX_URL.format(**args))
                 departments += r.json()
                 LOG.debug(r.text)
-            departments = list(set(departments))
+            departments = sorted(list(set(departments)))
             LOG.info(f"Running initdb on {departments}")
             r = requests.post(url=BACKEND_INITDB_URL.format("&".join(departments)))
             LOG.debug(f"You can follow the progress of initdb on {BACKEND_TASKS_URL.format(**r.json())}")
