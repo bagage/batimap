@@ -1,11 +1,11 @@
-import { Component, HostListener, NgZone, ViewChild } from "@angular/core";
-import { AppConfigService } from "../../services/app-config.service";
-import { MatDialog } from "@angular/material";
-import { CityDetailsDialogComponent } from "../../components/city-details-dialog/city-details-dialog.component";
-import { CityDTO } from "../../classes/city.dto";
-import { plainToClass } from "class-transformer";
-import { MapDateLegendComponent } from "../../components/map-date-legend/map-date-legend.component";
-import { LegendService } from "../../services/legend.service";
+import {Component, HostListener, NgZone, ViewChild} from "@angular/core";
+import {AppConfigService} from "../../services/app-config.service";
+import {MatDialog} from "@angular/material";
+import {CityDetailsDialogComponent} from "../../components/city-details-dialog/city-details-dialog.component";
+import {CityDTO} from "../../classes/city.dto";
+import {plainToClass} from "class-transformer";
+import {MapDateLegendComponent} from "../../components/map-date-legend/map-date-legend.component";
+import {LegendService} from "../../services/legend.service";
 
 import * as L from "leaflet";
 
@@ -37,10 +37,12 @@ export class MapComponent {
     private zone: NgZone,
     private legendService: LegendService,
     private configService: AppConfigService
-  ) {}
+  ) {
+  }
 
   onMapReady(map) {
     this.map = map;
+    this.legend.map = map;
     map.restoreView();
     L.hash(map);
     this.searchControl = L.geocoderBAN({
@@ -53,14 +55,14 @@ export class MapComponent {
     const date =
       this.legendService.city2date.get(properties.insee) || properties.date;
     const color = this.legendService.date2color(date);
-    const moreHidden = (properties.insee.length > 3 && !this.legendService.isActive(date));
+    const hidden = (properties.insee.length > 3 && !this.legendService.isActive(date));
     return {
       weight: 2,
       color: color,
-      opacity: moreHidden ? 0.08 : 1,
+      opacity: hidden ? 0.08 : 1,
       fill: true,
       radius: type === "point" ? zoom / 2 : 1,
-      fillOpacity: moreHidden ? 0.08 : properties.josm_ready ? 0.8 : 0.4
+      fillOpacity: hidden ? 0.08 : properties.josm_ready ? 0.8 : 0.4
     };
   }
 
@@ -75,10 +77,7 @@ export class MapComponent {
         departments: (properties, zoom) =>
           this.stylingFunction(properties, zoom, "polygon")
       },
-      interactive: true, // Make sure that this VectorGrid fires mouse/pointer events
-      getFeatureId: function(f) {
-        return f.properties.insee;
-      }
+      interactive: true // Make sure that this VectorGrid fires mouse/pointer events
     };
 
     this.cadastreLayer = L.vectorGrid.protobuf(
