@@ -10,7 +10,7 @@ services:
     - ./postgis/data:/var/lib/postgresql/data
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.10
+        ipv4_address: 10.8.0.10
 
   imposm_updater:
     build: imposm_updater
@@ -23,7 +23,7 @@ services:
     - ./imposm_updater/data:/app
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.11
+        ipv4_address: 10.8.0.11
 
   tiles:
     build: tiles
@@ -38,7 +38,7 @@ services:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.12
+        ipv4_address: 10.8.0.12
 
   tiles-cleaner:
     build: tiles-cleaner
@@ -49,7 +49,7 @@ services:
     - ./tiles/:/app
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.13
+        ipv4_address: 10.8.0.13
 
   initdb_worker:
     build: initdb_worker
@@ -58,7 +58,7 @@ services:
     - ./imposm_updater/data/tiles:/tiles
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.14
+        ipv4_address: 10.8.0.14
 
   redis:
     image: redis:4-alpine
@@ -69,7 +69,7 @@ services:
       - '6379:6379'
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.15
+        ipv4_address: 10.8.0.15
 
   celery:
     build: backend
@@ -83,7 +83,7 @@ services:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.16
+        ipv4_address: 10.8.0.16
 
   backend:
     build: backend
@@ -99,7 +99,7 @@ services:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.17
+        ipv4_address: 10.8.0.17
 
   frontend:
     build: frontend
@@ -112,11 +112,11 @@ services:
     - backend
     networks:
       fixed_network:
-        ipv4_address: 10.5.0.18
+        ipv4_address: 10.8.0.18
 
 networks:
   fixed_network:
     driver: bridge
     ipam:
      config:
-       - subnet: 10.5.0.0/16
+       - subnet: 10.8.0.0/16
