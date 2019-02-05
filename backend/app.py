@@ -257,22 +257,26 @@ def update_command(insee):
 
 @app.cli.command("stats")
 @click.argument("items", nargs=-1)
-@click.option("--region", type=click.Choice(["city", "department", "france"]))
 @click.option("--fast", is_flag=True)
-def get_city_stats(items, region, fast):
+@click.option("--all", is_flag=True)
+def get_city_stats(items, fast, all):
     """
     Returns cadastral status of given items.
     If status is unknown, it is computed first.
     """
-    if region == "france":
+    d = [None]
+    c = None
+    if all:
+        click.echo("Will stats ALL available cities")
         d = db.get_departments()
-        c = None
-    elif region == "department":
-        d = items
-        c = None
     else:
-        d = [None]
-        c = items
+        are_depts = len([x for x in items if len(x) < 4]) > 0
+        if are_depts:
+            click.echo(f"Will stats given departments {items}")
+            d = items
+        else:
+            click.echo(f"Will stats given cities {items}")
+            c = items
 
     for department in d:
         for (city, date) in batimap.stats(

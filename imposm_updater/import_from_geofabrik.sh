@@ -58,8 +58,8 @@ if [ "$DO_IMPORT" = "true" ]; then
     for region in $regions; do
         echo "downloading $region.osm.pbf"
         file=$(basename $region).osm.pbf
-        axel --no-clobber http://download.geofabrik.de/europe/$region.osm.pbf || test -f $file
-        axel --no-clobber http://download.geofabrik.de/europe/$region.osm.pbf.md5 || test -f $file.md5
+        axel http://download.geofabrik.de/europe/$region.osm.pbf || test -f $file
+        axel http://download.geofabrik.de/europe/$region.osm.pbf.md5 || test -f $file.md5
         echo "checking $region.osm.pbf file integrity"
         md5sum -c $file.md5
     done
