@@ -53,8 +53,11 @@ def task_progress(task, current):
 def task_initdb(departments):
     if departments:
         initdb_is_done_file = Path("tiles/initdb_is_done")
+        migration_file = Path("html/maintenance.html")
         if initdb_is_done_file.exists():
             initdb_is_done_file.unlink()
+        if migration_file.exists():
+            migration_file.unlink()
 
         # fill table with cities from cadastre website
         batimap.update_departments_raster_state(db, departments)
