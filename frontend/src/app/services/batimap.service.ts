@@ -161,7 +161,12 @@ export class BatimapService {
     );
   }
 
-  public obsoleteCity(): Observable<ObsoleteCityDTO> {
-    return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE());
+  public obsoleteCity(ignored: string[]): Observable<ObsoleteCityDTO> {
+    return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(),
+      {
+        params: {
+          ignored
+        }
+      });
   }
 }

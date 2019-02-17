@@ -190,7 +190,8 @@ def api_departments_in_bbox(lonNW, latNW, lonSE, latSE) -> dict:
 
 @app.route("/cities/obsolete", methods=["GET"])
 def api_obsolete_city() -> dict:
-    (city, position) = db.get_obsolete_city()
+    ignored = (request.args.get('ignored') or "").replace(" ", "").split(",")
+    (city, position) = db.get_obsolete_city(ignored)
     return json.dumps({"position": [position.x, position.y], "city": city}, cls=CityEncoder)
 
 
