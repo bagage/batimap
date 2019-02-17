@@ -548,7 +548,7 @@ class Postgis(object):
                 WHERE
                     c.insee = p.insee
                 ORDER BY
-                    date != 'never', date != 'unknown', date = 'raster', date,
+                    date != 'never', date != 'unfinished', date != 'unknown', date = 'raster', date,
                     date_cadastre < NOW() - INTERVAL '30 days',
                     random()
                 LIMIT
