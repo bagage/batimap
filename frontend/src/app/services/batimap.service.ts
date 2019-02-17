@@ -165,7 +165,7 @@ export class BatimapService {
     return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(),
       {
         params: {
-          ignored
+          ignored: ignored.join(',')
         }
       });
   }
