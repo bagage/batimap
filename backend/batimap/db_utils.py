@@ -532,14 +532,15 @@ class Postgis(object):
                 tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
             self.update_stats_for_insee(tuples)
 
-    def get_obsolete_city(self):
+    def get_obsolete_city(self, ignored):
         """
             Find the city that has the most urging need of import (never > unknown > old import > raster).
             Also privileges ready-to-work cities (cadastre data available) upon the others.
             However we do NOT want this to be a fixed-order list (to avoid multiple users working on the
             same city), so we finally randomize final list of matching cities.
         """
-        req = """
+        ignored_list = "', '".join(ignored)
+        req = f"""
                 SELECT
                     c.date, c.name, c.insee, c.details, c.date_cadastre, ST_AsText(ST_Centroid(p.geometry))
                 FROM
@@ -548,6 +549,7 @@ class Postgis(object):
                 WHERE
                     c.insee = p.insee
                 ORDER BY
+                    date IN ('{ignored_list}'),
                     date != 'never', date != 'unfinished', date != 'unknown', date = 'raster', date,
                     date_cadastre < NOW() - INTERVAL '30 days',
                     random()
@@ -559,4 +561,4 @@ class Postgis(object):
         row = self.cursor.fetchone()
         if row:
             city = CityDTO(row[0], None, row[1], row[2], row[3], row[4])
-            return (city, Point(row[5]))
+            return city, Point(row[5])
