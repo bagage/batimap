@@ -65,10 +65,11 @@ class Watcher:
 class Handler(FileSystemEventHandler):
     @staticmethod
     def on_any_event(event):
+        LOG.debug(f"New event: {event}")
         if event.is_directory:
             return None
         elif event.event_type == "modified":
-            LOG.debug(f"New entries in {event.src_path}")
+            LOG.info(f"New entries in {event.src_path}")
             lines = None
             with open(event.src_path) as f:
                 lines = f.readlines()
