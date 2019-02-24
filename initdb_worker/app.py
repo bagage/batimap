@@ -65,10 +65,10 @@ class Watcher:
 class Handler(FileSystemEventHandler):
     @staticmethod
     def on_any_event(event):
-        LOG.debug(f"New event: {event}")
+        LOG.debug(f"New event: {event}, is_directory={event.is_directory}, event_type={event.event_type}")
         if event.is_directory:
             return None
-        elif event.event_type == "modified":
+        elif event.event_type == "modified" or event.event_type == "created":
             LOG.info(f"New entries in {event.src_path}")
             lines = None
             with open(event.src_path) as f:
@@ -85,9 +85,12 @@ class Handler(FileSystemEventHandler):
                 departments += r.json()
                 LOG.debug(r.text)
             departments = sorted(list(set(departments)))
-            LOG.info(f"Running initdb on {departments}")
-            r = requests.post(url=BACKEND_INITDB_URL.format("&".join(departments)))
-            LOG.debug(f"You can follow the progress of initdb on {BACKEND_TASKS_URL.format(**r.json())}")
+            if len(departments):
+                LOG.info(f"Running initdb on {departments}")
+                r = requests.post(url=BACKEND_INITDB_URL.format("&".join(departments)))
+                LOG.info(f"You can follow the progress of initdb on {BACKEND_TASKS_URL.format(**r.json())}")
+            else:
+                LOG.warning("No departments found in file!")
 
 
 if __name__ == "__main__":
