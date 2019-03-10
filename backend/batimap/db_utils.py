@@ -158,7 +158,7 @@ class Postgis(object):
                 WHERE
                     p.admin_level::int >= 7
                     AND c.insee = p.insee
-                    AND p.geometry && ST_MakeEnvelope(%(latNW)s, %(lonNW)s, %(latSE)s, %(lonSE)s, 4326 )
+                    AND p.geometry && ST_MakeEnvelope(%(lonNW)s, %(latNW)s, %(lonSE)s, %(latSE)s, 4326 )
                """
 
         args = {"lonNW": lonNW, "lonSE": lonSE, "latNW": latNW, "latSE": latSE}
@@ -476,15 +476,15 @@ class Postgis(object):
                 insee_name[insee] = name
                 buildings[insee] += [source] * count
 
-    def import_city_stats_from_osmplanet(self, departments):
-        LOG.info(f"Calcul des statistiques du bâti pour les départements {departments}…")
-        for d in departments:
-            LOG.info(f"Calcul des statistiques du bâti pour le département {d}…")
+    def import_city_stats_from_osmplanet(self, insees):
+        LOG.info(f"Calcul des statistiques du bâti pour les codes INSEE {insees}…")
+        for insee in insees:
+            LOG.info(f"Calcul des statistiques du bâti pour le code INSEE {insee}…")
 
             buildings = {}
             insee_name = {}
 
-            self.fetch_buildings_stats(d, buildings, insee_name)
+            self.fetch_buildings_stats(insee, buildings, insee_name)
 
             # cities containing specific buildings (church, school, …) with Point geometry have probably
             # never been imported
@@ -518,7 +518,7 @@ class Postgis(object):
                     ORDER BY
                         c.insee
             """
-            self.execute(point_buildings_query, [d.zfill(2)])
+            self.execute(point_buildings_query, [insee.zfill(2)])
             simplified_cities = [x[0] for x in self.cursor.fetchall()]
             if len(simplified_cities):
                 LOG.info(
@@ -530,6 +530,7 @@ class Postgis(object):
             for insee, buildings in buildings.items():
                 (date, counts) = date_for_buildings(insee, buildings, insee in simplified_cities)
                 tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
+
             self.update_stats_for_insee(tuples)
 
     def get_obsolete_city(self, ignored):

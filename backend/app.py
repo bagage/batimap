@@ -50,21 +50,28 @@ def task_progress(task, current):
 
 
 @celery.task()
-def task_initdb(departments):
-    if departments:
-        initdb_is_done_file = Path("tiles/initdb_is_done")
-        migration_file = Path("html/maintenance.html")
-        if initdb_is_done_file.exists():
-            initdb_is_done_file.unlink()
-        if migration_file.exists():
-            migration_file.unlink()
+def task_initdb(items):
+    items_are_cities = len([len(x) > 3 for x in items]) > 0
+    if items_are_cities:
+        departments = list(set([City(db, insee).department for insee in items]))
+        departments = sorted([d for d in departments if d is not None])
+    else:
+        departments = items
+    LOG.debug(f"Will run initdb on departments {departments}")
 
-        # fill table with cities from cadastre website
-        batimap.update_departments_raster_state(db, departments)
-        batimap.fetch_departments_osm_state(db, departments)
-        db.import_city_stats_from_osmplanet(departments)
+    initdb_is_done_file = Path("tiles/initdb_is_done")
+    migration_file = Path("html/maintenance.html")
+    if initdb_is_done_file.exists():
+        initdb_is_done_file.unlink()
+    if migration_file.exists():
+        migration_file.unlink()
 
-        initdb_is_done_file.touch()
+    # fill table with cities from cadastre website
+    batimap.update_departments_raster_state(db, departments)
+    batimap.fetch_departments_osm_state(db, departments)
+    db.import_city_stats_from_osmplanet(items)
+
+    initdb_is_done_file.touch()
 
 
 @celery.task(bind=True)
@@ -190,7 +197,7 @@ def api_departments_in_bbox(lonNW, latNW, lonSE, latSE) -> dict:
 
 @app.route("/cities/obsolete", methods=["GET"])
 def api_obsolete_city() -> dict:
-    ignored = (request.args.get('ignored') or "").replace(" ", "").split(",")
+    ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
     (city, position) = db.get_obsolete_city(ignored)
     return json.dumps({"position": [position.x, position.y], "city": city}, cls=CityEncoder)
 
@@ -220,10 +227,10 @@ def api_josm_data(insee) -> dict:
 
 @app.route("/initdb", methods=["POST"])
 def api_initdb():
-    departments = [k for k in request.args.keys()]
-    LOG.debug("Receive an initdb request for " + str(departments))
-    if departments:
-        new_task = task_initdb.delay(departments)
+    items = request.get_json()["cities"]
+    LOG.debug("Receive an initdb request for " + str(items))
+    if items:
+        new_task = task_initdb.delay(items)
         return Response(
             response=json.dumps({"task_id": new_task.id}),
             status=202,
