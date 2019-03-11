@@ -46,12 +46,16 @@ celery = make_celery(app)
 
 
 def task_progress(task, current):
-    task.update_state(state="PROGRESS", meta=json.dumps({"current": current, "total": 100}))
+    current = int(current * 100) / 100  # round to 2 digits
+    if task.request.id:
+        task.update_state(state="PROGRESS", meta=json.dumps({"current": current, "total": 100}))
+    else:
+        LOG.warning(f"Task id not set, cannot update its progress to {current}%")
 
 
-@celery.task()
-def task_initdb(items):
-    items_are_cities = len([len(x) > 3 for x in items]) > 0
+@celery.task(bind=True)
+def task_initdb(self, items):
+    items_are_cities = len([1 for x in items if len(x) > 3]) > 0
     if items_are_cities:
         departments = list(set([City(db, insee).department for insee in items]))
         departments = sorted([d for d in departments if d is not None])
@@ -67,11 +71,15 @@ def task_initdb(items):
         migration_file.unlink()
 
     # fill table with cities from cadastre website
-    batimap.update_departments_raster_state(db, departments)
-    batimap.fetch_departments_osm_state(db, departments)
-    db.import_city_stats_from_osmplanet(items)
+    for d in batimap.update_departments_raster_state(db, departments):
+        task_progress(self, d / len(departments) * 33)
+    for d in batimap.fetch_departments_osm_state(db, departments):
+        task_progress(self, 33 + d / len(departments) * 33)
+    for d in db.import_city_stats_from_osmplanet(items):
+        task_progress(self, 66 + d / len(items) * 33)
 
     initdb_is_done_file.touch()
+    task_progress(self, 100)
 
 
 @celery.task(bind=True)
@@ -80,25 +88,29 @@ def task_josm_data(self, insee):
     c = City(db, insee)
     if not c.is_josm_ready():
         # first, generate cadastre data for that city
-        batimap.fetch_cadastre_data(c)
-        task_progress(self, 25)
-        batimap.fetch_departments_osm_state(db, [c.department])
-    task_progress(self, 50)
+        for d in batimap.fetch_cadastre_data(c):
+            task_progress(self, d / 100 * 80)
+        task_progress(self, 80)
+        next(batimap.fetch_departments_osm_state(db, [c.department]))
+    task_progress(self, 90)
     result = batimap.josm_data(db, insee, op)
-    task_progress(self, 75)
+    task_progress(self, 95)
     if c.get_last_import_date() != result["date"]:
         batimap.clear_tiles(db, insee)
     task_progress(self, 99)
     return json.dumps(result)
 
 
-@celery.task
-def task_update_insee_list(insee):
+@celery.task(bind=True)
+def task_update_insee_list(self, insee):
     (_, date) = next(batimap.stats(db, op, cities=[insee], force=False))
+    task_progress(self, 50)
     (city, date2) = next(batimap.stats(db, op, cities=[insee], force=True))
+    task_progress(self, 99)
 
     if date != date2:
         batimap.clear_tiles(db, insee)
+    task_progress(self, 100)
 
     return json.dumps(CityDTO(date2, city), cls=CityEncoder)
 
@@ -244,8 +256,11 @@ def api_tasks_status(task_id):
     # task_id could be wrong, but we can not check it
     task = AsyncResult(task_id)
     LOG.debug(f"Check status of {task_id} => {task.status}")
-
-    response = {"state": task.state, "result": json.loads(task.result) if task.result else None}
+    try:
+        result = json.loads(task.result) if task.result else None
+    except Exception:
+        result = {"error": f"Task failed: {task.result}"}
+    response = {"state": task.state, "result": result}
 
     return json.dumps(response, cls=CityEncoder)
 

@@ -1,8 +1,16 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output
+} from "@angular/core";
 import {CityDTO} from "../../classes/city.dto";
 import {JosmService} from "../../services/josm.service";
-import {BatimapService} from "../../services/batimap.service";
-import {Observable} from "rxjs";
+import {BatimapService, TaskProgress, TaskState} from "../../services/batimap.service";
+import {Observable, of} from "rxjs";
 import {filter, map, switchMap} from "rxjs/operators";
 import {Unsubscriber} from "../../classes/unsubscriber";
 import {ConflateCityDTO} from "../../classes/conflate-city.dto";
@@ -69,32 +77,48 @@ export class JosmButtonComponent extends Unsubscriber {
       ? this.conflateCity()
       : this.prepareCity();
     this.autoUnsubscribe(
-      obs.subscribe(null, null, () => {
-        this.options.active = false;
-        this.changeDetector.detectChanges();
-      })
+      obs.subscribe(progress => {
+          if (progress && progress.current !== undefined) {
+            const prog = ` (${progress.current}%)`;
+            if (this.options.text.indexOf("(") === -1) {
+              this.options.text += prog;
+            } else {
+              this.options.text = this.options.text.replace(/ \(.*\)/, prog);
+            }
+            this.changeDetector.detectChanges();
+          }
+        },
+        null,
+        () => {
+          this.options.active = false;
+          this.options.text = this.options.text.replace(/ \(.*\)/, "");
+          this.changeDetector.detectChanges();
+        })
     );
   }
 
   private conflateCity(): Observable<any> {
     return this.prepareCity().pipe(
-      switchMap(dto => this.josmService.openCityInJosm(this._city, dto))
+      switchMap(dto => dto instanceof TaskProgress ? of(dto) : this.josmService.openCityInJosm(this._city, dto))
     );
   }
 
-  private prepareCity(): Observable<ConflateCityDTO> {
+  private prepareCity(): Observable<ConflateCityDTO | TaskProgress> {
     return this.batimapService.cityData(this._city.insee).pipe(
-      filter(c => c.state === "SUCCESS"),
-      map(response => {
-        const progressConflateDTO = response.result;
-        if (this._city.date !== progressConflateDTO.date) {
-          this.newestDate.emit(progressConflateDTO.date);
-          return null;
-        } else if (progressConflateDTO.buildingsUrl) {
-          const c = this._city;
-          c.josm_ready = true;
-          this.city = c;
-          return progressConflateDTO;
+      map(task => {
+        if (task.state === TaskState.SUCCESS) {
+          const progressConflateDTO = task.result;
+          if (this._city.date !== progressConflateDTO.date) {
+            this.newestDate.emit(progressConflateDTO.date);
+            return null;
+          } else if (progressConflateDTO.buildingsUrl) {
+            const c = this._city;
+            c.josm_ready = true;
+            this.city = c;
+            return progressConflateDTO;
+          }
+        } else {
+          return task.progress;
         }
       })
     );

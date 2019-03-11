@@ -478,7 +478,7 @@ class Postgis(object):
 
     def import_city_stats_from_osmplanet(self, insees):
         LOG.info(f"Calcul des statistiques du bâti pour les codes INSEE {insees}…")
-        for insee in insees:
+        for idx, insee in enumerate(insees):
             LOG.info(f"Calcul des statistiques du bâti pour le code INSEE {insee}…")
 
             buildings = {}
@@ -532,6 +532,7 @@ class Postgis(object):
                 tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
 
             self.update_stats_for_insee(tuples)
+            yield idx + 1
 
     def get_obsolete_city(self, ignored):
         """

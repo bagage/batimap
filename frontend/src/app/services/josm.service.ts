@@ -1,18 +1,9 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { EMPTY, empty, forkJoin, Observable, of } from "rxjs";
-import { CityDTO } from "../classes/city.dto";
-import {
-  catchError,
-  filter,
-  flatMap,
-  map,
-  share,
-  switchMap,
-  tap
-} from "rxjs/operators";
-import { BatimapService } from "./batimap.service";
-import { ConflateCityDTO } from "../classes/conflate-city.dto";
+import {Injectable} from "@angular/core";
+import {HttpClient} from "@angular/common/http";
+import {EMPTY, forkJoin, Observable, of} from "rxjs";
+import {CityDTO} from "../classes/city.dto";
+import {catchError, map, share, switchMap} from "rxjs/operators";
+import {ConflateCityDTO} from "../classes/conflate-city.dto";
 
 @Injectable({
   providedIn: "root"
@@ -83,8 +74,7 @@ export class JosmService {
   }
 
   constructor(
-    private http: HttpClient,
-    private batimapService: BatimapService
+    private http: HttpClient
   ) {}
 
   public isStarted(): Observable<boolean> {

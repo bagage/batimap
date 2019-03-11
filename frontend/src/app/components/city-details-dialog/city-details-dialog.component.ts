@@ -1,15 +1,14 @@
-import { MatProgressButtonOptions } from "mat-progress-buttons";
-import { Observable } from "rxjs";
-import { CityDTO } from "../../classes/city.dto";
-import { Component, HostListener, Inject, OnInit } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from "@angular/material";
-import { JosmService } from "../../services/josm.service";
-import { BatimapService } from "../../services/batimap.service";
-import { LegendService } from "../../services/legend.service";
-import { HowtoDialogComponent } from "../howto-dialog/howto-dialog.component";
-import { filter } from "rxjs/operators";
-import { Unsubscriber } from "../../classes/unsubscriber";
-import { AboutDialogComponent } from "../about-dialog/about-dialog.component";
+import {MatProgressButtonOptions} from "mat-progress-buttons";
+import {Observable} from "rxjs";
+import {CityDTO} from "../../classes/city.dto";
+import {Component, HostListener, Inject, OnInit} from "@angular/core";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material";
+import {JosmService} from "../../services/josm.service";
+import {BatimapService, TaskState} from "../../services/batimap.service";
+import {LegendService} from "../../services/legend.service";
+import {HowtoDialogComponent} from "../howto-dialog/howto-dialog.component";
+import {Unsubscriber} from "../../classes/unsubscriber";
+import {AboutDialogComponent} from "../about-dialog/about-dialog.component";
 
 @Component({
   templateUrl: "./city-details-dialog.component.html",
@@ -71,25 +70,30 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     this.autoUnsubscribe(
       this.batimapService
         .updateCity(this.city.insee)
-        .pipe(filter(x => x.result !== null))
         .subscribe(
-          progress => {
-            this.updateButtonOpts.active = false;
-            this.city = progress.result;
-            this.cadastreLayer.redraw();
+          task => {
+            this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
+            if (task.state === TaskState.SUCCESS) {
+              this.city = task.result;
+              this.cadastreLayer.redraw();
+            }
           },
-          () => (this.updateButtonOpts.active = false)
+          null,
+          () => {
+            this.updateButtonOpts.active = false;
+            this.updateButtonOpts.text = `Rafraîchir`;
+          }
         )
     );
   }
 
   lastImport(d): string {
     if (!d || d === "never") {
-      return 'Le bâti n\'a jamais été importé.';
+      return "Le bâti n'a jamais été importé.";
     } else if (d === "raster") {
-      return 'Ville raster, pas d\'import possible.';
+      return "Ville raster, pas d'import possible.";
     } else if (d === "unfinished") {
-      return 'Des bâtiments sont de géométrie simple, à vérifier.';
+      return "Des bâtiments sont de géométrie simple, à vérifier.";
     } else if (Number.isInteger(+d)) {
       return `Dernier import en ${d}.`;
     } else {
