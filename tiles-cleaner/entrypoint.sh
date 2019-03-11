@@ -7,6 +7,7 @@ INITIAL_MAX_ZOOM=${INITIAL_MAX_ZOOM:-10}
 
 cd /app
 
+echo "Starting tiles cleaner. Waiting for new events…"
 while true; do
     if [ -f $INIT_FILE ]; then
         echo "Removing all tiles, regenerating up to level $INITIAL_MAX_ZOOM!"
