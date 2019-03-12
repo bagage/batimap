@@ -108,13 +108,17 @@ export class JosmButtonComponent extends Unsubscriber {
       map(task => {
         if (task.state === TaskState.SUCCESS) {
           const progressConflateDTO = task.result;
+
+          if (progressConflateDTO.buildingsUrl) {
+            const c = this._city;
+            c.josm_ready = true;
+            this.city = c;
+          }
+
           if (this._city.date !== progressConflateDTO.date) {
             this.newestDate.emit(progressConflateDTO.date);
             return null;
           } else if (progressConflateDTO.buildingsUrl) {
-            const c = this._city;
-            c.josm_ready = true;
-            this.city = c;
             return progressConflateDTO;
           }
         } else {
