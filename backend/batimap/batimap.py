@@ -23,10 +23,10 @@ NO_BUILDING_CITIES = ["55139", "55039", "55307", "55050", "55239"]
 def stats(db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
     if refresh_cadastre_state:
         if department:
-            update_departments_raster_state(db, [department])
+            next(update_departments_raster_state(db, [department]))
         else:
             depts = set([City(db, c).department for c in cities])
-            update_departments_raster_state(db, depts)
+            list(update_departments_raster_state(db, depts))
 
     if department:
         cities = db.within_department(department)
@@ -44,7 +44,7 @@ def update_departments_raster_state(db, departments):
     op.addheaders = [("Accept-Encoding", "gzip")]
 
     LOG.info(f"Récupération des infos cadastrales pour les départements {departments}")
-    for d in departments:
+    for idx, d in enumerate(departments):
         LOG.info(f"Récupération des infos cadastrales pour le département {d}")
         if len(db.within_department(d)) > 0 and len(db.within_department_raster(d)) == 0:
             LOG.info(f"Le département {d} ne contient que des communes vectorisées, rien à faire")
@@ -84,11 +84,12 @@ def update_departments_raster_state(db, departments):
             tuples.append((insee, dept, name, f"{code_commune}-{nom_commune}", is_raster, date))
         LOG.debug(f"Inserting {len(tuples)} cities in database…")
         db.insert_stats_for_insee(tuples)
+        yield idx + 1
 
 
 def fetch_departments_osm_state(db, departments):
     LOG.info(f"Récupération du statut OSM pour les départements {departments}")
-    for d in departments:
+    for idx, d in enumerate(departments):
         LOG.info(f"Récupération du statut OSM pour le département {d}")
         tuples = []
         url = "https://cadastre.openstreetmap.fr"
@@ -115,6 +116,7 @@ def fetch_departments_osm_state(db, departments):
         db.upsert_city_status(tuples)
         for insee in refresh_tiles:
             clear_tiles(db, insee)
+        yield idx + 1
 
 
 def josm_data(db, insee, overpass):
@@ -140,7 +142,7 @@ def fetch_cadastre_data(city, force=False):
     __pdf_progression_regex = re.compile(r".*\d+-(\d+)-(\d+).pdf$")
 
     if not city or not city.name_cadastre:
-        return False
+        return
 
     url = "https://cadastre.openstreetmap.fr"
     dept = city.department.zfill(3)
@@ -152,14 +154,13 @@ def fetch_cadastre_data(city, force=False):
         if archive in [x.text for x in e.select("td:nth-of-type(2) a")]:
             date = e.select("td:nth-of-type(3)")[0].text.strip()
             LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
-            return True
+            return
 
     data = {"dep": dept, "type": "bati", "force": "true" if force else "false", "ville": city.name_cadastre}
 
     # otherwise we invoke Cadastre generation
     with closing(requests.post(url, data=data, stream=True)) as r:
         (total_y, total) = (0, 0)
-        current = 0
         for line in r.iter_lines(decode_unicode=True):
             match = __total_pdfs_regex.match(line)
             if match:
@@ -172,15 +173,16 @@ def fetch_cadastre_data(city, force=False):
                 current = x * total_y + y
                 msg = f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
                 LOG.info(msg)
+                yield current * 100 / total
             if "Termin" in line:
                 current = total
                 msg = f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
                 LOG.info(msg)
+                yield 100
             elif "ERROR:" in line or "ERREUR:" in line:
                 LOG.error(line)
-                return False
-
-    return True
+                # may happen when cadastre.gouv.fr is in maintenance mode
+                raise Exception(line)
 
 
 def clear_tiles(db, insee):

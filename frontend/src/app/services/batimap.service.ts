@@ -13,13 +13,25 @@ import {LegendService} from "./legend.service";
 import {ObsoleteCityDTO} from "../classes/obsolete-city.dto";
 import {ClassType} from "../../../node_modules/class-transformer/ClassTransformer";
 
-export interface Progression<T> {
-  state: string;
+export enum TaskState {
+  PENDING = "PENDING",
+  PROGRESS = "PROGRESS",
+  FAILURE = "FAILURE",
+  SUCCESS = "SUCCESS",
+}
+
+export interface TaskResult<T> {
+  state: TaskState;
   result: T;
+  progress: TaskProgress;
 }
 
 export interface Task {
   task_id: string;
+}
+
+export class TaskProgress {
+  constructor(public current: number, public total: number) {}
 }
 
 @Injectable({
@@ -82,25 +94,31 @@ export class BatimapService {
   private longRunningAPI<T>(
     url,
     cls: ClassType<T>
-  ): Observable<Progression<T>> {
-    let hasFinished = false;
+  ): Observable<TaskResult<T>> {
     return this.http.get<Task>(url).pipe(
       switchMap(task =>
         timer(0, 3000).pipe(
-          switchMap(() => this.http.get<Progression<T>>(this.URL_TASK(task))),
-          // takeWhile is not inclusive, so workaround it with a boolean cf https://github.com/ReactiveX/rxjs/issues/4000
-          takeWhile(x => x.state === "PENDING" || x.state === "PROGRESS" || !hasFinished),
-          tap(x => (hasFinished = x.state !== "PENDING" && x.state !== "PROGRESS")),
-          map(r => {
-            r.result = plainToClass(cls, r.result);
-            return r;
+          switchMap(() => this.http.get<TaskResult<T>>(this.URL_TASK(task))),
+          takeWhile(r => r.state === TaskState.PENDING || r.state === TaskState.PROGRESS, true),
+          tap(r => {
+            if (r.state === TaskState.PENDING) {
+              r.progress = new TaskProgress(0, 100);
+            } else if (r.state === TaskState.PROGRESS) {
+              r.progress = plainToClass(TaskProgress, r.result);
+              r.result = null;
+            } else if (r.state === TaskState.FAILURE) {
+              throw new Error(r.result.toString());
+            } else {
+              r.result = plainToClass(cls, r.result);
+              r.progress = new TaskProgress(100, 100);
+            }
           })
         )
       )
     );
   }
 
-  public cityData(insee: string): Observable<Progression<ConflateCityDTO>> {
+  public cityData(insee: string): Observable<TaskResult<ConflateCityDTO>> {
     return this.longRunningAPI<ConflateCityDTO>(
       this.URL_CITY_DATA(insee),
       ConflateCityDTO
@@ -145,13 +163,13 @@ export class BatimapService {
       );
   }
 
-  public updateCity(insee: string): Observable<Progression<CityDTO>> {
+  public updateCity(insee: string): Observable<TaskResult<CityDTO>> {
     return this.longRunningAPI<CityDTO>(
       this.URL_CITY_UPDATE(insee),
       CityDTO
     ).pipe(
       tap(progress => {
-        if (progress.result) {
+        if (progress.state === TaskState.SUCCESS) {
           this.legendService.city2date.set(
             progress.result.insee,
             progress.result.date
@@ -165,7 +183,7 @@ export class BatimapService {
     return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(),
       {
         params: {
-          ignored: ignored.join(',')
+          ignored: ignored.join(",")
         }
       });
   }
