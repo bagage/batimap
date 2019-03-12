@@ -86,7 +86,8 @@ def task_initdb(self, items):
 def task_josm_data(self, insee):
     task_progress(self, 0)
     c = City(db, insee)
-    if not c.is_josm_ready():
+    is_ready = c.is_josm_ready()
+    if not is_ready:
         # first, generate cadastre data for that city
         for d in batimap.fetch_cadastre_data(c):
             task_progress(self, d / 100 * 80)
@@ -95,7 +96,7 @@ def task_josm_data(self, insee):
     task_progress(self, 90)
     result = batimap.josm_data(db, insee, op)
     task_progress(self, 95)
-    if c.get_last_import_date() != result["date"]:
+    if c.get_last_import_date() != result["date"] or not is_ready:
         batimap.clear_tiles(db, insee)
     task_progress(self, 99)
     return json.dumps(result)
