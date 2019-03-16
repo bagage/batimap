@@ -137,26 +137,30 @@ def josm_data(db, insee, overpass):
     }
 
 
-def fetch_cadastre_data(city, force=False):
+def fetch_cadastre_data(city):
     __total_pdfs_regex = re.compile(r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$")
     __pdf_progression_regex = re.compile(r".*\d+-(\d+)-(\d+).pdf$")
 
     if not city or not city.name_cadastre:
         return
 
+    # force refresh if cadastre data is too old
+    force = city.date_cadastre is not None and not city.is_josm_ready()
+
     url = "https://cadastre.openstreetmap.fr"
     dept = city.department.zfill(3)
     r = requests.get(f"{url}/data/{dept}/")
     bs = BeautifulSoup(r.content, "lxml")
 
-    archive = f"{city.name_cadastre.upper()}-houses-simplifie.osm"
-    for e in bs.find_all("tr"):
-        if archive in [x.text for x in e.select("td:nth-of-type(2) a")]:
-            date = e.select("td:nth-of-type(3)")[0].text.strip()
-            LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
-            return
+    if not force:
+        archive = f"{city.name_cadastre.upper()}-houses-simplifie.osm"
+        for e in bs.find_all("tr"):
+            if archive in [x.text for x in e.select("td:nth-of-type(2) a")]:
+                date = e.select("td:nth-of-type(3)")[0].text.strip()
+                LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
+                return
 
-    data = {"dep": dept, "type": "bati", "force": "true" if force else "false", "ville": city.name_cadastre}
+    data = {"dep": dept, "type": "bati", "force": str(force).lower(), "ville": city.name_cadastr}
 
     # otherwise we invoke Cadastre generation
     with closing(requests.post(url, data=data, stream=True)) as r:
