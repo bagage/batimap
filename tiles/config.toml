@@ -23,6 +23,7 @@ geometry_fieldname = "geometry"
 id_fieldname = "osm_id"
 sql = """
   SELECT
+    DISTINCT ON (oa.insee)
     ST_AsBinary(ST_Simplify(geometry, 0.002, true)) AS geometry,
     oa.osm_id,
     cs.name,
@@ -37,6 +38,8 @@ sql = """
     oa.admin_level::int >= '7'
     AND cs.insee = oa.insee
     AND geometry && !BBOX!
+  ORDER BY
+    oa.insee, oa.admin_level
 """
 
 [[providers.layers]]
@@ -45,6 +48,7 @@ geometry_fieldname = "geometry"
 id_fieldname = "osm_id"
 sql = """
   SELECT
+    DISTINCT ON (oa.insee)
     ST_AsBinary(ST_Centroid(oa.geometry)) AS geometry,
     oa.osm_id,
     cs.name,
@@ -59,6 +63,8 @@ sql = """
     oa.admin_level::int >= '7'
     AND cs.insee = oa.insee
     AND geometry && !BBOX!
+  ORDER BY
+    oa.insee, oa.admin_level
 """
 
 [[providers.layers]]
