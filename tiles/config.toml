@@ -26,7 +26,7 @@ sql = """
     DISTINCT ON (oa.insee)
     ST_AsBinary(ST_Simplify(geometry, 0.002, true)) AS geometry,
     oa.osm_id,
-    cs.name,
+    oa.name,
     cs.insee,
     cs.details,
     cs.date,
@@ -51,7 +51,7 @@ sql = """
     DISTINCT ON (oa.insee)
     ST_AsBinary(ST_Centroid(oa.geometry)) AS geometry,
     oa.osm_id,
-    cs.name,
+    oa.name,
     cs.details,
     cs.insee,
     cs.date,
