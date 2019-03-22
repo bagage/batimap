@@ -372,6 +372,8 @@ class Postgis(object):
                     p.insee = %s
                     AND p.admin_level::int >= 8
                     AND p.boundary = 'administrative'
+                ORDER BY
+                    admin_level
         """
         self.execute(req, [insee])
 
@@ -380,7 +382,7 @@ class Postgis(object):
             # fixme: this may happen for multi polygons cities (76218 - Doudeauville for instance)
             LOG.warning(
                 f"Expected a single bbox for insee {insee} at most, "
-                f"but found {len(results)} instead. Taking the first one."
+                f"but found {len(results)} instead. Taking the biggest one."
             )
 
         return Bbox(results[0][0]) if len(results) else None
