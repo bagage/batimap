@@ -160,7 +160,7 @@ def fetch_cadastre_data(city):
                 LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
                 return
 
-    data = {"dep": dept, "type": "bati", "force": str(force).lower(), "ville": city.name_cadastr}
+    data = {"dep": dept, "type": "bati", "force": str(force).lower(), "ville": city.name_cadastre}
 
     # otherwise we invoke Cadastre generation
     with closing(requests.post(url, data=data, stream=True)) as r:
