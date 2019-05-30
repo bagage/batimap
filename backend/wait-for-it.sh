@@ -31,7 +31,7 @@ wait_for()
         -d $POSTGRES_DB -c "select COUNT(*) from pg_indexes where schemaname = 'public' AND tablename = 'osm_buildings'" 2>/dev/null`
         result=$?
         if [[ $result -eq 0 ]]; then
-            if [[ $count == 3 ]]; then
+            if [[ $count == 2 ]]; then
                 end_ts=$(date +%s)
                 echoerr "$cmdname: postgis is available after $((end_ts - start_ts)) seconds"
                 break
