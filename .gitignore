@@ -1,10 +1,6 @@
-.vscode
-__pycache__/
-frontend/node_modules
-imposm_updater/data
-postgis/data
-tiles/data
-tiles_cleaner/data
 .bash_history
-imposm_updater/data
+.vscode
 /.idea
+__pycache__/
+/data/
+frontend/node_modules
