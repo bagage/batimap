@@ -10,12 +10,14 @@ cd /app
 echo "Starting tiles cleaner. Waiting for new events…"
 while true; do
     if [ -f $INIT_FILE ]; then
-        echo "Removing all tiles, regenerating up to level $INITIAL_MAX_ZOOM!"
+        echo "Removing all tiles, will regenerate up to level $INITIAL_MAX_ZOOM!"
         # cache whole world at start, if needed
         rm -rf data/cache/*
+        echo "Regenerating up to level $INITIAL_MAX_ZOOM!"
         tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
         echo -n > $UPDATE_FILE
         rm $INIT_FILE
+        echo "Initialization terminated"
     elif [ -s $UPDATE_FILE ]; then
         echo "There is $(wc -l $UPDATE_FILE) outdated tiles to treat..."
         cat $UPDATE_FILE | sort | uniq > $WORK_FILE
