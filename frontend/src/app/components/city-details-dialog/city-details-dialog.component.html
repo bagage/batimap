@@ -13,10 +13,19 @@
   <h3>{{ city.insee }} - {{ city.name }}</h3>
   {{ lastImport(city.date) }}
 
-  <div *ngIf="detailsEntry.length > 0">
+  <div *ngIf="city.details?.dates?.size > 0">
     <h4>Bâtiments par date</h4>
     <ul>
-      <li *ngFor="let k of detailsEntry">{{ k[0] }} - {{ k[1] }}</li>
+      <li *ngFor="let i of city.details.dates | keyvalue">{{ i.key }} - {{ i.value }}</li>
+    </ul>
+  </div>
+
+  <div *ngIf="city.details?.simplified?.length > 0">
+    <h4>Bâtiments simplifiés</h4>
+    <ul>
+      <li *ngFor="let i of city.details.simplified">
+        <a href="https://www.openstreetmap.org/node/{{i}}" target="_blank">{{ i }}</a><button mat-button color="primary" (click)="editNode(i)"><mat-icon>edit</mat-icon>JOSM</button>
+      </li>
     </ul>
   </div>
 

@@ -212,7 +212,7 @@ def fetch_osm_data(db, city, overpass, force):
             request = f"""[out:json];
                 area[boundary='administrative'][admin_level~'8|9']['ref:INSEE'='{city.insee}']->.a;
                 (
-                  node['building'='church'](area.a);
+                  node['building'](area.a);
                   way['building']{ignored_buildings}(area.a);
                   relation['building']{ignored_buildings}(area.a);
                 );
@@ -225,20 +225,20 @@ def fetch_osm_data(db, city, overpass, force):
             # iterate on every building
             elements = response.get("elements")
             buildings = []
-            has_simplified_buildings = False
+            simplified_buildings = []
             for element in elements:
                 if element.get("type") == "node":
                     LOG.info(
                         f"{city} contient des bâtiments "
                         f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
                     )
-                    has_simplified_buildings = True
+                    simplified_buildings.append(element.get("id"))
 
                 tags = element.get("tags")
                 buildings.append((tags.get("source") or "") + (tags.get("source:date") or ""))
-            (date, sources_date) = date_for_buildings(city.insee, buildings, has_simplified_buildings)
+            (date, sources_date) = date_for_buildings(city.insee, buildings, len(simplified_buildings) > 0)
         # only update date if we did not use cache files for buildings
-        city.details = {"dates": sources_date}
+        city.details = {"simplified": simplified_buildings, "dates": sources_date}
         db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details))])
     return (city, date)
 

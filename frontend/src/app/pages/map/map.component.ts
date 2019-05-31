@@ -2,8 +2,8 @@ import {Component, HostListener, NgZone, ViewChild} from "@angular/core";
 import {AppConfigService} from "../../services/app-config.service";
 import {MatDialog} from "@angular/material";
 import {CityDetailsDialogComponent} from "../../components/city-details-dialog/city-details-dialog.component";
-import {CityDTO} from "../../classes/city.dto";
-import {plainToClass} from "class-transformer";
+import {CityDetailsDTO, CityDTO} from "../../classes/city.dto";
+import {classToPlain, deserialize, plainToClass, serialize} from "class-transformer";
 import {MapDateLegendComponent} from "../../components/map-date-legend/map-date-legend.component";
 import {LegendService} from "../../services/legend.service";
 
@@ -100,8 +100,9 @@ export class MapComponent {
     this.legend.cadastreLayer = this.cadastreLayer;
   }
 
-  openPopup(cityJson: any) {
-    const city = plainToClass<CityDTO, object>(CityDTO, cityJson);
+  private openPopup(cityJson: string) {
+    const city = plainToClass(CityDTO, cityJson);
+    city.details = deserialize(CityDetailsDTO, city.details.toString());
     this.matDialog.open(CityDetailsDialogComponent, {
       data: [city, this.cadastreLayer]
     });

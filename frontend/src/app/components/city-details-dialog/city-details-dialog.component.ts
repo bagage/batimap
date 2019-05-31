@@ -101,23 +101,12 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
   }
 
-  get detailsEntry(): [string, string][] {
-    if (this.city && this.city.details) {
-      let json;
-      try {
-        json = JSON.parse(this.city.details);
-      } catch {
-        json = this.city.details;
-      }
-      if (json && json.dates) {
-        return Object.entries(json.dates);
-      }
-    }
-    return [];
-  }
-
   cityDateChanged(newDate: string) {
     this.moreRecentDate = newDate;
     this.city.date = newDate;
+  }
+
+  editNode(node: number) {
+    this.josmService.openNode(node, this.city).subscribe();
   }
 }

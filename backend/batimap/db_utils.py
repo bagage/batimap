@@ -506,22 +506,21 @@ class Postgis(object):
                             AND p.insee = c.insee
                     )
                     SELECT
-                        c.insee
+                        c.insee, p.osm_id
                     FROM
                         cities c,
                         osm_buildings p
                     WHERE
-                        p.building is not null and p.building = 'church'
+                        p.building is not null
                         AND c.is_raster = false
                         AND ST_GeometryType(p.geometry) = 'ST_Point'
                         AND ST_Intersects(c.geometry, p.geometry)
-                    GROUP BY
-                        c.insee
                     ORDER BY
                         c.insee
             """
             self.execute(point_buildings_query, [insee.zfill(2)])
-            simplified_cities = [x[0] for x in self.cursor.fetchall()]
+            simplified_buildings = self.cursor.fetchall()
+            simplified_cities = list(set([x[0] for x in simplified_buildings]))
             if len(simplified_cities):
                 LOG.info(
                     f"Les villes {simplified_cities} contiennent des bâtiments "
@@ -531,7 +530,8 @@ class Postgis(object):
             tuples = []
             for insee, buildings in buildings.items():
                 (date, counts) = date_for_buildings(insee, buildings, insee in simplified_cities)
-                tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts})))
+                simplified = [x[1] for x in simplified_buildings if x[0] == insee]
+                tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts, "simplified": simplified})))
 
             self.update_stats_for_insee(tuples)
             yield idx + 1
