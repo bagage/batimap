@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { MatSort, MatTableDataSource } from '@angular/material';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import * as L from 'leaflet';
 import { Observable } from 'rxjs';
 import { CityDTO } from '../../classes/city.dto';
@@ -14,6 +15,7 @@ import { JosmService } from '../../services/josm.service';
 })
 export class CitiesListComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
+    @ViewChild(MatSort, { static: true }) sort: MatSort;
 
     displayedColumns: Array<string> = [
         'name',
@@ -25,8 +27,6 @@ export class CitiesListComponent extends Unsubscriber implements OnInit {
     dataSource = new MatTableDataSource<CityDTO>();
     isReady: boolean;
     josmReady$: Observable<boolean>;
-
-    @ViewChild(MatSort) sort: MatSort;
 
     constructor(
         private readonly batimapService: BatimapService,

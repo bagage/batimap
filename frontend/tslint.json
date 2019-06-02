@@ -2,7 +2,7 @@
     "rulesDirectory": ["node_modules/codelyzer"],
     "extends": ["angular-tslint-rules"],
     "rules": {
-        "i18n": [false],
+        "template-i18n": [false],
         "no-floating-promises": false,
         "newline-per-chained-call": false,
         "typedef": false,
@@ -10,8 +10,8 @@
         "no-import-side-effect": false,
         "angular-whitespace": [false],
         "no-require-imports": false, // fixme?
-        "no-template-call-expression": false, // fixme
-        "trackBy-function": false, // fixme
+        "template-no-call-expression": false, // fixme
+        "template-use-track-by-function": false, // fixme
         "no-console": false //fixme
     }
 }

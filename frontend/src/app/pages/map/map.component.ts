@@ -1,5 +1,5 @@
 import { Component, HostListener, NgZone, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import {
     classToPlain,
     deserialize,
@@ -20,7 +20,8 @@ import * as L from 'leaflet';
     styleUrls: ['./map.component.css']
 })
 export class MapComponent {
-    @ViewChild(MapDateLegendComponent) legend: MapDateLegendComponent;
+    @ViewChild(MapDateLegendComponent, { static: true })
+    legend: MapDateLegendComponent;
 
     options = {
         layers: [
@@ -47,7 +48,6 @@ export class MapComponent {
     onMapReady(map) {
         this.map = map;
         this.legend.map = map;
-        map.restoreView();
         L.hash(map);
         this.searchControl = L.geocoderBAN({
             placeholder: 'Rechercher une commune (shift+f)'

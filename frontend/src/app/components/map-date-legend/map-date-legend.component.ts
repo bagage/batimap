@@ -1,5 +1,5 @@
 import { Component, HostListener, Input, NgZone, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import * as L from 'leaflet';
 import { Observable } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
