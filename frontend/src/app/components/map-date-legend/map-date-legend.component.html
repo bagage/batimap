@@ -1,47 +1,52 @@
 <mat-card>
-  <mat-card-title id="title">Date de dernier import par commune</mat-card-title>
-  <mat-card-content>
-    <button
-      mat-mini-fab
-      color="accent"
-      (click)="feelingLucky()"
-      matTooltip="J'ai de la chance ! Sélectionner automatiquement une commune qui a besoin d'un import. [Raccourci : shift+c]"
+    <mat-card-title id="title"
+        >Date de dernier import par commune</mat-card-title
     >
-      <mat-icon>extension</mat-icon>
-    </button>
-    <button
-      mat-mini-fab
-      color="primary"
-      (click)="openHelp()"
-      matTooltip="Afficher l'aide. [Raccourci : shift+a]"
-    >
-      <mat-icon>live_help</mat-icon>
-    </button>
-    <ng-container
-      *ngIf="(legendItems$ | async) as legendItems; else dataHandler"
-    >
-      <ng-container *ngIf="legendItems?.length > 0; else noCities">
-        <mat-checkbox
-          *ngFor="let item of legendItems"
-          [id]="'legend' + item.name"
-          [(ngModel)]="item.checked"
-          (change)="legendChanges(item)"
-          [ngStyle]="{ color: legendService.date2color(item.name) }"
+    <mat-card-content>
+        <button
+            mat-mini-fab
+            color="accent"
+            (click)="feelingLucky()"
+            matTooltip="J'ai de la chance ! Sélectionner automatiquement une commune qui a besoin d'un import. [Raccourci : shift+c]"
         >
-          {{ legendService.date2name(item.name) }} ({{ item.percent }}%)
-        </mat-checkbox>
-      </ng-container>
-    </ng-container>
-    <ng-template #noCities>
-      <p>
-        Il semblerait qu'il n'y ait aucune commune disponible dans cette zone.
-      </p>
-    </ng-template>
-    <ng-template #dataHandler>
-      <div *ngIf="error; else loading" class="mat-error">
-        Le serveur est actuellement hors-ligne.
-      </div>
-    </ng-template>
-    <ng-template #loading> <app-loader></app-loader> </ng-template>
-  </mat-card-content>
+            <mat-icon>extension</mat-icon>
+        </button>
+        <button
+            mat-mini-fab
+            color="primary"
+            (click)="openHelp()"
+            matTooltip="Afficher l'aide. [Raccourci : shift+a]"
+        >
+            <mat-icon>live_help</mat-icon>
+        </button>
+        <ng-container
+            *ngIf="legendItems$ | async as legendItems; else dataHandler"
+        >
+            <ng-container *ngIf="legendItems?.length > 0; else noCities">
+                <mat-checkbox
+                    *ngFor="let item of legendItems"
+                    [id]="'legend' + item.name"
+                    [(ngModel)]="item.checked"
+                    (change)="legendChanges(item)"
+                    [ngStyle]="{ color: legendService.date2color(item.name) }"
+                >
+                    {{ legendService.date2name(item.name) }} ({{
+                        item.percent
+                    }}%)
+                </mat-checkbox>
+            </ng-container>
+        </ng-container>
+        <ng-template #noCities>
+            <p>
+                Il semblerait qu'il n'y ait aucune commune disponible dans cette
+                zone.
+            </p>
+        </ng-template>
+        <ng-template #dataHandler>
+            <div *ngIf="error; else loading" class="mat-error">
+                Le serveur est actuellement hors-ligne.
+            </div>
+        </ng-template>
+        <ng-template #loading> <app-loader></app-loader> </ng-template>
+    </mat-card-content>
 </mat-card>

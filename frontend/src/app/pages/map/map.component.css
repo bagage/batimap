@@ -1,16 +1,16 @@
 :host {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
 
-  display: -webkit-flex; /* Safari */
-  display: flex;
-  flex-direction: column;
+    display: -webkit-flex; /* Safari */
+    display: flex;
+    flex-direction: column;
 }
 
 div {
-  flex: 1;
-  width: 100%;
+    flex: 1;
+    width: 100%;
 }

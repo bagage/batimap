@@ -1,9 +1,9 @@
-import { Type } from "class-transformer";
-import { CityDTO } from "./city.dto";
+import { Type } from 'class-transformer';
+import { CityDTO } from './city.dto';
 
 export class ObsoleteCityDTO {
-  position: [number, number];
+    position: [number, number];
 
-  @Type(() => CityDTO)
-  city: CityDTO;
+    @Type(() => CityDTO)
+    city: CityDTO;
 }

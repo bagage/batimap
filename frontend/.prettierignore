@@ -1,0 +1,9 @@
+*.ico
+*.log
+*.woff2
+.*ignore
+.editorconfig
+browserslist
+Docker*
+prod/
+yarn.lock
