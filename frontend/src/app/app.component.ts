@@ -11,14 +11,19 @@ import { JosmScriptUpdateDialogComponent } from './components/josm-script-update
     styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-    constructor(matDialog: MatDialog, titleService: Title) {
+    constructor(private matDialog: MatDialog, titleService: Title) {
         const version = environment.version;
         titleService.setTitle(`État du bâti dans OSM (${version})`);
 
         if (localStorage.getItem('first-time-help') !== 'false') {
-            matDialog.open(AboutDialogComponent);
+            this.openDialog(AboutDialogComponent);
         } else if (JosmScriptUpdateDialogComponent.shouldDisplayDialog()) {
-            matDialog.open(JosmScriptUpdateDialogComponent);
+            this.openDialog(JosmScriptUpdateDialogComponent);
         }
+    }
+
+    private openDialog(dialog) {
+        // open asyncly because otherwise on chrome the popup is immediately closed
+        setTimeout(() => this.matDialog.open(dialog), 1000);
     }
 }
