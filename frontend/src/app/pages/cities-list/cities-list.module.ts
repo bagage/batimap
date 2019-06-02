@@ -1,8 +1,8 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CitiesListComponent } from './cities-list.component';
-import { MatLibModule } from '../../mat-lib.module';
+import { NgModule } from '@angular/core';
 import { SharedComponentsModule } from '../../components/shared-components.module';
+import { MatLibModule } from '../../mat-lib.module';
+import { CitiesListComponent } from './cities-list.component';
 
 @NgModule({
     imports: [CommonModule, MatLibModule, SharedComponentsModule],

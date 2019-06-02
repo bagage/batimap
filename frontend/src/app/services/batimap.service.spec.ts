@@ -1,9 +1,9 @@
-import { TestBed, inject } from '@angular/core/testing';
+import { inject, TestBed } from '@angular/core/testing';
 
-import { BatimapService } from './batimap.service';
 import { HttpClientTestingModule } from '../../../node_modules/@angular/common/http/testing';
 import { AppConfigService } from './app-config.service';
 import { MockAppConfigService } from './app-config.service.mock';
+import { BatimapService } from './batimap.service';
 
 describe('BatimapService', () => {
     beforeEach(() => {

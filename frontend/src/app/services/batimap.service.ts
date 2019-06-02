@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
 import { AppConfigService } from './app-config.service';
 
-import { HttpClient } from '../../../node_modules/@angular/common/http';
-import { Observable, of, timer } from 'rxjs';
-import { ConflateCityDTO } from '../classes/conflate-city.dto';
-import { CityDTO } from '../classes/city.dto';
-import { LatLngBounds } from 'leaflet';
 import { plainToClass } from 'class-transformer';
+import { LatLngBounds } from 'leaflet';
+import { Observable, of, timer } from 'rxjs';
 import { debounceTime, map, switchMap, takeWhile, tap } from 'rxjs/operators';
-import { LegendDTO } from '../classes/legend.dto';
-import { LegendService } from './legend.service';
-import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
+import { HttpClient } from '../../../node_modules/@angular/common/http';
 import { ClassType } from '../../../node_modules/class-transformer/ClassTransformer';
+import { CityDTO } from '../classes/city.dto';
+import { ConflateCityDTO } from '../classes/conflate-city.dto';
+import { LegendDTO } from '../classes/legend.dto';
+import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
+import { LegendService } from './legend.service';
 
 export enum TaskState {
     PENDING = 'PENDING',
@@ -38,25 +38,97 @@ export class TaskProgress {
     providedIn: 'root'
 })
 export class BatimapService {
-    private URL_TASK(task: Task): string {
-        return (
-            this.configService.getConfig().backendServerUrl +
-            `/tasks/${task.task_id}`
+    constructor(
+        private readonly http: HttpClient,
+        private readonly legendService: LegendService,
+        private readonly configService: AppConfigService
+    ) {}
+
+    cityData(insee: string): Observable<TaskResult<ConflateCityDTO>> {
+        return this.longRunningAPI<ConflateCityDTO>(
+            this.URL_CITY_DATA(insee),
+            ConflateCityDTO
         );
+    }
+
+    citiesInBbox(bbox: LatLngBounds): Observable<Array<CityDTO>> {
+        return this.http
+            .get<Array<CityDTO>>(
+                this.URL_CITIES_BBOX(
+                    bbox.getNorthWest().wrap().lng,
+                    bbox.getNorthWest().wrap().lat,
+                    bbox.getSouthEast().wrap().lng,
+                    bbox.getSouthEast().wrap().lat
+                )
+            )
+            .pipe(
+                map(r => plainToClass(CityDTO, r)),
+                debounceTime(3000)
+            );
+    }
+
+    legendForBbox(bbox: LatLngBounds): Observable<Array<LegendDTO>> {
+        return this.http
+            .get<Array<LegendDTO>>(
+                this.URL_LEGEND(
+                    bbox.getNorthWest().wrap().lng,
+                    bbox.getNorthWest().wrap().lat,
+                    bbox.getSouthEast().wrap().lng,
+                    bbox.getSouthEast().wrap().lat
+                )
+            )
+            .pipe(
+                map(r => plainToClass(LegendDTO, r)),
+                switchMap((legends: Array<LegendDTO>) => {
+                    for (const l of legends) {
+                        l.checked = this.legendService.isActive(l);
+                    }
+
+                    return of(legends);
+                }),
+                debounceTime(3000)
+            );
+    }
+
+    updateCity(insee: string): Observable<TaskResult<CityDTO>> {
+        return this.longRunningAPI<CityDTO>(
+            this.URL_CITY_UPDATE(insee),
+            CityDTO
+        ).pipe(
+            tap(progress => {
+                if (progress.state === TaskState.SUCCESS) {
+                    this.legendService.city2date.set(
+                        progress.result.insee,
+                        progress.result.date
+                    );
+                }
+            })
+        );
+    }
+
+    obsoleteCity(ignored: Array<string>): Observable<ObsoleteCityDTO> {
+        return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
+            params: {
+                ignored: ignored.join(',')
+            }
+        });
+    }
+    private URL_TASK(task: Task): string {
+        return `${this.configService.getConfig().backendServerUrl}/tasks/${
+            task.task_id
+        }`;
     }
 
     private URL_CITY_DATA(insee: string): string {
-        return (
-            this.configService.getConfig().backendServerUrl +
-            `cities/${insee}/josm`
-        );
+        return `${
+            this.configService.getConfig().backendServerUrl
+        }cities/${insee}/josm`;
     }
 
     private URL_CITY_UPDATE(insee: string): string {
-        return (
-            this.configService.getConfig().backendServerUrl +
-            `cities/${insee}/update`
-        );
+        return `${
+            this.configService.getConfig().backendServerUrl
+        }cities/${insee}/update`;
     }
 
     private URL_CITIES_BBOX(
@@ -65,10 +137,9 @@ export class BatimapService {
         lonSE: number,
         latSE: number
     ) {
-        return (
-            this.configService.getConfig().backendServerUrl +
-            `cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`
-        );
+        return `${
+            this.configService.getConfig().backendServerUrl
+        }cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
     private URL_LEGEND(
@@ -77,23 +148,16 @@ export class BatimapService {
         lonSE: number,
         latSE: number
     ) {
-        return (
-            this.configService.getConfig().backendServerUrl +
-            `legend/${lonNW}/${latNW}/${lonSE}/${latSE}`
-        );
+        return `${
+            this.configService.getConfig().backendServerUrl
+        }legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
     private URL_CITY_OBSOLETE() {
-        return (
-            this.configService.getConfig().backendServerUrl + `cities/obsolete`
-        );
+        return `${
+            this.configService.getConfig().backendServerUrl
+        }cities/obsolete`;
     }
-
-    constructor(
-        private http: HttpClient,
-        private legendService: LegendService,
-        private configService: AppConfigService
-    ) {}
 
     private longRunningAPI<T>(
         url,
@@ -116,7 +180,7 @@ export class BatimapService {
                             r.progress = new TaskProgress(0, 100);
                         } else if (r.state === TaskState.PROGRESS) {
                             r.progress = plainToClass(TaskProgress, r.result);
-                            r.result = null;
+                            r.result = undefined;
                         } else if (r.state === TaskState.FAILURE) {
                             throw new Error(r.result.toString());
                         } else {
@@ -127,74 +191,5 @@ export class BatimapService {
                 )
             )
         );
-    }
-
-    public cityData(insee: string): Observable<TaskResult<ConflateCityDTO>> {
-        return this.longRunningAPI<ConflateCityDTO>(
-            this.URL_CITY_DATA(insee),
-            ConflateCityDTO
-        );
-    }
-
-    public citiesInBbox(bbox: LatLngBounds): Observable<CityDTO[]> {
-        return this.http
-            .get<CityDTO[]>(
-                this.URL_CITIES_BBOX(
-                    bbox.getNorthWest().wrap().lng,
-                    bbox.getNorthWest().wrap().lat,
-                    bbox.getSouthEast().wrap().lng,
-                    bbox.getSouthEast().wrap().lat
-                )
-            )
-            .pipe(
-                map(r => plainToClass(CityDTO, r)),
-                debounceTime(3000)
-            );
-    }
-
-    public legendForBbox(bbox: LatLngBounds): Observable<LegendDTO[]> {
-        return this.http
-            .get<LegendDTO[]>(
-                this.URL_LEGEND(
-                    bbox.getNorthWest().wrap().lng,
-                    bbox.getNorthWest().wrap().lat,
-                    bbox.getSouthEast().wrap().lng,
-                    bbox.getSouthEast().wrap().lat
-                )
-            )
-            .pipe(
-                map(r => plainToClass(LegendDTO, r)),
-                switchMap((legends: LegendDTO[]) => {
-                    for (const l of legends) {
-                        l.checked = this.legendService.isActive(l);
-                    }
-                    return of(legends);
-                }),
-                debounceTime(3000)
-            );
-    }
-
-    public updateCity(insee: string): Observable<TaskResult<CityDTO>> {
-        return this.longRunningAPI<CityDTO>(
-            this.URL_CITY_UPDATE(insee),
-            CityDTO
-        ).pipe(
-            tap(progress => {
-                if (progress.state === TaskState.SUCCESS) {
-                    this.legendService.city2date.set(
-                        progress.result.insee,
-                        progress.result.date
-                    );
-                }
-            })
-        );
-    }
-
-    public obsoleteCity(ignored: string[]): Observable<ObsoleteCityDTO> {
-        return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
-            params: {
-                ignored: ignored.join(',')
-            }
-        });
     }
 }

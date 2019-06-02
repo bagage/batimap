@@ -1,15 +1,15 @@
 import { Component, HostListener, NgZone, ViewChild } from '@angular/core';
-import { AppConfigService } from '../../services/app-config.service';
 import { MatDialog } from '@angular/material';
-import { CityDetailsDialogComponent } from '../../components/city-details-dialog/city-details-dialog.component';
-import { CityDetailsDTO, CityDTO } from '../../classes/city.dto';
 import {
     classToPlain,
     deserialize,
     plainToClass,
     serialize
 } from 'class-transformer';
+import { CityDetailsDTO, CityDTO } from '../../classes/city.dto';
+import { CityDetailsDialogComponent } from '../../components/city-details-dialog/city-details-dialog.component';
 import { MapDateLegendComponent } from '../../components/map-date-legend/map-date-legend.component';
+import { AppConfigService } from '../../services/app-config.service';
 import { LegendService } from '../../services/legend.service';
 
 import * as L from 'leaflet';
@@ -38,10 +38,10 @@ export class MapComponent {
     private searchControl: L.Control;
 
     constructor(
-        private matDialog: MatDialog,
-        private zone: NgZone,
-        private legendService: LegendService,
-        private configService: AppConfigService
+        private readonly matDialog: MatDialog,
+        private readonly zone: NgZone,
+        private readonly legendService: LegendService,
+        private readonly configService: AppConfigService
     ) {}
 
     onMapReady(map) {
@@ -62,9 +62,10 @@ export class MapComponent {
         const color = this.legendService.date2color(date);
         const hidden =
             properties.insee.length > 3 && !this.legendService.isActive(date);
+
         return {
             weight: 2,
-            color: color,
+            color,
             opacity: hidden ? 0.08 : 1,
             fill: true,
             radius: type === 'point' ? zoom / 2 : 1,
@@ -95,7 +96,8 @@ export class MapComponent {
                 if (e.layer.options.opacity !== 1) {
                     return;
                     // do not open popup when clicking depts
-                } else if (e.layer.properties.insee.length <= 3) {
+                }
+                if (e.layer.properties.insee.length <= 3) {
                     return;
                 }
                 this.openPopup(e.layer.properties);
@@ -106,17 +108,16 @@ export class MapComponent {
         this.legend.cadastreLayer = this.cadastreLayer;
     }
 
+    @HostListener('document:keydown.shift.f', ['$event']) search(event) {
+        event.preventDefault();
+        (this.searchControl as any).toggle();
+    }
+
     private openPopup(cityJson: string) {
         const city = plainToClass(CityDTO, cityJson);
         city.details = deserialize(CityDetailsDTO, city.details.toString());
         this.matDialog.open(CityDetailsDialogComponent, {
             data: [city, this.cadastreLayer]
         });
-    }
-
-    @HostListener('document:keydown.shift.f', ['$event'])
-    search(event) {
-        event.preventDefault();
-        (<any>this.searchControl).toggle();
     }
 }

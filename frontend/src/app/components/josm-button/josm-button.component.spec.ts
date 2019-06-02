@@ -1,12 +1,12 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { JosmButtonComponent } from './josm-button.component';
-import { MatLibModule } from '../../mat-lib.module';
 import { HttpModule } from '@angular/http';
 import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
-import { LoaderComponent } from '../loader/loader.component';
+import { MatLibModule } from '../../mat-lib.module';
 import { AppConfigService } from '../../services/app-config.service';
 import { MockAppConfigService } from '../../services/app-config.service.mock';
+import { LoaderComponent } from '../loader/loader.component';
+import { JosmButtonComponent } from './josm-button.component';
 
 describe('JosmButtonComponent', () => {
     let component: JosmButtonComponent;
@@ -25,14 +25,14 @@ describe('JosmButtonComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(JosmButtonComponent);
         component = fixture.componentInstance;
-        const expected_city = {
+        const expectedCity = {
             name: '',
             date: '',
-            details: null,
+            details: undefined,
             insee: '',
             josm_ready: false
         };
-        component.city = expected_city;
+        component.city = expectedCity;
         fixture.detectChanges();
     });
 

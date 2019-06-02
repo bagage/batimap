@@ -1,5 +1,7 @@
-///<reference path="../../node_modules/@angular/cdk/tree/typings/tree-module.d.ts"/>
+import { CdkTableModule } from '@angular/cdk/table';
+import { CdkTreeModule } from '@angular/cdk/tree';
 import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
     MatAutocompleteModule,
     MatBadgeModule,
@@ -37,9 +39,6 @@ import {
     MatTooltipModule,
     MatTreeModule
 } from '@angular/material';
-import { CdkTableModule } from '@angular/cdk/table';
-import { CdkTreeModule } from '@angular/cdk/tree';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressButtonsModule } from 'mat-progress-buttons';
 
 @NgModule({

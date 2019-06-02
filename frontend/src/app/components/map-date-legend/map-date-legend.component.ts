@@ -1,15 +1,15 @@
 import { Component, HostListener, Input, NgZone, OnInit } from '@angular/core';
-import { BatimapService } from '../../services/batimap.service';
-import { LegendDTO } from '../../classes/legend.dto';
-import { LegendService } from '../../services/legend.service';
+import { MatDialog } from '@angular/material';
 import * as L from 'leaflet';
 import { Observable } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { MatDialog } from '@angular/material';
-import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
-import { CityDetailsDialogComponent } from '../city-details-dialog/city-details-dialog.component';
+import { LegendDTO } from '../../classes/legend.dto';
 import { ObsoleteCityDTO } from '../../classes/obsolete-city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
+import { BatimapService } from '../../services/batimap.service';
+import { LegendService } from '../../services/legend.service';
+import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
+import { CityDetailsDialogComponent } from '../city-details-dialog/city-details-dialog.component';
 
 @Component({
     selector: 'app-map-date-legend',
@@ -20,15 +20,15 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
     @Input() cadastreLayer;
 
-    legendItems$: Observable<LegendDTO[]>;
+    legendItems$: Observable<Array<LegendDTO>>;
     bounds: L.LatLngBounds;
     error = false;
 
     constructor(
-        private zone: NgZone,
-        private batimapService: BatimapService,
+        private readonly zone: NgZone,
+        private readonly batimapService: BatimapService,
         public legendService: LegendService,
-        private matDialog: MatDialog
+        private readonly matDialog: MatDialog
     ) {
         super();
     }
@@ -66,13 +66,11 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         this.cadastreLayer.redraw();
     }
 
-    @HostListener('document:keydown.shift.a')
-    openHelp() {
+    @HostListener('document:keydown.shift.a') openHelp() {
         this.matDialog.open(AboutDialogComponent);
     }
 
-    @HostListener('document:keydown.shift.c')
-    feelingLucky() {
+    @HostListener('document:keydown.shift.c') feelingLucky() {
         this.autoUnsubscribe(
             this.legendItems$
                 .pipe(

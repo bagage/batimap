@@ -1,23 +1,20 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
 
-import { AppComponent } from './app.component';
-import { AppConfigService } from './services/app-config.service';
-import { LeafletModule } from '@asymmetrik/ngx-leaflet';
+import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { HttpClientModule } from '@angular/common/http';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
+import { LeafletModule } from '@asymmetrik/ngx-leaflet';
+import { MatProgressButtonsModule } from 'mat-progress-buttons';
+import { AppComponent } from './app.component';
 import { MapComponent } from './pages/map/map.component';
 import { PagesModule } from './pages/pages.module';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AppConfigService } from './services/app-config.service';
 import { JosmService } from './services/josm.service';
-import { HttpClientModule } from '@angular/common/http';
-import { MatProgressButtonsModule } from 'mat-progress-buttons';
-import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 
-const appInitializerFn = (appConfig: AppConfigService) => {
-    return () => {
-        return appConfig.loadAppConfig();
-    };
-};
+const appInitializerFn = (appConfig: AppConfigService) => () =>
+    appConfig.loadAppConfig();
 
 const appRoutes: Routes = [{ path: '', component: MapComponent }];
 

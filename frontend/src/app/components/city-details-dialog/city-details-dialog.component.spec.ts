@@ -1,18 +1,18 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CityDetailsDialogComponent } from './city-details-dialog.component';
-import { MatLibModule } from '../../mat-lib.module';
-import { SharedComponentsModule } from '../shared-components.module';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { NgModule } from '@angular/core';
 import { HttpModule } from '@angular/http';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
 import { CityDTO } from '../../classes/city.dto';
+import { MatLibModule } from '../../mat-lib.module';
 import { AppConfigService } from '../../services/app-config.service';
 import { MockAppConfigService } from '../../services/app-config.service.mock';
-import { JosmButtonComponent } from '../josm-button/josm-button.component';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
-import { NgModule } from '@angular/core';
+import { JosmButtonComponent } from '../josm-button/josm-button.component';
+import { SharedComponentsModule } from '../shared-components.module';
+import { CityDetailsDialogComponent } from './city-details-dialog.component';
 
 @NgModule({
     imports: [MatLibModule],

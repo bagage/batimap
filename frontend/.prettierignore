@@ -7,3 +7,5 @@ browserslist
 Docker*
 prod/
 yarn.lock
+polyfills.ts
+test.ts

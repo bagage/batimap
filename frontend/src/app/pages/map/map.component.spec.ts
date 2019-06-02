@@ -1,13 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapComponent } from './map.component';
+import { HttpModule } from '@angular/http';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
+import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
 import { MapDateLegendComponent } from '../../components/map-date-legend/map-date-legend.component';
-import { CitiesListModule } from '../cities-list/cities-list.module';
 import { SharedComponentsModule } from '../../components/shared-components.module';
 import { MatLibModule } from '../../mat-lib.module';
-import { HttpModule } from '@angular/http';
-import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
+import { CitiesListModule } from '../cities-list/cities-list.module';
+import { MapComponent } from './map.component';
 
 describe('MapComponent', () => {
     let component: MapComponent;
@@ -32,7 +32,7 @@ describe('MapComponent', () => {
         fixture.detectChanges();
     });
 
-    //disable for now because it breaks the CI with generic "[object ErrorEvent] thrown" error
+    // disable for now because it breaks the CI with generic "[object ErrorEvent] thrown" error
     xit('should create', () => {
         expect(component).toBeTruthy();
     });

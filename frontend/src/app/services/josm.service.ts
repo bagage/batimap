@@ -1,21 +1,67 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { EMPTY, forkJoin, Observable, of } from 'rxjs';
-import { CityDTO } from '../classes/city.dto';
 import { catchError, map, share, switchMap } from 'rxjs/operators';
+import { CityDTO } from '../classes/city.dto';
 import { ConflateCityDTO } from '../classes/conflate-city.dto';
 
 @Injectable({
     providedIn: 'root'
 })
 export class JosmService {
-    private JOSM_URL_BASE = 'http://127.0.0.1:8111/';
-    private JOSM_URL_VERSION = this.JOSM_URL_BASE + 'version';
+    private readonly JOSM_URL_BASE = 'http://127.0.0.1:8111/';
+    private readonly JOSM_URL_VERSION = `${this.JOSM_URL_BASE}version`;
+
+    constructor(private readonly http: HttpClient) {}
+
+    isStarted(): Observable<boolean> {
+        return this.http.get(this.JOSM_URL_VERSION).pipe(
+            map(() => true),
+            catchError(() => of(false)),
+            share()
+        );
+    }
+
+    openCityInJosm(city: CityDTO, dto: ConflateCityDTO): Observable<any> {
+        if (!dto) {
+            console.log(
+                `Asked to open ${city.name} in JOSM, but no data. Ignoring`
+            );
+
+            return EMPTY;
+        }
+        const imagery = this.JOSM_URL_BDORTHO_IMAGERY();
+        const buildings = this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false);
+        const segmented = this.JOSM_URL_OPEN_FILE(
+            dto.segmententationPredictionssUrl,
+            false // cannot be locked otherwise todo plugin wont work
+        );
+        const osm = this.JOSM_URL_OSM_DATA_FOR_BBOX(
+            `Données OSM pour ${city.insee} - ${city.name}`,
+            dto.bbox[0].toString(),
+            dto.bbox[1].toString(),
+            dto.bbox[2].toString(),
+            dto.bbox[3].toString()
+        );
+
+        return forkJoin(imagery, buildings, segmented, osm);
+    }
+
+    openNode(node: number, city: CityDTO): Observable<any> {
+        return forkJoin(
+            this.JOSM_URL_BDORTHO_IMAGERY(),
+            this.JOSM_URL_LOAD_OBJECTS(
+                `n${node}`,
+                `Bâtiment simplifié ${node} dans ${city.insee} - ${city.name}`
+            )
+        );
+    }
 
     private JOSM_URL_BDORTHO_IMAGERY(): Observable<string> {
         const title = 'BDOrtho IGN';
         const url = 'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg';
-        return this.http.get(this.JOSM_URL_BASE + 'imagery', {
+
+        return this.http.get(`${this.JOSM_URL_BASE}imagery`, {
             responseType: 'text',
             params: {
                 title,
@@ -38,11 +84,12 @@ export class JosmService {
                     'could not be found, not opening it in JOSM',
                     e
                 );
+
                 return of('no segmentation');
             }),
             switchMap(a => {
                 if (a !== 'no segmentation') {
-                    return this.http.get(this.JOSM_URL_BASE + 'import', {
+                    return this.http.get(`${this.JOSM_URL_BASE}import`, {
                         responseType: 'text',
                         params: {
                             new_layer: 'true',
@@ -51,9 +98,9 @@ export class JosmService {
                             url
                         }
                     });
-                } else {
-                    return of('no segmentation');
                 }
+
+                return of('no segmentation');
             })
         );
     }
@@ -65,7 +112,7 @@ export class JosmService {
         bottom: string,
         top: string
     ): Observable<string> {
-        return this.http.get(this.JOSM_URL_BASE + 'load_and_zoom', {
+        return this.http.get(`${this.JOSM_URL_BASE}load_and_zoom`, {
             responseType: 'text',
             params: {
                 new_layer: 'true',
@@ -78,63 +125,17 @@ export class JosmService {
         });
     }
 
-    constructor(private http: HttpClient) {}
-
-    public isStarted(): Observable<boolean> {
-        return this.http.get(this.JOSM_URL_VERSION).pipe(
-            map(() => true),
-            catchError(() => of(false)),
-            share()
-        );
-    }
-
-    public openCityInJosm(
-        city: CityDTO,
-        dto: ConflateCityDTO
-    ): Observable<any> {
-        if (!dto) {
-            console.log(
-                `Asked to open ${city.name} in JOSM, but no data. Ignoring`
-            );
-            return EMPTY;
-        }
-        const imagery = this.JOSM_URL_BDORTHO_IMAGERY();
-        const buildings = this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false);
-        const segmented = this.JOSM_URL_OPEN_FILE(
-            dto.segmententationPredictionssUrl,
-            false /*cannot be locked otherwise todo plugin wont work*/
-        );
-        const osm = this.JOSM_URL_OSM_DATA_FOR_BBOX(
-            `Données OSM pour ${city.insee} - ${city.name}`,
-            dto.bbox[0].toString(),
-            dto.bbox[1].toString(),
-            dto.bbox[2].toString(),
-            dto.bbox[3].toString()
-        );
-        return forkJoin(imagery, buildings, segmented, osm);
-    }
-
     private JOSM_URL_LOAD_OBJECTS(
         objects: string,
-        layer_name: string
+        layerName: string
     ): Observable<any> {
-        return this.http.get(this.JOSM_URL_BASE + 'load_object', {
+        return this.http.get(`${this.JOSM_URL_BASE}load_object`, {
             responseType: 'text',
             params: {
                 new_layer: 'true',
-                objects: objects,
-                layer_name: layer_name
+                objects,
+                layer_name: layerName
             }
         });
-    }
-
-    public openNode(node: number, city: CityDTO): Observable<any> {
-        return forkJoin(
-            this.JOSM_URL_BDORTHO_IMAGERY(),
-            this.JOSM_URL_LOAD_OBJECTS(
-                `n${node}`,
-                `Bâtiment simplifié ${node} dans ${city.insee} - ${city.name}`
-            )
-        );
     }
 }

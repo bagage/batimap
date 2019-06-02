@@ -1,11 +1,11 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { MatSort, MatTableDataSource } from '@angular/material';
-import { BatimapService } from '../../services/batimap.service';
-import { CityDTO } from '../../classes/city.dto';
-import { JosmService } from '../../services/josm.service';
-import { Observable } from 'rxjs';
 import * as L from 'leaflet';
+import { Observable } from 'rxjs';
+import { CityDTO } from '../../classes/city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
+import { BatimapService } from '../../services/batimap.service';
+import { JosmService } from '../../services/josm.service';
 
 @Component({
     selector: 'app-cities-list',
@@ -15,7 +15,7 @@ import { Unsubscriber } from '../../classes/unsubscriber';
 export class CitiesListComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
 
-    displayedColumns: string[] = [
+    displayedColumns: Array<string> = [
         'name',
         'insee',
         'date',
@@ -29,7 +29,7 @@ export class CitiesListComponent extends Unsubscriber implements OnInit {
     @ViewChild(MatSort) sort: MatSort;
 
     constructor(
-        private batimapService: BatimapService,
+        private readonly batimapService: BatimapService,
         public josmService: JosmService
     ) {
         super();
@@ -50,8 +50,8 @@ export class CitiesListComponent extends Unsubscriber implements OnInit {
         this.autoUnsubscribe(
             this.batimapService
                 .citiesInBbox(this.map.getBounds())
-                .subscribe((cities: CityDTO[]) => {
-                    this.dataSource.data = null;
+                .subscribe((cities: Array<CityDTO>) => {
+                    this.dataSource.data = undefined;
                     this.dataSource.data = cities;
                     this.isReady = true;
                 })

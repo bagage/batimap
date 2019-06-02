@@ -1,8 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AboutDialogComponent } from './about-dialog.component';
-import { MatLibModule } from '../../mat-lib.module';
 import { MatDialogRef } from '@angular/material';
+import { MatLibModule } from '../../mat-lib.module';
+import { AboutDialogComponent } from './about-dialog.component';
 
 describe('AboutDialogComponent', () => {
     let component: AboutDialogComponent;

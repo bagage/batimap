@@ -7,17 +7,17 @@ import {
     Input,
     Output
 } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { filter, map, switchMap } from 'rxjs/operators';
 import { CityDTO } from '../../classes/city.dto';
-import { JosmService } from '../../services/josm.service';
+import { ConflateCityDTO } from '../../classes/conflate-city.dto';
+import { Unsubscriber } from '../../classes/unsubscriber';
 import {
     BatimapService,
     TaskProgress,
     TaskState
 } from '../../services/batimap.service';
-import { Observable, of } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
-import { Unsubscriber } from '../../classes/unsubscriber';
-import { ConflateCityDTO } from '../../classes/conflate-city.dto';
+import { JosmService } from '../../services/josm.service';
 
 @Component({
     selector: 'app-josm-button',
@@ -26,8 +26,6 @@ import { ConflateCityDTO } from '../../classes/conflate-city.dto';
     styleUrls: ['./josm-button.component.css']
 })
 export class JosmButtonComponent extends Unsubscriber {
-    private _city: CityDTO;
-
     @Input()
     set city(value: CityDTO) {
         this._city = value;
@@ -50,7 +48,7 @@ export class JosmButtonComponent extends Unsubscriber {
         this.options.disabled = this._city.josm_ready && !value;
     }
 
-    @Output() newestDate = new EventEmitter<string>();
+    @Output() readonly newestDate = new EventEmitter<string>();
 
     options = {
         active: false,
@@ -64,18 +62,17 @@ export class JosmButtonComponent extends Unsubscriber {
         disabled: false,
         tooltip: ''
     };
+    private _city: CityDTO;
 
     constructor(
-        private josmService: JosmService,
-        private batimapService: BatimapService,
-        private changeDetector: ChangeDetectorRef
+        private readonly josmService: JosmService,
+        private readonly batimapService: BatimapService,
+        private readonly changeDetector: ChangeDetectorRef
     ) {
         super();
     }
 
-    @HostListener('document:keydown.j')
-    @HostListener('document:keydown.p')
-    onClick() {
+    @HostListener('document:keydown.j') lick() {
         this.options.active = true;
         const obs = this._city.josm_ready
             ? this.conflateCity()
@@ -96,7 +93,7 @@ export class JosmButtonComponent extends Unsubscriber {
                         this.changeDetector.detectChanges();
                     }
                 },
-                null,
+                undefined,
                 () => {
                     this.options.active = false;
                     this.options.text = this.options.text.replace(
@@ -133,8 +130,10 @@ export class JosmButtonComponent extends Unsubscriber {
 
                     if (this._city.date !== progressConflateDTO.date) {
                         this.newestDate.emit(progressConflateDTO.date);
-                        return null;
-                    } else if (progressConflateDTO.buildingsUrl) {
+
+                        return undefined;
+                    }
+                    if (progressConflateDTO.buildingsUrl) {
                         return progressConflateDTO;
                     }
                 } else {

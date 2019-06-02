@@ -82,7 +82,11 @@
                             "src/tsconfig.app.json",
                             "src/tsconfig.spec.json"
                         ],
-                        "exclude": ["**/node_modules/**"]
+                        "exclude": [
+                            "**/node_modules/**",
+                            "**/polyfills.ts",
+                            "**/test.ts"
+                        ]
                     }
                 }
             }

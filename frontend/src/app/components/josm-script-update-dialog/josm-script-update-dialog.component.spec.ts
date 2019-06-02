@@ -1,8 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog.component';
-import { MatLibModule } from '../../mat-lib.module';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatLibModule } from '../../mat-lib.module';
+import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog.component';
 
 describe('JosmScriptUpdateDialogComponent', () => {
     let component: JosmScriptUpdateDialogComponent;

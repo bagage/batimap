@@ -1,14 +1,14 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapDateLegendComponent } from './map-date-legend.component';
-import { MatLibModule } from '../../mat-lib.module';
 import { HttpModule } from '@angular/http';
-import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import * as L from 'leaflet';
+import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
+import { MatLibModule } from '../../mat-lib.module';
 import { AppConfigService } from '../../services/app-config.service';
 import { MockAppConfigService } from '../../services/app-config.service.mock';
 import { LoaderComponent } from '../loader/loader.component';
+import { MapDateLegendComponent } from './map-date-legend.component';
 
 describe('MapDateLegendComponent', () => {
     let component: MapDateLegendComponent;

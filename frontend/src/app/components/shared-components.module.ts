@@ -1,13 +1,13 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { JosmButtonComponent } from './josm-button/josm-button.component';
+import { NgModule } from '@angular/core';
 import { MatLibModule } from '../mat-lib.module';
-import { LoaderComponent } from './loader/loader.component';
 import { AboutDialogComponent } from './about-dialog/about-dialog.component';
-import { HowtoDialogComponent } from './howto-dialog/howto-dialog.component';
-import { MapDateLegendComponent } from './map-date-legend/map-date-legend.component';
 import { CityDetailsDialogComponent } from './city-details-dialog/city-details-dialog.component';
+import { HowtoDialogComponent } from './howto-dialog/howto-dialog.component';
+import { JosmButtonComponent } from './josm-button/josm-button.component';
 import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog/josm-script-update-dialog.component';
+import { LoaderComponent } from './loader/loader.component';
+import { MapDateLegendComponent } from './map-date-legend/map-date-legend.component';
 
 @NgModule({
     imports: [CommonModule, MatLibModule],

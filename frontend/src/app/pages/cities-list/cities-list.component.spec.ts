@@ -1,14 +1,14 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CitiesListComponent } from './cities-list.component';
-import { MatLibModule } from '../../mat-lib.module';
-import { SharedComponentsModule } from '../../components/shared-components.module';
 import { HttpModule } from '@angular/http';
-import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import * as L from 'leaflet';
+import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
+import { SharedComponentsModule } from '../../components/shared-components.module';
+import { MatLibModule } from '../../mat-lib.module';
 import { AppConfigService } from '../../services/app-config.service';
 import { MockAppConfigService } from '../../services/app-config.service.mock';
+import { CitiesListComponent } from './cities-list.component';
 
 describe('CitiesListComponent', () => {
     let component: CitiesListComponent;

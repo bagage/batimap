@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { AboutDialogComponent } from './components/about-dialog/about-dialog.component';
 import { Title } from '@angular/platform-browser';
 import { environment } from '../environments/environment';
+import { AboutDialogComponent } from './components/about-dialog/about-dialog.component';
 import { JosmScriptUpdateDialogComponent } from './components/josm-script-update-dialog/josm-script-update-dialog.component';
 
 @Component({

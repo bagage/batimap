@@ -23,12 +23,19 @@ export class JosmScriptUpdateDialogComponent implements OnDestroy {
                 return diff < 0;
             }
         }
+
         return false;
     }
 
     static shouldDisplayDialog(): boolean {
-        const userVersion = localStorage.getItem(this.storageKey) || '0.0.0';
-        return this.strictlyLowerThanVersion(userVersion, environment.version);
+        const userVersion =
+            localStorage.getItem(JosmScriptUpdateDialogComponent.storageKey) ||
+            '0.0.0';
+
+        return JosmScriptUpdateDialogComponent.strictlyLowerThanVersion(
+            userVersion,
+            environment.version
+        );
     }
 
     ngOnDestroy() {
