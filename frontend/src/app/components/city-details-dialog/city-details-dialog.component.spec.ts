@@ -1,7 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NgModule } from '@angular/core';
-import { HttpModule } from '@angular/http';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
@@ -11,7 +10,6 @@ import { AppConfigService } from '../../services/app-config.service';
 import { MockAppConfigService } from '../../services/app-config.service.mock';
 import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
 import { JosmButtonComponent } from '../josm-button/josm-button.component';
-import { SharedComponentsModule } from '../shared-components.module';
 import { CityDetailsDialogComponent } from './city-details-dialog.component';
 
 @NgModule({
@@ -31,7 +29,6 @@ describe('CityDetailsDialogComponent', () => {
             declarations: [CityDetailsDialogComponent, JosmButtonComponent],
             imports: [
                 MatLibModule,
-                HttpModule,
                 HttpClientTestingModule,
                 DialogTestModule,
                 NoopAnimationsModule

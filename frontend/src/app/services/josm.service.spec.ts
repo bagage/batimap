@@ -1,6 +1,5 @@
 import { inject, TestBed } from '@angular/core/testing';
 
-import { HttpModule } from '@angular/http';
 import { HttpClientTestingModule } from '../../../node_modules/@angular/common/http/testing';
 import { AppConfigService } from './app-config.service';
 import { MockAppConfigService } from './app-config.service.mock';
@@ -13,7 +12,7 @@ describe('JosmService', () => {
                 JosmService,
                 { provide: AppConfigService, useClass: MockAppConfigService }
             ],
-            imports: [HttpModule, HttpClientTestingModule]
+            imports: [HttpClientTestingModule]
         });
     });
 

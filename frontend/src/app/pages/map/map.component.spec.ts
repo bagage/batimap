@@ -1,10 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HttpModule } from '@angular/http';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
 import { MapDateLegendComponent } from '../../components/map-date-legend/map-date-legend.component';
-import { SharedComponentsModule } from '../../components/shared-components.module';
 import { MatLibModule } from '../../mat-lib.module';
 import { CitiesListModule } from '../cities-list/cities-list.module';
 import { MapComponent } from './map.component';
@@ -20,7 +18,6 @@ describe('MapComponent', () => {
                 LeafletModule,
                 CitiesListModule,
                 MatLibModule,
-                HttpModule,
                 HttpClientTestingModule
             ]
         }).compileComponents();

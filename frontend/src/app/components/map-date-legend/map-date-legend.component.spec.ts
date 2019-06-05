@@ -1,6 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HttpModule } from '@angular/http';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import * as L from 'leaflet';
 import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
@@ -17,12 +16,7 @@ describe('MapDateLegendComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [MapDateLegendComponent, LoaderComponent],
-            imports: [
-                MatLibModule,
-                HttpModule,
-                HttpClientTestingModule,
-                LeafletModule
-            ],
+            imports: [MatLibModule, HttpClientTestingModule, LeafletModule],
             providers: [
                 MapDateLegendComponent,
                 { provide: AppConfigService, useClass: MockAppConfigService }

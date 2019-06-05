@@ -1,6 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HttpModule } from '@angular/http';
 import { HttpClientTestingModule } from '../../../../node_modules/@angular/common/http/testing';
 import { MatLibModule } from '../../mat-lib.module';
 import { AppConfigService } from '../../services/app-config.service';
@@ -15,7 +14,7 @@ describe('JosmButtonComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [JosmButtonComponent, LoaderComponent],
-            imports: [MatLibModule, HttpModule, HttpClientTestingModule],
+            imports: [MatLibModule, HttpClientTestingModule],
             providers: [
                 { provide: AppConfigService, useClass: MockAppConfigService }
             ]
