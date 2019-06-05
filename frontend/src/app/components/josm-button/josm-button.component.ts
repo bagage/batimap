@@ -72,7 +72,7 @@ export class JosmButtonComponent extends Unsubscriber {
         super();
     }
 
-    @HostListener('document:keydown.j') lick() {
+    @HostListener('document:keydown.j') onClick() {
         this.options.active = true;
         const obs = this._city.josm_ready
             ? this.conflateCity()
