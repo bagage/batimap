@@ -7,7 +7,7 @@ services:
     ports:
     - "5432:5432"
     volumes:
-    - ./postgis/data:/var/lib/postgresql/data
+    - ./data/postgis:/var/lib/postgresql/data
     networks:
       fixed_network:
         ipv4_address: 10.8.0.10
@@ -20,10 +20,20 @@ services:
     depends_on:
     - postgis
     volumes:
-    - ./imposm_updater/data:/app
+    - ./data/imposm_updater:/app
     networks:
       fixed_network:
         ipv4_address: 10.8.0.11
+
+  initdb_worker:
+    build: initdb_worker
+    volumes:
+    - ./initdb_worker/:/code
+    - ./data/imposm_updater/tiles:/tiles
+    restart: always
+    networks:
+      fixed_network:
+        ipv4_address: 10.8.0.12
 
   tiles:
     build: tiles
@@ -32,13 +42,14 @@ services:
     command: bash /wait-for-it.sh -- tegola --config $$CONFIG serve
     volumes:
     - ./tiles/:/app
+    - ./data/tiles/cache:/data/cache
     ports:
     - "9999:9999"
     depends_on:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.8.0.12
+        ipv4_address: 10.8.0.13
 
   tiles-cleaner:
     build: tiles-cleaner
@@ -47,30 +58,10 @@ services:
     command: bash /entrypoint.sh
     volumes:
     - ./tiles/:/app
-    networks:
-      fixed_network:
-        ipv4_address: 10.8.0.13
-
-  initdb_worker:
-    build: initdb_worker
-    volumes:
-    - ./initdb_worker/:/code
-    - ./imposm_updater/data/tiles:/tiles
-    restart: always
+    - ./data/tiles:/data
     networks:
       fixed_network:
         ipv4_address: 10.8.0.14
-
-  redis:
-    image: redis:4-alpine
-    command: redis-server
-    volumes:
-      - ./redis/data:/var/lib/redis/data
-    ports:
-      - '6379:6379'
-    networks:
-      fixed_network:
-        ipv4_address: 10.8.0.15
 
   celery:
     build: backend
@@ -79,12 +70,12 @@ services:
     command: sh /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
     volumes:
     - ./backend/:/code
-    - ./tiles/data/outdated:/code/tiles
+    - ./data/tiles:/code/tiles
     depends_on:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.8.0.16
+        ipv4_address: 10.8.0.15
 
   backend:
     build: backend
@@ -95,12 +86,12 @@ services:
     - "5000:5000"
     volumes:
     - ./backend/:/code
-    - ./tiles/data/outdated:/code/tiles
+    - ./data/tiles:/code/tiles
     depends_on:
     - postgis
     networks:
       fixed_network:
-        ipv4_address: 10.8.0.17
+        ipv4_address: 10.8.0.16
 
   frontend:
     build: frontend
@@ -111,6 +102,17 @@ services:
     depends_on:
     - tiles
     - backend
+    networks:
+      fixed_network:
+        ipv4_address: 10.8.0.17
+
+  redis:
+    image: redis:4-alpine
+    command: redis-server
+    volumes:
+      - ./data/redis:/var/lib/redis/data
+    ports:
+      - '6379:6379'
     networks:
       fixed_network:
         ipv4_address: 10.8.0.18

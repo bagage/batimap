@@ -1,8 +1,9 @@
 #!/bin/sh
 
-INIT_FILE="/app/data/outdated/initdb_is_done"
-UPDATE_FILE=/app/data/outdated/outdated.txt
-WORK_FILE=/app/data/outdated/inprogress.txt
+INIT_FILE="/data/initdb_is_done"
+CACHE_DIR="/data/cache"
+UPDATE_FILE=/data/outdated.txt
+WORK_FILE=/data/inprogress.txt
 INITIAL_MAX_ZOOM=${INITIAL_MAX_ZOOM:-10}
 
 cd /app
@@ -12,7 +13,7 @@ while true; do
     if [ -f $INIT_FILE ]; then
         echo "Removing all tiles, will regenerate up to level $INITIAL_MAX_ZOOM!"
         # cache whole world at start, if needed
-        rm -rf data/cache/*
+        rm -rf "$CACHE_DIR"/*
         echo "Regenerating up to level $INITIAL_MAX_ZOOM!"
         tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
         echo -n > $UPDATE_FILE

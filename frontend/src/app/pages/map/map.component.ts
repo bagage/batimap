@@ -1,115 +1,123 @@
-import {Component, HostListener, NgZone, ViewChild} from "@angular/core";
-import {AppConfigService} from "../../services/app-config.service";
-import {MatDialog} from "@angular/material";
-import {CityDetailsDialogComponent} from "../../components/city-details-dialog/city-details-dialog.component";
-import {CityDTO} from "../../classes/city.dto";
-import {plainToClass} from "class-transformer";
-import {MapDateLegendComponent} from "../../components/map-date-legend/map-date-legend.component";
-import {LegendService} from "../../services/legend.service";
+import { Component, HostListener, NgZone, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import {
+    classToPlain,
+    deserialize,
+    plainToClass,
+    serialize
+} from 'class-transformer';
+import { CityDetailsDTO, CityDTO } from '../../classes/city.dto';
+import { CityDetailsDialogComponent } from '../../components/city-details-dialog/city-details-dialog.component';
+import { MapDateLegendComponent } from '../../components/map-date-legend/map-date-legend.component';
+import { AppConfigService } from '../../services/app-config.service';
+import { LegendService } from '../../services/legend.service';
 
-import * as L from "leaflet";
+import * as L from 'leaflet';
 
 @Component({
-  selector: "app-map",
-  templateUrl: "./map.component.html",
-  styleUrls: ["./map.component.css"]
+    selector: 'app-map',
+    templateUrl: './map.component.html',
+    styleUrls: ['./map.component.css']
 })
 export class MapComponent {
-  @ViewChild(MapDateLegendComponent) legend: MapDateLegendComponent;
+    @ViewChild(MapDateLegendComponent, { static: true })
+    legend: MapDateLegendComponent;
 
-  options = {
-    layers: [
-      L.tileLayer("https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png", {
-        maxZoom: 18,
-        attribution: "© Contributeurs OpenStreetMap"
-      })
-    ],
-    zoom: 5,
-    maxZoom: 13,
-    center: L.latLng(46.111, 3.977)
-  };
-  map: L.Map;
-  cadastreLayer: any;
-  private searchControl: L.Control;
-
-  constructor(
-    private matDialog: MatDialog,
-    private zone: NgZone,
-    private legendService: LegendService,
-    private configService: AppConfigService
-  ) {
-  }
-
-  onMapReady(map) {
-    this.map = map;
-    this.legend.map = map;
-    map.restoreView();
-    L.hash(map);
-    this.searchControl = L.geocoderBAN({
-      placeholder: "Rechercher une commune (shift+f)"
-    }).addTo(map);
-    this.setupVectorTiles(map);
-  }
-
-  stylingFunction(properties, zoom, type): any {
-    const date =
-      this.legendService.city2date.get(properties.insee) || properties.date;
-    const color = this.legendService.date2color(date);
-    const hidden = (properties.insee.length > 3 && !this.legendService.isActive(date));
-    return {
-      weight: 2,
-      color: color,
-      opacity: hidden ? 0.08 : 1,
-      fill: true,
-      radius: type === "point" ? zoom / 2 : 1,
-      fillOpacity: hidden ? 0.08 : properties.josm_ready ? 0.8 : 0.4
+    options = {
+        layers: [
+            L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© Contributeurs OpenStreetMap'
+            })
+        ],
+        zoom: 5,
+        maxZoom: 13,
+        center: L.latLng(46.111, 3.977)
     };
-  }
+    map: L.Map;
+    cadastreLayer: any;
+    private searchControl: L.Control;
 
-  setupVectorTiles(map) {
-    // noinspection JSUnusedGlobalSymbols
-    const vectorTileOptions = {
-      vectorTileLayerStyles: {
-        cities: (properties, zoom) =>
-          this.stylingFunction(properties, zoom, "polygon"),
-        "cities-point": (properties, zoom) =>
-          this.stylingFunction(properties, zoom, "point"),
-        departments: (properties, zoom) =>
-          this.stylingFunction(properties, zoom, "polygon")
-      },
-      interactive: true // Make sure that this VectorGrid fires mouse/pointer events
-    };
+    constructor(
+        private readonly matDialog: MatDialog,
+        private readonly zone: NgZone,
+        private readonly legendService: LegendService,
+        private readonly configService: AppConfigService
+    ) {}
 
-    this.cadastreLayer = L.vectorGrid.protobuf(
-      this.configService.getConfig().tilesServerUrl,
-      vectorTileOptions
-    );
-    this.cadastreLayer.on("click", e => {
-      this.zone.run(() => {
-        if (e.layer.options.opacity !== 1) {
-          return;
-          // do not open popup when clicking depts
-        } else if (e.layer.properties.insee.length <= 3) {
-          return;
-        }
-        this.openPopup(e.layer.properties);
-      });
-    });
-    this.cadastreLayer.addTo(map);
+    onMapReady(map) {
+        this.map = map;
+        this.legend.map = map;
+        L.hash(map);
+        this.searchControl = L.geocoderBAN({
+            placeholder: 'Rechercher une commune (shift+f)'
+        }).addTo(map);
+        this.setupVectorTiles(map);
+    }
 
-    this.legend.cadastreLayer = this.cadastreLayer;
-  }
+    stylingFunction(properties, zoom, type): any {
+        const date =
+            this.legendService.city2date.get(properties.insee) ||
+            properties.date;
+        const color = this.legendService.date2color(date);
+        const hidden =
+            properties.insee.length > 3 && !this.legendService.isActive(date);
 
-  openPopup(cityJson: any) {
-    const city = plainToClass<CityDTO, object>(CityDTO, cityJson);
-    this.matDialog.open(CityDetailsDialogComponent, {
-      data: [city, this.cadastreLayer]
-    });
-  }
+        return {
+            weight: 2,
+            color,
+            opacity: hidden ? 0.08 : 1,
+            fill: true,
+            radius: type === 'point' ? zoom / 2 : 1,
+            fillOpacity: hidden ? 0.08 : properties.josm_ready ? 0.8 : 0.4
+        };
+    }
 
-  @HostListener("document:keydown.shift.f", ["$event"])
-  search(event) {
-    event.preventDefault();
-    (<any>this.searchControl).toggle();
-  }
+    setupVectorTiles(map) {
+        // noinspection JSUnusedGlobalSymbols
+        const vectorTileOptions = {
+            vectorTileLayerStyles: {
+                cities: (properties, zoom) =>
+                    this.stylingFunction(properties, zoom, 'polygon'),
+                'cities-point': (properties, zoom) =>
+                    this.stylingFunction(properties, zoom, 'point'),
+                departments: (properties, zoom) =>
+                    this.stylingFunction(properties, zoom, 'polygon')
+            },
+            interactive: true // Make sure that this VectorGrid fires mouse/pointer events
+        };
+
+        this.cadastreLayer = L.vectorGrid.protobuf(
+            this.configService.getConfig().tilesServerUrl,
+            vectorTileOptions
+        );
+        this.cadastreLayer.on('click', e => {
+            this.zone.run(() => {
+                if (e.layer.options.opacity !== 1) {
+                    return;
+                    // do not open popup when clicking depts
+                }
+                if (e.layer.properties.insee.length <= 3) {
+                    return;
+                }
+                this.openPopup(e.layer.properties);
+            });
+        });
+        this.cadastreLayer.addTo(map);
+
+        this.legend.cadastreLayer = this.cadastreLayer;
+    }
+
+    @HostListener('document:keydown.shift.f', ['$event']) search(event) {
+        event.preventDefault();
+        (this.searchControl as any).toggle();
+    }
+
+    private openPopup(cityJson: string) {
+        const city = plainToClass(CityDTO, cityJson);
+        city.details = deserialize(CityDetailsDTO, city.details.toString());
+        this.matDialog.open(CityDetailsDialogComponent, {
+            data: [city, this.cadastreLayer]
+        });
+    }
 }

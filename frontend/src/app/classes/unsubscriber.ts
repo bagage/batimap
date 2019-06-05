@@ -1,13 +1,13 @@
-import { OnDestroy } from "@angular/core";
-import { Subscription } from "rxjs";
+import { OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 export class Unsubscriber implements OnDestroy {
-  private subscriptions: Subscription[] = [];
+    private readonly subscriptions: Subscription[] = [];
 
-  autoUnsubscribe(subscription: Subscription) {
-    this.subscriptions.push(subscription);
-  }
-  ngOnDestroy() {
-    this.subscriptions.forEach(it => it.unsubscribe());
-  }
+    autoUnsubscribe(subscription: Subscription) {
+        this.subscriptions.push(subscription);
+    }
+    ngOnDestroy() {
+        this.subscriptions.forEach(it => it.unsubscribe());
+    }
 }

@@ -1,22 +1,22 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 
 @Injectable()
 export class AppConfigService {
-  private appConfig;
+    private appConfig;
 
-  constructor(private http: HttpClient) {}
+    constructor(private readonly http: HttpClient) {}
 
-  loadAppConfig() {
-    return this.http
-      .get("/assets/data/appConfig.json")
-      .toPromise()
-      .then(data => {
-        this.appConfig = data;
-      });
-  }
+    async loadAppConfig(): Promise<any> {
+        return this.http
+            .get('/assets/data/appConfig.json')
+            .toPromise()
+            .then(data => {
+                this.appConfig = data;
+            });
+    }
 
-  getConfig() {
-    return this.appConfig;
-  }
+    getConfig() {
+        return this.appConfig;
+    }
 }
