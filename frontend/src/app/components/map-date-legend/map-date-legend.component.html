@@ -28,11 +28,9 @@
                     [id]="'legend' + item.name"
                     [(ngModel)]="item.checked"
                     (change)="legendChanges(item)"
-                    [ngStyle]="{ color: legendService.date2color(item.name) }"
+                    [ngStyle]="{ color: item.color }"
                 >
-                    {{ legendService.date2name(item.name) }} ({{
-                        item.percent
-                    }}%)
+                    {{ item.name }} ({{ item.percent }}%)
                 </mat-checkbox>
             </ng-container>
         </ng-container>

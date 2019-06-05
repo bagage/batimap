@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 
 export class CityDetailsDTO {
     @Type(() => Number) dates: Map<string, number>;
-    simplified: Array<number>;
+    simplified: number[];
 }
 
 export class CityDTO {

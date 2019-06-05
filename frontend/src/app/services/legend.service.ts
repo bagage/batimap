@@ -43,10 +43,9 @@ export class LegendService {
             if (year >= oldestYear) {
                 // last color is black and we do not want to use it for this because it represents raster cities
                 const colorsCount = currentYear - oldestYear + 1;
-                const colors: Array<string> = palette(
-                    'tol-sq',
-                    colorsCount
-                ).map(it => `#${it}`);
+                const colors: string[] = palette('tol-sq', colorsCount).map(
+                    it => `#${it}`
+                );
 
                 return colors[currentYear - year];
             }

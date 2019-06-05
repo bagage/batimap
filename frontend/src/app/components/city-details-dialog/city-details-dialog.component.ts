@@ -36,6 +36,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         disabled: false
     };
     moreRecentDate: string;
+    lastImport: string;
 
     constructor(
         @Inject(MAT_DIALOG_DATA) private readonly data: [CityDTO, any],
@@ -47,6 +48,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     ) {
         super();
         this.city = data[0];
+        this.lastImport = this.computeLastImport();
         this.cadastreLayer = data[1];
     }
 
@@ -89,7 +91,8 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         );
     }
 
-    lastImport(d): string {
+    computeLastImport(): string {
+        const d = this.city ? this.city.date : undefined;
         if (!d || d === 'never') {
             return "Le bâti n'a jamais été importé.";
         }
@@ -109,6 +112,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     cityDateChanged(newDate: string) {
         this.moreRecentDate = newDate;
         this.city.date = newDate;
+        this.lastImport = this.computeLastImport();
     }
 
     editNode(node: number) {

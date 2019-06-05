@@ -2,7 +2,7 @@ import { OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 export class Unsubscriber implements OnDestroy {
-    private readonly subscriptions: Array<Subscription> = [];
+    private readonly subscriptions: Subscription[] = [];
 
     autoUnsubscribe(subscription: Subscription) {
         this.subscriptions.push(subscription);

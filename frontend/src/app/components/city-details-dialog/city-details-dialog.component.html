@@ -11,7 +11,7 @@
 </h2>
 <mat-dialog-content>
     <h3>{{ city.insee }} - {{ city.name }}</h3>
-    {{ lastImport(city.date) }}
+    {{ lastImport }}
 
     <div *ngIf="city.details?.dates?.size > 0">
         <h4>Bâtiments par date</h4>

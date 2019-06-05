@@ -11,6 +11,16 @@ import { LegendService } from '../../services/legend.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { CityDetailsDialogComponent } from '../city-details-dialog/city-details-dialog.component';
 
+class MapDateLegendModel {
+    constructor(
+        public name: string, // legend item name
+        public checked: boolean, // is the legend item checked or not
+        public count: number, // number of items of this item on the map
+        public percent: number, // number of items of this item relative to the total number on the map
+        public color: string
+    ) {}
+}
+
 @Component({
     selector: 'app-map-date-legend',
     templateUrl: './map-date-legend.component.html',
@@ -20,7 +30,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
     @Input() cadastreLayer;
 
-    legendItems$: Observable<Array<LegendDTO>>;
+    legendItems$: Observable<MapDateLegendModel[]>;
     bounds: L.LatLngBounds;
     error = false;
 
@@ -56,7 +66,19 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                     catchError(err => {
                         this.error = true;
                         throw err;
-                    })
+                    }),
+                    map(items =>
+                        items.map(
+                            it =>
+                                new MapDateLegendModel(
+                                    this.legendService.date2name(it.name),
+                                    it.checked,
+                                    it.count,
+                                    it.percent,
+                                    this.legendService.date2color(it.name)
+                                )
+                        )
+                    )
                 );
         }
     }

@@ -11,7 +11,7 @@ import { JosmScriptUpdateDialogComponent } from './components/josm-script-update
     styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-    constructor(private matDialog: MatDialog, titleService: Title) {
+    constructor(private readonly matDialog: MatDialog, titleService: Title) {
         const version = environment.version;
         titleService.setTitle(`État du bâti dans OSM (${version})`);
 

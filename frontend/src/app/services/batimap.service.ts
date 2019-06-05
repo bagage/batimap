@@ -51,9 +51,9 @@ export class BatimapService {
         );
     }
 
-    citiesInBbox(bbox: LatLngBounds): Observable<Array<CityDTO>> {
+    citiesInBbox(bbox: LatLngBounds): Observable<CityDTO[]> {
         return this.http
-            .get<Array<CityDTO>>(
+            .get<CityDTO[]>(
                 this.URL_CITIES_BBOX(
                     bbox.getNorthWest().wrap().lng,
                     bbox.getNorthWest().wrap().lat,
@@ -67,9 +67,9 @@ export class BatimapService {
             );
     }
 
-    legendForBbox(bbox: LatLngBounds): Observable<Array<LegendDTO>> {
+    legendForBbox(bbox: LatLngBounds): Observable<LegendDTO[]> {
         return this.http
-            .get<Array<LegendDTO>>(
+            .get<LegendDTO[]>(
                 this.URL_LEGEND(
                     bbox.getNorthWest().wrap().lng,
                     bbox.getNorthWest().wrap().lat,
@@ -79,7 +79,7 @@ export class BatimapService {
             )
             .pipe(
                 map(r => plainToClass(LegendDTO, r)),
-                switchMap((legends: Array<LegendDTO>) => {
+                switchMap((legends: LegendDTO[]) => {
                     for (const l of legends) {
                         l.checked = this.legendService.isActive(l);
                     }
@@ -106,7 +106,7 @@ export class BatimapService {
         );
     }
 
-    obsoleteCity(ignored: Array<string>): Observable<ObsoleteCityDTO> {
+    obsoleteCity(ignored: string[]): Observable<ObsoleteCityDTO> {
         return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
             params: {
                 ignored: ignored.join(',')

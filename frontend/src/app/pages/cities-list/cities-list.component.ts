@@ -17,7 +17,7 @@ export class CitiesListComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
     @ViewChild(MatSort, { static: true }) sort: MatSort;
 
-    displayedColumns: Array<string> = [
+    displayedColumns: string[] = [
         'name',
         'insee',
         'date',
@@ -50,7 +50,7 @@ export class CitiesListComponent extends Unsubscriber implements OnInit {
         this.autoUnsubscribe(
             this.batimapService
                 .citiesInBbox(this.map.getBounds())
-                .subscribe((cities: Array<CityDTO>) => {
+                .subscribe((cities: CityDTO[]) => {
                     this.dataSource.data = undefined;
                     this.dataSource.data = cities;
                     this.isReady = true;
