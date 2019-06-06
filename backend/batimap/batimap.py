@@ -205,6 +205,7 @@ def fetch_osm_data(db, city, overpass, force):
     date = city.get_last_import_date()
     if force or date is None:
         sources_date = []
+        simplified_buildings = []
         if city.is_raster:
             date = "raster"
         else:
@@ -225,7 +226,6 @@ def fetch_osm_data(db, city, overpass, force):
             # iterate on every building
             elements = response.get("elements")
             buildings = []
-            simplified_buildings = []
             for element in elements:
                 if element.get("type") == "node":
                     LOG.info(
