@@ -115,7 +115,7 @@ export class MapComponent {
 
     private openPopup(cityJson: string) {
         const city = plainToClass(CityDTO, cityJson);
-        city.details = deserialize(CityDetailsDTO, city.details.toString());
+        city.details = city.details ? deserialize(CityDetailsDTO, city.details.toString()) : undefined;
         this.matDialog.open(CityDetailsDialogComponent, {
             data: [city, this.cadastreLayer]
         });
