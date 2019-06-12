@@ -191,6 +191,7 @@ def fetch_cadastre_data(city):
 
 def clear_tiles(db, insee):
     bbox = db.bbox_for_insee(insee)
+    LOG.info(f"{insee} tiles must be cleared: {str(bbox)}")
     with open("tiles/outdated.txt", "a") as fd:
         fd.write(str(bbox) + "\n")
 
