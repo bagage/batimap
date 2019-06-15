@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 import 'leaflet';
 import 'leaflet-geocoder-ban/dist/leaflet-geocoder-ban';
 import 'leaflet-hash';
-import 'leaflet.restoreview';
+import '@bagage/leaflet.restoreview';
 import 'leaflet.vectorgrid';
 import { SharedComponentsModule } from '../../components/shared-components.module';
 import { MatLibModule } from '../../mat-lib.module';
