@@ -14,17 +14,19 @@ export class LegendService {
 
             return true;
         }
+        const id =
+            typeof legend === 'string' ? legend : this.date2name(legend.name);
 
-        return (
-            this.getLocalStorage(
-                typeof legend === 'string' ? legend : legend.name
-            ) !== 'false'
-        );
+        return this.getLocalStorage(id) !== 'false';
     }
 
     setActive(legend: LegendDTO, isActive: boolean) {
         if (legend) {
-            localStorage.setItem(legend.name, isActive ? undefined : 'false');
+            if (isActive) {
+                localStorage.removeItem(legend.name);
+            } else {
+                localStorage.setItem(legend.name, 'false');
+            }
         }
     }
 
