@@ -10,16 +10,7 @@ import { BatimapService } from '../../services/batimap.service';
 import { LegendService } from '../../services/legend.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { CityDetailsDialogComponent } from '../city-details-dialog/city-details-dialog.component';
-
-class MapDateLegendModel {
-    constructor(
-        public name: string, // legend item name
-        public checked: boolean, // is the legend item checked or not
-        public count: number, // number of items of this item on the map
-        public percent: number, // number of items of this item relative to the total number on the map
-        public color: string
-    ) {}
-}
+import { MapDateLegendModel } from './map-date-legend.model';
 
 @Component({
     selector: 'app-map-date-legend',
@@ -71,10 +62,11 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                         items.map(
                             it =>
                                 new MapDateLegendModel(
-                                    this.legendService.date2name(it.name),
+                                    it.name,
                                     it.checked,
                                     it.count,
                                     it.percent,
+                                    this.legendService.date2name(it.name),
                                     this.legendService.date2color(it.name)
                                 )
                         )
