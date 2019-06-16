@@ -14,8 +14,7 @@ export class LegendService {
 
             return true;
         }
-        const id =
-            typeof legend === 'string' ? legend : this.date2name(legend.name);
+        const id = typeof legend === 'string' ? legend : legend.name;
 
         return this.getLocalStorage(id) !== 'false';
     }
@@ -43,7 +42,8 @@ export class LegendService {
                 return 'green';
             }
             if (year >= oldestYear) {
-                // last color is black and we do not want to use it for this because it represents raster cities
+                // last generated color is black and we do not want to use it
+                // because it already represents raster cities
                 const colorsCount = currentYear - oldestYear + 1;
                 const colors: string[] = palette('tol-sq', colorsCount).map(
                     it => `#${it}`
