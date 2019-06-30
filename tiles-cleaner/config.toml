@@ -108,10 +108,10 @@ name = "batimap"
 
   [[maps.layers]]
   provider_layer = "cadastre.cities-point"
-  min_zoom = 8
+  min_zoom = 7
   max_zoom = 8
 
   [[maps.layers]]
   provider_layer = "cadastre.departments"
   min_zoom = 0
-  max_zoom = 7
+  max_zoom = 6
