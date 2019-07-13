@@ -25,10 +25,10 @@ services:
       fixed_network:
         ipv4_address: 10.8.0.11
 
-  initdb_worker:
-    build: initdb_worker
+  citystats-refresher:
+    build: citystats-refresher
     volumes:
-    - ./initdb_worker/:/code
+    - ./citystats-refresher/:/code
     - ./data/imposm/tiles:/tiles
     restart: always
     networks:

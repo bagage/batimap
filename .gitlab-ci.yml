@@ -61,10 +61,10 @@ build_imposm:
     CONTAINER: imposm
     DOCKERFILE: Dockerfile
 
-build_initdb_worker:
+build_citystats-refresher:
   <<: *build_docker_image
   variables:
-    CONTAINER: initdb_worker
+    CONTAINER: citystats-refresher
     DOCKERFILE: Dockerfile
 
 build_backend:
