@@ -1,16 +1,7 @@
 {
     "areas": {
-        "area_tags": [
-            "buildings",
-            "landuse",
-            "leisure",
-            "natural",
-            "aeroway"
-        ],
-        "linear_tags": [
-            "highway",
-            "barrier"
-        ]
+        "area_tags": ["buildings", "landuse", "leisure", "natural", "aeroway"],
+        "linear_tags": ["highway", "barrier"]
     },
     "tables": {
         "buildings": {
@@ -49,19 +40,13 @@
             "type": "geometry",
             "type_mappings": {
                 "points": {
-                    "building": [
-                        "__any__"
-                    ]
+                    "building": ["__any__"]
                 },
                 "linestrings": {
-                    "building": [
-                        "__any__"
-                    ]
+                    "building": ["__any__"]
                 },
                 "polygons": {
-                    "building": [
-                        "__any__"
-                    ]
+                    "building": ["__any__"]
                 }
             }
         },
@@ -98,11 +83,9 @@
                     "key": "ref:INSEE"
                 }
             ],
-           "type": "polygon",
+            "type": "polygon",
             "mapping": {
-                "boundary": [
-                    "administrative"
-                ]
+                "boundary": ["administrative"]
             }
         }
     }

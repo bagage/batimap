@@ -12,15 +12,15 @@ services:
       fixed_network:
         ipv4_address: 10.8.0.10
 
-  imposm_updater:
-    build: imposm_updater
+  imposm:
+    build: imposm
     env_file:
     - ./.env
-    entrypoint: bash /wait-for-it.sh -- /import_from_geofabrik.sh $$REGIONS
+    entrypoint: bash /wait-for-it.sh -- /entrypoint.sh $$REGIONS
     depends_on:
     - postgis
     volumes:
-    - ./data/imposm_updater:/app
+    - ./data/imposm:/app
     networks:
       fixed_network:
         ipv4_address: 10.8.0.11
@@ -29,7 +29,7 @@ services:
     build: initdb_worker
     volumes:
     - ./initdb_worker/:/code
-    - ./data/imposm_updater/tiles:/tiles
+    - ./data/imposm/tiles:/tiles
     restart: always
     networks:
       fixed_network:

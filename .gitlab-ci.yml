@@ -55,10 +55,10 @@ build_postgis:
     CONTAINER: postgis
     DOCKERFILE: Dockerfile
 
-build_imposm_updater:
+build_imposm:
   <<: *build_docker_image
   variables:
-    CONTAINER: imposm_updater
+    CONTAINER: imposm
     DOCKERFILE: Dockerfile
 
 build_initdb_worker:
