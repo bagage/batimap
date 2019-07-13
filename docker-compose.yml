@@ -93,12 +93,12 @@ services:
       fixed_network:
         ipv4_address: 10.8.0.16
 
-  frontend:
-    build: frontend
+  front:
+    build: front
     ports:
     - "4200:4200"
     volumes:
-    - ./frontend/:/usr/src/app
+    - ./front/:/usr/src/app
     depends_on:
     - tiles
     - back
