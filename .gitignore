@@ -4,3 +4,5 @@
 __pycache__/
 /data/
 front/node_modules
+front/package-lock.json
+.env
