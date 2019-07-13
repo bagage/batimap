@@ -67,10 +67,10 @@ build_citystats-refresher:
     CONTAINER: citystats-refresher
     DOCKERFILE: Dockerfile
 
-build_backend:
+build_back:
   <<: *build_docker_image
   variables:
-    CONTAINER: backend
+    CONTAINER: back
     DOCKERFILE: Dockerfile
 
 build_tiles:

@@ -114,20 +114,20 @@ export class BatimapService {
         });
     }
     private URL_TASK(task: Task): string {
-        return `${this.configService.getConfig().backendServerUrl}/tasks/${
+        return `${this.configService.getConfig().backServerUrl}/tasks/${
             task.task_id
         }`;
     }
 
     private URL_CITY_DATA(insee: string): string {
         return `${
-            this.configService.getConfig().backendServerUrl
+            this.configService.getConfig().backServerUrl
         }cities/${insee}/josm`;
     }
 
     private URL_CITY_UPDATE(insee: string): string {
         return `${
-            this.configService.getConfig().backendServerUrl
+            this.configService.getConfig().backServerUrl
         }cities/${insee}/update`;
     }
 
@@ -138,7 +138,7 @@ export class BatimapService {
         latSE: number
     ) {
         return `${
-            this.configService.getConfig().backendServerUrl
+            this.configService.getConfig().backServerUrl
         }cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
@@ -149,14 +149,12 @@ export class BatimapService {
         latSE: number
     ) {
         return `${
-            this.configService.getConfig().backendServerUrl
+            this.configService.getConfig().backServerUrl
         }legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
     private URL_CITY_OBSOLETE() {
-        return `${
-            this.configService.getConfig().backendServerUrl
-        }cities/obsolete`;
+        return `${this.configService.getConfig().backServerUrl}cities/obsolete`;
     }
 
     private longRunningAPI<T>(

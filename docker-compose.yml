@@ -64,12 +64,12 @@ services:
         ipv4_address: 10.8.0.14
 
   celery:
-    build: backend
+    build: back
     env_file:
     - ./.env
     command: sh /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
     volumes:
-    - ./backend/:/code
+    - ./back/:/code
     - ./data/tiles:/code/tiles
     depends_on:
     - postgis
@@ -77,15 +77,15 @@ services:
       fixed_network:
         ipv4_address: 10.8.0.15
 
-  backend:
-    build: backend
+  back:
+    build: back
     env_file:
     - ./.env
     command: sh /wait-for-it.sh -- sh /entrypoint.sh
     ports:
     - "5000:5000"
     volumes:
-    - ./backend/:/code
+    - ./back/:/code
     - ./data/tiles:/code/tiles
     depends_on:
     - postgis
@@ -101,7 +101,7 @@ services:
     - ./frontend/:/usr/src/app
     depends_on:
     - tiles
-    - backend
+    - back
     networks:
       fixed_network:
         ipv4_address: 10.8.0.17
