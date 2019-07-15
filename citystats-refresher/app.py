@@ -28,9 +28,9 @@ logging.basicConfig(
     level=verbosity[os.environ.get("INITDB_VERBOSITY") or config["DEFAULT"]["VERBOSITY"] or "CRITICAL"],
 )
 
-BACKEND_CITIES_IN_BBOX_URL = config["DEFAULT"]["BACKEND_URL"] + "/cities/in_bbox/{lonNW}/{latNW}/{lonSE}/{latSE}"
-BACKEND_INITDB_URL = config["DEFAULT"]["BACKEND_URL"] + "/initdb"
-BACKEND_TASKS_URL = config["DEFAULT"]["BACKEND_URL"] + "/tasks/{task_id}"
+BACK_CITIES_IN_BBOX_URL = config["DEFAULT"]["BACK_URL"] + "/cities/in_bbox/{lonNW}/{latNW}/{lonSE}/{latSE}"
+BACK_INITDB_URL = config["DEFAULT"]["BACK_URL"] + "/initdb"
+BACK_TASKS_URL = config["DEFAULT"]["BACK_URL"] + "/tasks/{task_id}"
 
 
 def convert_zxy_to_lonlat(z, x, y):
@@ -88,16 +88,16 @@ class Handler(FileSystemEventHandler):
             lonNW, latNW = convert_zxy_to_lonlat(z, x, y)
             lonSE, latSE = convert_zxy_to_lonlat(z, x + 1, y + 1)
             args = {"lonNW": lonNW, "latNW": latNW, "lonSE": lonSE, "latSE": latSE}
-            LOG.debug(BACKEND_CITIES_IN_BBOX_URL.format(**args))
-            r = requests.get(url=BACKEND_CITIES_IN_BBOX_URL.format(**args))
+            LOG.debug(BACK_CITIES_IN_BBOX_URL.format(**args))
+            r = requests.get(url=BACK_CITIES_IN_BBOX_URL.format(**args))
             cities += [x["insee"] for x in r.json()]
             LOG.debug(r.text)
         cities = sorted(list(set(cities)))
         if len(cities):
             LOG.info(f"Running initdb on {cities}")
-            r = requests.post(url=BACKEND_INITDB_URL, json={"cities": cities})
+            r = requests.post(url=BACK_INITDB_URL, json={"cities": cities})
             if r.status_code == 202:
-                LOG.info(f"You can follow the progress of initdb on {BACKEND_TASKS_URL.format(**r.json())}")
+                LOG.info(f"You can follow the progress of initdb on {BACK_TASKS_URL.format(**r.json())}")
             else:
                 LOG.warning(f"Error {r.status_code} {r.reason} while invoking initdb: {r.text}")
         else:

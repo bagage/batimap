@@ -15,5 +15,5 @@ fi
 
 GUNICORN_TIMEOUT_VALUE=${GUNICORN_TIMEOUT_VALUE:=60}
 
-# start the backend
+# start the back
 gunicorn --bind ':5000' --timeout $GUNICORN_TIMEOUT_VALUE --workers 4 app:app

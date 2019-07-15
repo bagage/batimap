@@ -12,24 +12,24 @@ services:
       fixed_network:
         ipv4_address: 10.8.0.10
 
-  imposm_updater:
-    build: imposm_updater
+  imposm:
+    build: imposm
     env_file:
     - ./.env
-    entrypoint: bash /wait-for-it.sh -- /import_from_geofabrik.sh $$REGIONS
+    entrypoint: bash /wait-for-it.sh -- /entrypoint.sh $$REGIONS
     depends_on:
     - postgis
     volumes:
-    - ./data/imposm_updater:/app
+    - ./data/imposm:/app
     networks:
       fixed_network:
         ipv4_address: 10.8.0.11
 
-  initdb_worker:
-    build: initdb_worker
+  citystats-refresher:
+    build: citystats-refresher
     volumes:
-    - ./initdb_worker/:/code
-    - ./data/imposm_updater/tiles:/tiles
+    - ./citystats-refresher/:/code
+    - ./data/imposm/tiles:/tiles
     restart: always
     networks:
       fixed_network:
@@ -64,12 +64,12 @@ services:
         ipv4_address: 10.8.0.14
 
   celery:
-    build: backend
+    build: back
     env_file:
     - ./.env
     command: sh /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
     volumes:
-    - ./backend/:/code
+    - ./back/:/code
     - ./data/tiles:/code/tiles
     depends_on:
     - postgis
@@ -77,15 +77,15 @@ services:
       fixed_network:
         ipv4_address: 10.8.0.15
 
-  backend:
-    build: backend
+  back:
+    build: back
     env_file:
     - ./.env
     command: sh /wait-for-it.sh -- sh /entrypoint.sh
     ports:
     - "5000:5000"
     volumes:
-    - ./backend/:/code
+    - ./back/:/code
     - ./data/tiles:/code/tiles
     depends_on:
     - postgis
@@ -93,15 +93,15 @@ services:
       fixed_network:
         ipv4_address: 10.8.0.16
 
-  frontend:
-    build: frontend
+  front:
+    build: front
     ports:
     - "4200:4200"
     volumes:
-    - ./frontend/:/usr/src/app
+    - ./front/:/usr/src/app
     depends_on:
     - tiles
-    - backend
+    - back
     networks:
       fixed_network:
         ipv4_address: 10.8.0.17

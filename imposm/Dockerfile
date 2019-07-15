@@ -23,10 +23,8 @@ RUN mkdir /config
 
 COPY config.json /config
 COPY mapping.json /config
-COPY import_from_geofabrik.sh /
+COPY entrypoint.sh /
 COPY wait-for-it.sh /
-
-RUN chmod +x /import_from_geofabrik.sh
 
 ENV POSTGRES_ADDRESS=localhost
 ENV POSTGRES_PORT=5432
@@ -34,4 +32,4 @@ ENV POSTGRES_DB=gis
 
 ENV REGIONS=""
 
-ENTRYPOINT ["bash", "-c", "/import_from_geofabrik.sh $REGIONS"]
+ENTRYPOINT ["bash", "-c", "/entrypoint.sh $REGIONS"]

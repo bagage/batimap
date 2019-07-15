@@ -3,4 +3,6 @@
 /.idea
 __pycache__/
 /data/
-frontend/node_modules
+front/node_modules
+front/package-lock.json
+.env

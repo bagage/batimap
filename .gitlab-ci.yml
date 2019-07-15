@@ -12,7 +12,7 @@ test:
   before_script:
     - yarn config set cache-folder cache-ci
   script:
-    - cd frontend/
+    - cd front/
     - yarn
     - yarn lint
     - yarn prettier --check
@@ -41,7 +41,7 @@ build_ci_test:
   variables:
     CONTAINER: ci-test
     DOCKERFILE: Dockerfile.ci
-    BASE_DIR: frontend
+    BASE_DIR: front
 
 build_tiles_cleaner:
   <<: *build_docker_image
@@ -55,22 +55,22 @@ build_postgis:
     CONTAINER: postgis
     DOCKERFILE: Dockerfile
 
-build_imposm_updater:
+build_imposm:
   <<: *build_docker_image
   variables:
-    CONTAINER: imposm_updater
+    CONTAINER: imposm
     DOCKERFILE: Dockerfile
 
-build_initdb_worker:
+build_citystats-refresher:
   <<: *build_docker_image
   variables:
-    CONTAINER: initdb_worker
+    CONTAINER: citystats-refresher
     DOCKERFILE: Dockerfile
 
-build_backend:
+build_back:
   <<: *build_docker_image
   variables:
-    CONTAINER: backend
+    CONTAINER: back
     DOCKERFILE: Dockerfile
 
 build_tiles:
@@ -79,8 +79,8 @@ build_tiles:
     CONTAINER: tiles
     DOCKERFILE: Dockerfile
 
-build_frontend:
+build_front:
   <<: *build_docker_image
   variables:
-    CONTAINER: frontend
+    CONTAINER: front
     DOCKERFILE: Dockerfile.prod
