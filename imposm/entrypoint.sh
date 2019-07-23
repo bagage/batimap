@@ -49,9 +49,6 @@ connection_param="postgis://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$PO
 
 if [ "$DO_IMPORT" = "true" ]; then
     SCRIPT_DIR=$(realpath $(dirname $0))
-    WORK_DIR=/app
-
-    cd $WORK_DIR
 
     echo "downloading $regions"
 
