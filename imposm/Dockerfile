@@ -32,6 +32,8 @@ ENV POSTGRES_DB=gis
 
 ENV REGIONS=""
 
+RUN adduser conflation --uid 1000 --gecos "" --disabled-password --home /data
+USER conflation
 WORKDIR /data
 
 ENTRYPOINT ["bash", "-c", "/entrypoint.sh $REGIONS"]

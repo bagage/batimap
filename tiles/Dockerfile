@@ -20,4 +20,7 @@ COPY wait-for-it.sh /
 
 ENV CONFIG=/app/config.toml
 
+RUN adduser conflation --gecos "" --disabled-password --home /data
+USER conflation
+
 CMD tegola --config $CONFIG serve

@@ -19,4 +19,7 @@ COPY config.toml /app/config.toml
 
 COPY entrypoint.sh /
 
+RUN adduser conflation --gecos "" --disabled-password --home /data
+USER conflation
+
 CMD /entrypoint.sh
