@@ -1,4 +1,5 @@
-FROM debian
+FROM debian:sid-slim
+
 RUN apt update && \
     apt install -y unzip postgresql-client wget jq curl && \
     apt autoremove && apt clean
