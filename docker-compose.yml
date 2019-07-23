@@ -29,7 +29,7 @@ services:
     build: citystats-refresher
     volumes:
     - ./citystats-refresher/:/code
-    - ./data/imposm/tiles:/tiles
+    - ./data/imposm/tiles:/data/tiles
     restart: always
     networks:
       fixed_network:

@@ -18,4 +18,7 @@ COPY --from=builder /install /usr/local
 COPY . /code
 WORKDIR /code
 
+RUN adduser conflation --gecos "" --disabled-password --home /data
+USER conflation
+
 ENTRYPOINT [ "python3", "/code/app.py" ]

@@ -1,4 +1,5 @@
-FROM debian
+FROM debian:sid-slim
+
 RUN apt update && \
     apt install -y unzip postgresql-client wget jq curl && \
     apt autoremove && apt clean
@@ -18,5 +19,8 @@ ADD config.toml /app/config.toml
 COPY wait-for-it.sh /
 
 ENV CONFIG=/app/config.toml
+
+RUN adduser conflation --gecos "" --disabled-password --home /data
+USER conflation
 
 CMD tegola --config $CONFIG serve

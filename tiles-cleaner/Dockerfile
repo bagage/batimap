@@ -1,4 +1,5 @@
-FROM debian
+FROM debian:sid-slim
+
 RUN apt update && \
     apt install -y unzip postgresql-client wget jq curl && \
     apt autoremove && apt clean
@@ -17,5 +18,8 @@ RUN mkdir /app
 COPY config.toml /app/config.toml
 
 COPY entrypoint.sh /
+
+RUN adduser conflation --gecos "" --disabled-password --home /data
+USER conflation
 
 CMD /entrypoint.sh

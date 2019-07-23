@@ -22,6 +22,7 @@ WORKDIR /code
 
 COPY wait-for-it.sh /
 COPY entrypoint.sh /
-# ENV FLASK_APP=app.py
-# CMD flask run
+
+RUN adduser conflation --gecos "" --disabled-password --home /data
+USER conflation
 
