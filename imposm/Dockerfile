@@ -32,4 +32,6 @@ ENV POSTGRES_DB=gis
 
 ENV REGIONS=""
 
+WORKDIR /data
+
 ENTRYPOINT ["bash", "-c", "/entrypoint.sh $REGIONS"]

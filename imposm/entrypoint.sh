@@ -49,9 +49,6 @@ connection_param="postgis://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$PO
 
 if [ "$DO_IMPORT" = "true" ]; then
     SCRIPT_DIR=$(realpath $(dirname $0))
-    WORK_DIR=/app
-
-    cd $WORK_DIR
 
     echo "downloading $regions"
 
@@ -59,9 +56,9 @@ if [ "$DO_IMPORT" = "true" ]; then
         echo "downloading $region.osm.pbf"
         file=$(basename $region).osm.pbf
         axel http://download.geofabrik.de/europe/$region.osm.pbf.md5
-        (test -f $file && md5sum -c $file.md5 &>/dev/null) || (rm -f $file && axel http://download.geofabrik.de/europe/$region.osm.pbf || test -f $file)
+        (test -f $file && md5sum -c $file.md5 &>/dev/null) || (rm -f $file && axel http://download.geofabrik.de/europe/$region.osm.pbf)
         echo "checking $region.osm.pbf file integrity"
-        md5sum -c $file.md5
+        md5sum -c $file.md5 || exit 1
     done
 
     echo "Waiting for postgis to be available..."

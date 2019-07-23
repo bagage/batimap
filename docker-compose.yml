@@ -20,7 +20,7 @@ services:
     depends_on:
     - postgis
     volumes:
-    - ./data/imposm:/app
+    - ./data/imposm:/data
     networks:
       fixed_network:
         ipv4_address: 10.8.0.11
