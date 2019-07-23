@@ -41,7 +41,7 @@ def convert_zxy_to_lonlat(z, x, y):
 
 
 class Watcher:
-    DIRECTORY_TO_WATCH = "/tiles"
+    DIRECTORY_TO_WATCH = "/data/tiles"
 
     def __init__(self):
         self.observer = Observer()
