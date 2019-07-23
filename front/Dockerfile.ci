@@ -1,5 +1,7 @@
-FROM node:10
+FROM node:alpine
 
 RUN apt-get update && apt-get install -yy chromium --no-install-recommends && apt-get clean
 
 ENV CHROME_BIN=/usr/bin/chromium
+
+USER node
