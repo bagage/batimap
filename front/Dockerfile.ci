@@ -3,5 +3,3 @@ FROM node:alpine
 RUN apk add chromium
 
 ENV CHROME_BIN=/usr/bin/chromium
-
-USER node
