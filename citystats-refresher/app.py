@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import requests
-from math import degrees, sinh, atan, pi
 import configparser
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -31,13 +30,6 @@ logging.basicConfig(
 BACK_CITIES_IN_BBOX_URL = config["DEFAULT"]["BACK_URL"] + "/cities/in_bbox/{lonNW}/{latNW}/{lonSE}/{latSE}"
 BACK_INITDB_URL = config["DEFAULT"]["BACK_URL"] + "/initdb"
 BACK_TASKS_URL = config["DEFAULT"]["BACK_URL"] + "/tasks/{task_id}"
-
-
-def convert_zxy_to_lonlat(z, x, y):
-    n = pow(2, z)
-    lon = x / n * 360.0 - 180.0
-    lat = degrees(atan(sinh(pi * (1 - (2 * y / n)))))
-    return [lon, lat]
 
 
 class Watcher:
@@ -84,10 +76,9 @@ class Handler(FileSystemEventHandler):
         cities = []
         for i, line in enumerate(lines):
             LOG.debug(f"entry {i} / {len(lines)} : {line}")
-            z, x, y = map(int, line.split("/"))
-            lonNW, latNW = convert_zxy_to_lonlat(z, x, y)
-            lonSE, latSE = convert_zxy_to_lonlat(z, x + 1, y + 1)
-            args = {"lonNW": lonNW, "latNW": latNW, "lonSE": lonSE, "latSE": latSE}
+            # each line is like: '4.39307577596182,48.7899945842883,4.4969189229214,48.8514051846223\n'
+            (lonW, latS, lonE, latN) = line.strip().split(",")
+            args = {"lonNW": lonW, "latNW": latN, "lonSE": lonE, "latSE": latS}
             LOG.debug(BACK_CITIES_IN_BBOX_URL.format(**args))
             r = requests.get(url=BACK_CITIES_IN_BBOX_URL.format(**args))
             cities += [x["insee"] for x in r.json()]
