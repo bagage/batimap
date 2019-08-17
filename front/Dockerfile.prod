@@ -9,5 +9,3 @@ FROM nginx:alpine
 WORKDIR /usr/share/nginx/html
 COPY --from=0 /usr/src/app/dist/batimap .
 COPY prod/nginx.conf /etc/nginx/conf.d/default.conf
-
-USER node

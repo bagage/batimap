@@ -6,7 +6,6 @@ ADD . /usr/src/app
 
 RUN chown -R node:node /usr/src/app
 
-USER node
 WORKDIR /usr/src/app
 CMD yarn && yarn start --host 0.0.0.0
 
