@@ -5,7 +5,7 @@
 ></div>
 
 <app-map-date-legend
-    [ngClass]="{ hidden: map?.getZoom() < 7 }"
+    [hideCheckboxes]="map?.getZoom() < 7"
     #legend
 ></app-map-date-legend>
 

@@ -20,6 +20,7 @@ import { MapDateLegendModel } from './map-date-legend.model';
 export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
     @Input() cadastreLayer;
+    @Input() hideCheckboxes: boolean;
 
     legendItems$: Observable<MapDateLegendModel[]>;
     bounds: L.LatLngBounds;

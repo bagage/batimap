@@ -1,37 +1,53 @@
 <mat-card>
-    <mat-card-title id="title"
-        >Date de dernier import par commune</mat-card-title
-    >
+    <mat-card-title id="title">Date de dernier import </mat-card-title>
     <mat-card-content>
-        <button
-            mat-mini-fab
-            color="accent"
-            (click)="feelingLucky()"
-            matTooltip="J'ai de la chance ! Sélectionner automatiquement une commune qui a besoin d'un import. [Raccourci : shift+c]"
-        >
-            <mat-icon>extension</mat-icon>
-        </button>
-        <button
-            mat-mini-fab
-            color="primary"
-            (click)="openHelp()"
-            matTooltip="Afficher l'aide. [Raccourci : shift+a]"
-        >
-            <mat-icon>live_help</mat-icon>
-        </button>
+        <div style="margin-bottom: 10px">
+            <button
+                mat-mini-fab
+                color="accent"
+                (click)="feelingLucky()"
+                matTooltip="J'ai de la chance ! Sélectionner automatiquement une commune qui a besoin d'un import. [Raccourci : shift+c]"
+            >
+                <mat-icon>extension</mat-icon>
+            </button>
+            <button
+                mat-mini-fab
+                style="margin-left: 10px"
+                color="primary"
+                (click)="openHelp()"
+                matTooltip="Afficher l'aide. [Raccourci : shift+a]"
+            >
+                <mat-icon>live_help</mat-icon>
+            </button>
+        </div>
+
         <ng-container
             *ngIf="legendItems$ | async as legendItems; else dataHandler"
         >
             <ng-container *ngIf="legendItems?.length > 0; else noCities">
-                <mat-checkbox
-                    *ngFor="let item of legendItems"
-                    [id]="'legend' + item.name"
-                    [(ngModel)]="item.checked"
-                    (change)="legendChanges(item)"
-                    [ngStyle]="{ color: item.color }"
-                >
-                    {{ item.displayName }} ({{ item.percent }}%)
-                </mat-checkbox>
+                <ng-container *ngIf="!hideCheckboxes; else labels">
+                    <div>
+                        <mat-checkbox
+                            *ngFor="let item of legendItems"
+                            [id]="'legend' + item.name"
+                            [(ngModel)]="item.checked"
+                            (change)="legendChanges(item)"
+                            [ngStyle]="{ color: item.color }"
+                        >
+                            {{ item.displayName }} ({{ item.percent }}%)
+                        </mat-checkbox>
+                    </div>
+                </ng-container>
+                <ng-template #labels>
+                    <ul>
+                        <li
+                            *ngFor="let item of legendItems"
+                            [ngStyle]="{ color: item.color }"
+                        >
+                            {{ item.displayName }} ({{ item.percent }}%)
+                        </li>
+                    </ul>
+                </ng-template>
             </ng-container>
         </ng-container>
         <ng-template #noCities>
@@ -45,6 +61,8 @@
                 Le serveur est actuellement hors-ligne.
             </div>
         </ng-template>
-        <ng-template #loading> <app-loader></app-loader> </ng-template>
+        <ng-template #loading>
+            <app-loader></app-loader>
+        </ng-template>
     </mat-card-content>
 </mat-card>
