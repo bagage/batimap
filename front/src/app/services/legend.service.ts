@@ -63,7 +63,7 @@ export class LegendService {
         }
 
         // unknown
-        return 'gray';
+        return '#6200EE';
     }
 
     date2name(yearStr: string) {
