@@ -4,7 +4,10 @@
     [leafletOptions]="options"
 ></div>
 
-<app-map-date-legend #legend></app-map-date-legend>
+<app-map-date-legend
+    [ngClass]="{ hidden: map?.getZoom() < 7 }"
+    #legend
+></app-map-date-legend>
 
 <!--disable list for now, not ideal flow yet-->
-<app-cities-list #list *ngIf="false"></app-cities-list>
+<app-cities-list *ngIf="false"></app-cities-list>

@@ -10,6 +10,9 @@
     flex-direction: column;
 }
 
+.hidden {
+    visibility: hidden;
+}
 div {
     flex: 1;
     width: 100%;
