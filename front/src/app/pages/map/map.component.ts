@@ -93,11 +93,12 @@ export class MapComponent {
         );
         this.cadastreLayer.on('click', e => {
             this.zone.run(() => {
-                if (e.layer.options.opacity !== 1) {
-                    return;
-                    // do not open popup when clicking depts
-                }
+                // do not open popup when clicking depts
                 if (e.layer.properties.insee.length <= 3) {
+                    return;
+                }
+                // do not open popup when clicking hiden cities
+                if (e.layer.options.opacity !== 1) {
                     return;
                 }
                 this.openPopup(e.layer.properties);

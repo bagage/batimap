@@ -4,12 +4,16 @@
     "rules": {
         "array-type": [true, "array-simple"],
         "i18n": [false],
+
+        "newline-per-chained-call": false, // prettier's responsibility
+        "angular-whitespace": [false], // prettier's responsibility
+        "prefer-inline-decorator": false, // prettier's responsibility
+
         "no-floating-promises": false,
-        "newline-per-chained-call": false,
         "typedef": false,
         "no-void-expression": false,
         "no-import-side-effect": false,
-        "angular-whitespace": [false],
+        "template-cyclomatic-complexity": false, //fixme
         "no-require-imports": false, // fixme?
         "trackBy-function": false, // fixme
         "no-call-expression": [false], // fixme

@@ -9,3 +9,4 @@ prod/
 yarn.lock
 polyfills.ts
 test.ts
+dist/
