@@ -35,7 +35,7 @@ export class LegendService {
 
     date2color(yearStr: string): string {
         const currentYear = new Date().getFullYear();
-        const oldestYear = 2009;
+        const oldestYear = 2008;
         if (Number.isInteger(+yearStr)) {
             const year = Number.parseInt(yearStr, 10);
             if (year === currentYear) {
