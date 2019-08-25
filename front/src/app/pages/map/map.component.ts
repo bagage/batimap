@@ -68,7 +68,7 @@ export class MapComponent {
             color,
             opacity: hidden ? 0.08 : 1,
             fill: true,
-            radius: type === 'point' ? zoom / 2 : 1,
+            radius: type === 'point' ? (zoom === 8 ? 4 : 2) : 1,
             fillOpacity: hidden ? 0.08 : properties.josm_ready ? 0.8 : 0.4
         };
     }
