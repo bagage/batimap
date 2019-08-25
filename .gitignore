@@ -1,8 +1,10 @@
 .bash_history
 .vscode
-/.idea
 __pycache__/
 /data/
 front/node_modules
 front/package-lock.json
 .env
+
+.idea/*
+!.idea/runConfigurations
