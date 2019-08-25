@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { AppConfigService } from './app-config.service';
 
-import { plainToClass } from 'class-transformer';
+import { deserialize, plainToClass } from 'class-transformer';
 import { LatLngBounds } from 'leaflet';
 import { Observable, of, timer } from 'rxjs';
 import { debounceTime, map, switchMap, takeWhile, tap } from 'rxjs/operators';
 import { HttpClient } from '../../../node_modules/@angular/common/http';
 import { ClassType } from '../../../node_modules/class-transformer/ClassTransformer';
-import { CityDTO } from '../classes/city.dto';
+import { CityDetailsDTO, CityDTO } from '../classes/city.dto';
 import { ConflateCityDTO } from '../classes/conflate-city.dto';
 import { LegendDTO } from '../classes/legend.dto';
 import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
@@ -107,11 +107,23 @@ export class BatimapService {
     }
 
     obsoleteCity(ignored: string[]): Observable<ObsoleteCityDTO> {
-        return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
-            params: {
-                ignored: ignored.join(',')
-            }
-        });
+        return this.http
+            .get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
+                params: {
+                    ignored: ignored.join(',')
+                }
+            })
+            .pipe(
+                map(data => {
+                    data.city.details = data.city.details
+                        ? deserialize(
+                              CityDetailsDTO,
+                              data.city.details.toString()
+                          )
+                        : undefined;
+                    return data;
+                })
+            );
     }
     private URL_TASK(task: Task): string {
         return `${this.configService.getConfig().backServerUrl}/tasks/${
