@@ -34,7 +34,6 @@ test:
     - docker tag registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG
-  retry: 2
 
 build_ci_test:
   <<: *build_docker_image
