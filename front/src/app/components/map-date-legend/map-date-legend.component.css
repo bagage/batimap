@@ -11,6 +11,9 @@
     max-width: 220px;
 }
 
+ul {
+    padding: 10px;
+}
 #title {
     font-size: medium;
 }
