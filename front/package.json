@@ -1,11 +1,12 @@
 {
-    "name": "batimap",
+    "name": "cadastre-conflation",
     "version": "1.3.0",
     "scripts": {
         "ng": "ng",
         "start": "yarn outdated & ng serve",
         "build": "yarn outdated & ng build",
         "test": "ng test",
+        "postinstall": "cd node_modules/leaflet.vectorgrid && yarn install && yarn build",
         "lint": "ng lint --fix",
         "e2e": "ng e2e",
         "prettier": "prettier --write '**/*'"
@@ -28,16 +29,16 @@
         "@angular/platform-browser-dynamic": "^8.0.0",
         "@angular/router": "^8.0.0",
         "@asymmetrik/ngx-leaflet": "^5.0.1",
+        "@bagage/leaflet.restoreview": "1.0.1",
         "class-transformer": "^0.2.0",
         "core-js": "^3.1.3",
         "google-palette": "^1.1.0",
         "hammerjs": "^2.0.8",
         "leaflet": "~1.5.1",
-        "@bagage/leaflet.restoreview": "1.0.1",
         "leaflet-geocoder-ban": "^1.0.7",
         "leaflet-hash": "^0.2.1",
         "leaflet-search": "^2.9.7",
-        "leaflet.vectorgrid": "^1.3.0",
+        "leaflet.vectorgrid": "Leaflet/Leaflet.VectorGrid#master",
         "mat-progress-buttons": "^8.0.4",
         "protractor": "^5.4.2",
         "reflect-metadata": "^0.1.12",
@@ -49,7 +50,7 @@
         "@angular/cli": "~8.0.1",
         "@angular/compiler-cli": "^8.0.0",
         "@angular/language-service": "^8.0.0",
-        "@types/jasmine": "~3.3.9",
+        "@types/jasmine": "~3.4.0",
         "@types/jasminewd2": "~2.0.3",
         "@types/leaflet": "^1.4.3",
         "@types/node": "^12.0.4",
@@ -58,9 +59,9 @@
         "husky": "^2.3.0",
         "jasmine-core": "~3.4.0",
         "jasmine-spec-reporter": "~4.2.1",
-        "karma": "~4.1.0",
-        "karma-chrome-launcher": "~2.2.0",
-        "karma-coverage-istanbul-reporter": "~2.0.5",
+        "karma": "~4.2.0",
+        "karma-chrome-launcher": "~3.1.0",
+        "karma-coverage-istanbul-reporter": "~2.1.0",
         "karma-firefox-launcher": "^1.1.0",
         "karma-jasmine": "~2.0.1",
         "karma-jasmine-html-reporter": "^1.4.0",
@@ -69,5 +70,10 @@
         "ts-node": "^8.0.3",
         "tslint": "^5.13.1",
         "typescript": "3.4.5"
+    },
+    "overrides": {
+        "leaflet.vectorgrid": {
+            "main": "src/bundle-extra.js"
+        }
     }
 }
