@@ -2,7 +2,6 @@
     position: absolute;
     right: 1%;
     top: 2%;
-    bottom: 2%;
     z-index: 1000; /* must appear above the map! */
     background-color: white;
 
