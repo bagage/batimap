@@ -8,7 +8,7 @@ import '@bagage/leaflet.restoreview';
 import 'leaflet';
 import 'leaflet-geocoder-ban/dist/leaflet-geocoder-ban';
 import 'leaflet-hash';
-import 'leaflet.vectorgrid';
+import '@bagage/leaflet.vectorgrid';
 import { SharedComponentsModule } from '../../components/shared-components.module';
 import { MatLibModule } from '../../mat-lib.module';
 
