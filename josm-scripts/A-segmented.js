@@ -15,43 +15,56 @@ if (josm.layers.activeLayer !== null) {
 }
 for (var i = 0; i < josm.layers.length; i++) {
     var layer = josm.layers.get(i);
-    if (!segmentedLayer && (!layerPattern || layer.name.contains(layerPattern)) && layer.name.endsWith("-houses-prediction_segmente.osm")) {
+    if (
+        !segmentedLayer &&
+        (!layerPattern || layer.name.contains(layerPattern)) &&
+        layer.name.endsWith("-houses-prediction_segmente.osm")
+    ) {
         segmentedLayer = layer;
-    } else if (!housesLayer && (!layerPattern || layer.name.contains(layerPattern)) && layer.name.endsWith("-houses-simplifie.osm")) {
+    } else if (
+        !housesLayer &&
+        (!layerPattern || layer.name.contains(layerPattern)) &&
+        layer.name.endsWith("-houses-simplifie.osm")
+    ) {
         housesLayer = layer;
     }
 }
 
 function startTodo() {
-    var todoClassloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader("todo");
+    var todoClassloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader(
+        "todo"
+    );
     if (todoClassloader == null) {
         josm.alert("Le plugin Todo ne semble pas installé");
         return;
     }
 
     var map = org.openstreetmap.josm.gui.MainApplication.map;
-    var dialogsField = map.getClass().getDeclaredField('allDialogs');
+    var dialogsField = map.getClass().getDeclaredField("allDialogs");
 
     var todoDialog = null;
     dialogsField.setAccessible(true);
     var dialogs = dialogsField.get(map);
     for (var dialogIdx = 0; dialogIdx < dialogs.size(); dialogIdx++) {
         var dialog = dialogs.get(dialogIdx);
-        if (dialog.getClass().toString() == "class org.openstreetmap.josm.plugins.todo.TodoDialog") {
+        if (
+            dialog.getClass().toString() ==
+            "class org.openstreetmap.josm.plugins.todo.TodoDialog"
+        ) {
             todoDialog = dialog;
         }
     }
 
     if (todoDialog) {
-        var actAddField = todoDialog.class.getDeclaredField('actAdd');
+        var actAddField = todoDialog.class.getDeclaredField("actAdd");
         actAddField.setAccessible(true);
         actAddField.get(todoDialog).actionPerformed(null);
 
         // autozoom on first issue
-        var model = todoDialog.class.getDeclaredField('model');
+        var model = todoDialog.class.getDeclaredField("model");
         model.setAccessible(true);
         var first = model.get(todoDialog).getSelected();
-        var primitive = first.class.getDeclaredField('primitive');
+        var primitive = first.class.getDeclaredField("primitive");
         primitive.setAccessible(true);
         var autoScaleAction = org.openstreetmap.josm.actions.AutoScaleAction;
         segmentedLayer.data.selection.clearAll();
@@ -60,10 +73,14 @@ function startTodo() {
 
         if (!todoDialog.isVisible()) {
             todoDialog.unfurlDialog();
-            josm.alert("Veuillez maintenant réaliser la liste des tâches, passer ensuite à la seconde étape B-conflation.js...")
+            josm.alert(
+                "Veuillez maintenant réaliser la liste des tâches, passer ensuite à la seconde étape B-conflation.js..."
+            );
         }
     } else {
-        josm.alert("Impossible de trouver l'onglet Todo. Est-ce que le plugin est installé ?")
+        josm.alert(
+            "Impossible de trouver l'onglet Todo. Est-ce que le plugin est installé ?"
+        );
         return null;
     }
 }
@@ -73,7 +90,9 @@ function do_work() {
     // Then we zoom on first item and wait for user to work.
     josm.layers.activeLayer = segmentedLayer;
     var ds = segmentedLayer.data;
-    var segmented = ds.query('type:way name="Est-ce que les bâtiments ne sont pas segmentés ici par le cadastre ?"');
+    var segmented = ds.query(
+        'type:way name="Est-ce que les bâtiments ne sont pas segmentés ici par le cadastre ?"'
+    );
     if (segmented.length > 0) {
         // select in todo
         ds.selection.clearAll();
@@ -87,15 +106,24 @@ function do_work() {
 }
 
 if (housesLayer == null && segmentedLayer == null) {
-    josm.alert("Impossible de trouver les calques de travail (XXX-houses-prediction_segmente.osm et XXX-houses-simplifie.osm)")
+    josm.alert(
+        "Impossible de trouver les calques de travail (<insee>-<ville>-houses-prediction_segmente.osm et <insee>-<ville>-houses-simplifie.osm)"
+    );
 } else if (housesLayer == null) {
-    josm.alert("Impossible de trouver le calque de travail (XXX-houses-simplifie.osm)")
+    josm.alert(
+        "Impossible de trouver le calque de travail (<insee>-<ville>-houses-simplifie.osm)"
+    );
 } else if (segmentedLayer == null) {
-    josm.alert("Impossible de trouver le calque de travail (XXX-houses-prediction_segmente.osm)")
-// check that insee match
-} else if (segmentedLayer.name.split('-')[0] != housesLayer.name.split('-')[0]) {
-    josm.alert("Les calques de travail ne correspondent pas à la même commune INSEE")
+    josm.alert(
+        "Impossible de trouver le calque de travail (<insee>-<ville>-houses-prediction_segmente.osm)"
+    );
+    // check that insee match
+} else if (
+    segmentedLayer.name.split("-")[0] != housesLayer.name.split("-")[0]
+) {
+    josm.alert(
+        "Les calques de travail ne correspondent pas à la même commune INSEE"
+    );
 } else {
     do_work();
 }
-
