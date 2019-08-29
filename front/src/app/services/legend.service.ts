@@ -41,23 +41,23 @@ export class LegendService {
         }
     }
 
+    oldestYear = 2008;
+    currentYear = new Date().getFullYear();
+    yearColors = palette('tol-sq', this.currentYear - this.oldestYear + 1).map(
+        it => `#${it}`
+    );
+
     date2color(yearStr: string): string {
-        const currentYear = new Date().getFullYear();
-        const oldestYear = 2008;
         if (Number.isInteger(+yearStr)) {
             const year = Number.parseInt(yearStr, 10);
-            if (year === currentYear) {
+            if (year === this.currentYear) {
                 return 'green';
             }
-            if (year >= oldestYear) {
+            if (year >= this.oldestYear) {
                 // last generated color is black and we do not want to use it
                 // because it already represents raster cities
-                const colorsCount = currentYear - oldestYear + 1;
-                const colors: string[] = palette('tol-sq', colorsCount).map(
-                    it => `#${it}`
-                );
-
-                return colors[currentYear - year];
+                const colorsCount = this.currentYear - this.oldestYear + 1;
+                return this.yearColors[this.currentYear - year];
             }
         }
         if (yearStr === 'raster') {
