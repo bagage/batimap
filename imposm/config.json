@@ -1,7 +1,7 @@
 {
-    "cachedir": "/app/cache",
-    "diffdir": "/app/diff",
-    "expiretiles_dir": "/app/tiles",
+    "cachedir": "/data/cache",
+    "diffdir": "/data/diff",
+    "expiretiles_dir": "/data/tiles",
     "expiretiles_zoom": 10,
     "replication_interval": "24h",
     "replication_url": "http://download.geofabrik.de/europe/france-updates/",
