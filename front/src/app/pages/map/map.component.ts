@@ -49,6 +49,7 @@ export class MapComponent {
         this.map = map;
         this.legend.map = map;
         L.hash(map);
+        map.restoreView();
         this.searchControl = L.geocoderBAN({
             placeholder: 'Rechercher une commune (shift+f)'
         }).addTo(map);
