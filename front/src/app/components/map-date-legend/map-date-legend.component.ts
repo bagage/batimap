@@ -77,7 +77,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     }
 
     legendChanges(legend: LegendDTO) {
-        this.legendService.setActive(legend, legend.checked);
+        this.legendService.toggleActive(legend, legend.checked);
         this.cadastreLayer.redraw();
     }
 

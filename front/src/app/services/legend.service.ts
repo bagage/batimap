@@ -7,30 +7,38 @@ import { LegendDTO } from '../classes/legend.dto';
 })
 export class LegendService {
     city2date: Map<string, string> = new Map<string, string>();
+    inactiveLegendItems = new Set<string>();
+    storageName = 'deactivated-legends';
+
+    constructor() {
+        const ignored = localStorage.getItem(this.storageName);
+        if (ignored)
+            ignored.split(',').map(v => this.inactiveLegendItems.add(v));
+    }
 
     isActive(legend: LegendDTO | string): boolean {
-        if (!legend) {
-            console.warn('legend is null!!!');
-
-            return true;
-        }
         const id = typeof legend === 'string' ? legend : legend.name;
 
-        return this.getLocalStorage(id) !== 'false';
+        return !this.inactiveLegendItems.has(id);
     }
 
-    setActive(legend: LegendDTO, isActive: boolean) {
+    toggleActive(legend: LegendDTO, isActive: boolean) {
         if (legend) {
-            if (isActive) {
-                localStorage.removeItem(legend.name);
-            } else {
-                localStorage.setItem(legend.name, 'false');
+            const currentActive = !this.inactiveLegendItems.has(legend.name);
+            if (currentActive !== isActive) {
+                if (isActive) {
+                    this.inactiveLegendItems.delete(legend.name);
+                } else {
+                    this.inactiveLegendItems.add(legend.name);
+                }
+                // persist settings
+                let value = [];
+                this.inactiveLegendItems.forEach(v => value.push(v));
+                if (value.length > 0)
+                    localStorage.setItem(this.storageName, value.join(','));
+                else localStorage.removeItem(this.storageName);
             }
         }
-    }
-
-    getLocalStorage(key: string): string | null {
-        return localStorage.getItem(key);
     }
 
     date2color(yearStr: string): string {
