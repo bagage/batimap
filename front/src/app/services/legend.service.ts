@@ -67,7 +67,7 @@ export class LegendService {
             return 'pink';
         }
         if (yearStr === 'unfinished') {
-            return 'orange';
+            return '#03A9F4';
         }
 
         // unknown
