@@ -27,7 +27,7 @@ while true; do
             # if bbox not empty
             if [ ! -z $bbox ]; then
                 tegola --config /app/config.toml cache purge --bounds "$bbox" --min-zoom 7 --max-zoom 13
-                tegola --config /app/config.toml cache seed --bounds "$bbox" --min-zoom 7 --max-zoom 10
+                tegola --config /app/config.toml cache seed --bounds "$bbox" --min-zoom 7 --max-zoom $INITIAL_MAX_ZOOM
             fi
         done < $WORK_FILE
         rm $WORK_FILE
