@@ -57,11 +57,16 @@ class Handler(FileSystemEventHandler):
     def on_any_event(event):
         LOG.debug(f"New event: {event}, is_directory={event.is_directory}, event_type={event.event_type}")
         if event.is_directory:
-            return None
+            path = None
         elif event.event_type == "modified":
-            return Handler.parse_entries(event.src_path)
+            path = event.src_path
         elif event.event_type == "moved":
-            return Handler.parse_entries(event.dest_path)
+            path = event.dest_path
+        else:
+            path = None
+
+        if path and "outdated.txt" in path:
+            return Handler.parse_entries(path)
 
     @staticmethod
     def parse_entries(file_path):
