@@ -1,16 +1,3 @@
-:host {
-    position: absolute;
-    right: 1%;
-    top: 2%;
-    z-index: 1000; /* must appear above the map! */
-    background-color: white;
-
-    display: flex;
-    flex-direction: column;
-
-    max-width: 220px;
-}
-
 ul {
     padding: 10px;
 }

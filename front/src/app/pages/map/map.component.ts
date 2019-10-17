@@ -37,6 +37,7 @@ export class MapComponent {
     map: L.Map;
     cadastreLayer: any;
     private searchControl: L.Control;
+    displayLegend = true;
 
     constructor(
         private readonly matDialog: MatDialog,

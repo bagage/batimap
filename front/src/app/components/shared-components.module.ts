@@ -8,6 +8,7 @@ import { JosmButtonComponent } from './josm-button/josm-button.component';
 import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog/josm-script-update-dialog.component';
 import { LoaderComponent } from './loader/loader.component';
 import { MapDateLegendComponent } from './map-date-legend/map-date-legend.component';
+import { LegendButtonComponent } from './legend-button/legend-button.component';
 
 @NgModule({
     imports: [CommonModule, MatLibModule],
@@ -18,7 +19,8 @@ import { MapDateLegendComponent } from './map-date-legend/map-date-legend.compon
         JosmButtonComponent,
         LoaderComponent,
         MapDateLegendComponent,
-        JosmScriptUpdateDialogComponent
+        JosmScriptUpdateDialogComponent,
+        LegendButtonComponent
     ],
     exports: [
         CityDetailsDialogComponent,
@@ -27,7 +29,8 @@ import { MapDateLegendComponent } from './map-date-legend/map-date-legend.compon
         JosmButtonComponent,
         LoaderComponent,
         MapDateLegendComponent,
-        JosmScriptUpdateDialogComponent
+        JosmScriptUpdateDialogComponent,
+        LegendButtonComponent
     ],
     entryComponents: [
         AboutDialogComponent,

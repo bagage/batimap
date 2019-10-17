@@ -14,3 +14,24 @@ div {
     flex: 1;
     width: 100%;
 }
+
+.hidden {
+    visibility: hidden;
+}
+
+app-map-date-legend,
+app-legend-button {
+    position: absolute;
+    right: 1%;
+    top: 2%;
+    z-index: 1000; /* must appear above the map! */
+}
+
+app-map-date-legend {
+    background-color: white;
+
+    display: flex;
+    flex-direction: column;
+
+    max-width: 220px;
+}
