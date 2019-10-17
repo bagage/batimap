@@ -291,8 +291,8 @@ def get_city_stats(items, fast, all):
     Returns cadastral status of given items.
     If status is unknown, it is computed first.
     """
-    d = [None]
-    c = None
+    d = []
+    c = []
     if all:
         click.echo("Will stats ALL available cities")
         d = db.get_departments()

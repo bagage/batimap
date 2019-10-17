@@ -5,9 +5,13 @@
 ></div>
 
 <app-map-date-legend
-    [hideCheckboxes]="map?.getZoom() < 7"
     #legend
+    [ngClass]="{ hidden: !displayLegend }"
+    [hideCheckboxes]="map?.getZoom() < 7"
+    (hideLegend)="displayLegend = false"
 ></app-map-date-legend>
 
+<app-legend-button *ngIf="!displayLegend" (showLegend)="displayLegend = true">
+</app-legend-button>
 <!--disable list for now, not ideal flow yet-->
 <app-cities-list *ngIf="false"></app-cities-list>

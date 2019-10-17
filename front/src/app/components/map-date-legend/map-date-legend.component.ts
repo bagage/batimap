@@ -1,4 +1,12 @@
-import { Component, HostListener, Input, NgZone, OnInit } from '@angular/core';
+import {
+    Component,
+    EventEmitter,
+    HostListener,
+    Input,
+    NgZone,
+    OnInit,
+    Output
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import * as L from 'leaflet';
 import { Observable } from 'rxjs';
@@ -21,6 +29,8 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
     @Input() cadastreLayer;
     @Input() hideCheckboxes: boolean;
+
+    @Output() readonly hideLegend = new EventEmitter();
 
     legendItems$: Observable<MapDateLegendModel[]>;
     bounds: L.LatLngBounds;
@@ -83,6 +93,10 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
 
     @HostListener('document:keydown.shift.a') openHelp() {
         this.matDialog.open(AboutDialogComponent);
+    }
+
+    @HostListener('document:keydown.shift.h') emitHideLegend(): void {
+        this.hideLegend.emit();
     }
 
     @HostListener('document:keydown.shift.c') feelingLucky() {
