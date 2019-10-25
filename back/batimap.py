@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from .city import City
+from city import City
 
 from bs4 import BeautifulSoup, SoupStrainer
 import http.cookiejar

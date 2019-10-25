@@ -18,11 +18,11 @@ from flask_cors import CORS
 from celery import Celery
 from celery.result import AsyncResult
 
-from batimap import batimap
-from batimap.city import City
-from batimap.citydto import CityEncoder, CityDTO
-from batimap.overpassw import Overpass
-from batimap.db_utils import Postgis
+import batimap
+from city import City
+from citydto import CityEncoder, CityDTO
+from overpassw import Overpass
+from db_utils import Postgis
 
 app = Flask(__name__)
 app.config.from_pyfile(app.root_path + "/app.conf")
