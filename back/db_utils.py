@@ -7,10 +7,10 @@ import psycopg2
 import psycopg2.extras
 import logging
 from geojson import Feature, FeatureCollection, loads
-from .bbox import Bbox
-from .point import Point
-from .batimap import IGNORED_BUILDINGS, date_for_buildings
-from .citydto import CityDTO
+from bbox import Bbox
+from point import Point
+from batimap import IGNORED_BUILDINGS, date_for_buildings
+from citydto import CityDTO
 
 LOG = logging.getLogger(__name__)
 
