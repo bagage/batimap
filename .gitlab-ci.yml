@@ -1,6 +1,6 @@
 stages:
-  - test
   - build
+  - test
 
 test:
   image: registry.gitlab.com/bagage/cadastre-conflation/ci-test
