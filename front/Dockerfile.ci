@@ -1,5 +1,5 @@
-FROM node:alpine
+FROM node:8
 
-RUN apk add chromium
+RUN apt-get update && apt-get install -yy chromium --no-install-recommends && apt-get clean
 
 ENV CHROME_BIN=/usr/bin/chromium

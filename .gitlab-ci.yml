@@ -17,6 +17,10 @@ test:
     - yarn lint
     - yarn prettier --check
     - yarn test --karma-config src/karma-ci.conf.js
+  artifacts:
+    reports:
+      junit: front/src/junit_karma.xml
+
   except:
     - master
 
