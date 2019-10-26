@@ -1,9 +1,9 @@
 beautifulsoup4==4.8.1
-celery[redis]==4.2.1
+celery[redis]==4.3.0
 Click==7.0
-Flask==1.0.2
+Flask==1.1.1
 Flask_Cors==3.0.8
-Flask_RESTful==0.3.6
+Flask_RESTful==0.3.7
 geojson==2.5.0
 gevent==1.4.0
 gunicorn==19.9.0
@@ -11,5 +11,5 @@ lxml==4.4.1
 overpass==0.6.1
 psycopg2==2.8.4
 python_dateutil==2.8.0
-redis==3.2.0
-requests==2.21.0
+redis==3.3.11
+requests==2.22.0
