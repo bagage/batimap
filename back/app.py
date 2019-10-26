@@ -85,6 +85,7 @@ def task_initdb(self, items):
 @celery.task(bind=True)
 def task_josm_data(self, insee):
     task_progress(self, 1)
+    c = City(db, insee)
     # force refreshing cadastre date
     next(batimap.fetch_departments_osm_state(db, [c.department]))
     c = City(db, insee)
