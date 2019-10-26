@@ -7,9 +7,9 @@ module.exports = function(config) {
         frameworks: ['jasmine', '@angular-devkit/build-angular'],
         plugins: [
             require('karma-jasmine'),
-            require('karma-firefox-launcher'),
             require('karma-chrome-launcher'),
             require('karma-jasmine-html-reporter'),
+            require('karma-junit-reporter'),
             require('karma-coverage-istanbul-reporter'),
             require('@angular-devkit/build-angular/plugins/karma')
         ],
@@ -24,14 +24,24 @@ module.exports = function(config) {
         customLaunchers: {
             ChromeHeadlessSandbox: {
                 base: 'ChromeHeadless',
-                flags: ['--no-sandbox', '--disable-dev-shm-usage']
+                flags: [
+                    '--no-sandbox',
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                    '--disable-web-security',
+                    '--window-size=800,600'
+                ]
             }
         },
-        reporters: ['progress', 'kjhtml'],
+        reporters: ['progress', 'kjhtml', 'junit'],
+        junitReporter: {
+            outputFile: 'junit_karma.xml',
+            useBrowserName: false
+        },
         port: 9876,
         colors: true,
         logLevel: config.LOG_INFO,
-        autoWatch: false,
+        autoWatch: true,
         browsers: ['ChromeHeadlessSandbox'],
         singleRun: true
     });
