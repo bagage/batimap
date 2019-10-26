@@ -121,6 +121,7 @@ export class BatimapService {
                               data.city.details.toString()
                           )
                         : undefined;
+
                     return data;
                 })
             );
