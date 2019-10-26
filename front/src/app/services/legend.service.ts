@@ -10,10 +10,17 @@ export class LegendService {
     inactiveLegendItems = new Set<string>();
     storageName = 'deactivated-legends';
 
+    oldestYear = 2008;
+    currentYear = new Date().getFullYear();
+    yearColors = palette('tol-sq', this.currentYear - this.oldestYear + 1).map(
+        it => `#${it}`
+    );
+
     constructor() {
         const ignored = localStorage.getItem(this.storageName);
-        if (ignored)
+        if (ignored) {
             ignored.split(',').map(v => this.inactiveLegendItems.add(v));
+        }
     }
 
     isActive(legend: LegendDTO | string): boolean {
@@ -32,20 +39,16 @@ export class LegendService {
                     this.inactiveLegendItems.add(legend.name);
                 }
                 // persist settings
-                let value = [];
+                const value = [];
                 this.inactiveLegendItems.forEach(v => value.push(v));
-                if (value.length > 0)
+                if (value.length > 0) {
                     localStorage.setItem(this.storageName, value.join(','));
-                else localStorage.removeItem(this.storageName);
+                } else {
+                    localStorage.removeItem(this.storageName);
+                }
             }
         }
     }
-
-    oldestYear = 2008;
-    currentYear = new Date().getFullYear();
-    yearColors = palette('tol-sq', this.currentYear - this.oldestYear + 1).map(
-        it => `#${it}`
-    );
 
     date2color(yearStr: string): string {
         if (Number.isInteger(+yearStr)) {
@@ -57,6 +60,7 @@ export class LegendService {
                 // last generated color is black and we do not want to use it
                 // because it already represents raster cities
                 const colorsCount = this.currentYear - this.oldestYear + 1;
+
                 return this.yearColors[this.currentYear - year];
             }
         }

@@ -15,7 +15,7 @@ FROM base
 
 RUN apk --update add postgresql-client libxml2 libxslt redis
 
-COPY --from=builder /usr/local/lib/python3.6 /usr/local/lib/python3.6
+COPY --from=builder /usr/local /usr/local
 
 COPY . /code
 WORKDIR /code

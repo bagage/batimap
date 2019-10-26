@@ -6,9 +6,9 @@ import { CityDetailsDialogComponent } from './city-details-dialog/city-details-d
 import { HowtoDialogComponent } from './howto-dialog/howto-dialog.component';
 import { JosmButtonComponent } from './josm-button/josm-button.component';
 import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog/josm-script-update-dialog.component';
+import { LegendButtonComponent } from './legend-button/legend-button.component';
 import { LoaderComponent } from './loader/loader.component';
 import { MapDateLegendComponent } from './map-date-legend/map-date-legend.component';
-import { LegendButtonComponent } from './legend-button/legend-button.component';
 
 @NgModule({
     imports: [CommonModule, MatLibModule],

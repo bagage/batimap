@@ -3,7 +3,7 @@
     "extends": ["angular-tslint-rules"],
     "rules": {
         "array-type": [true, "array-simple"],
-        "i18n": [false],
+        "template-i18n": [false], // there is no i18n here
 
         "newline-per-chained-call": false, // prettier's responsibility
         "angular-whitespace": [false], // prettier's responsibility
@@ -15,7 +15,7 @@
         "no-import-side-effect": false,
         "template-cyclomatic-complexity": false, //fixme
         "no-require-imports": false, // fixme?
-        "trackBy-function": false, // fixme
+        "template-use-track-by-function": false, // fixme
         "no-call-expression": [false], // fixme
         "no-console": false //fixme
     }

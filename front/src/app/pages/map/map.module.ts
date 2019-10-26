@@ -5,10 +5,10 @@ import { MapComponent } from './map.component';
 
 import { CommonModule } from '@angular/common';
 import '@bagage/leaflet.restoreview';
+import '@bagage/leaflet.vectorgrid';
 import 'leaflet';
 import 'leaflet-geocoder-ban/dist/leaflet-geocoder-ban';
 import 'leaflet-hash';
-import '@bagage/leaflet.vectorgrid';
 import { SharedComponentsModule } from '../../components/shared-components.module';
 import { MatLibModule } from '../../mat-lib.module';
 
