@@ -113,7 +113,7 @@ def fetch_departments_osm_state(db, departments):
                     LOG.debug(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
                     refresh_tiles.append(c.insee)
 
-        db.upsert_city_status(tuples)
+        db.upsert_city_status(d, tuples)
         for insee in refresh_tiles:
             clear_tiles(db, insee)
         yield idx + 1
