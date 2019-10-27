@@ -417,7 +417,12 @@ class Postgis(object):
         except Exception as e:
             LOG.warning("Cannot write in database: " + str(e))
 
-    def upsert_city_status(self, tuples):
+    def upsert_city_status(self, dept, tuples):
+        reqDeleteAll = """
+                UPDATE city_stats
+                SET date_cadastre = NULL
+                WHERE department = %s
+        """
         req = """
                 UPDATE city_stats as c
                 SET date_cadastre = e.date_cadastre
@@ -425,6 +430,8 @@ class Postgis(object):
                 WHERE e.name_cadastre = c.name_cadastre
         """
         try:
+            LOG.debug(f"Cleaning dept {tuples}")
+            self.execute(reqDeleteAll, [dept])
             LOG.debug(f"Updating cities date_cadastre for {tuples}")
             psycopg2.extras.execute_values(self.cursor, req, tuples)
             self.connection.commit()
