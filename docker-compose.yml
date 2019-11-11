@@ -80,6 +80,7 @@ services:
     - "4200:4200"
     volumes:
     - ./front/:/usr/src/app
+    - ./data/front/node_modules/:/usr/src/app/node_modules
     depends_on:
     - tiles
     - back
