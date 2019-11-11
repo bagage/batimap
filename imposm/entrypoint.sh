@@ -67,7 +67,6 @@ if [ "$DO_IMPORT" = "true" ]; then
         pg_isready -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB
         result=$?
         if [[ $result -eq 0 ]]; then
-            echo "$cmdname: postgis is available"
             break
         fi
         sleep 5
@@ -87,4 +86,4 @@ if [ "$DO_IMPORT" = "true" ]; then
     echo "Imports done!"
 fi
 
-imposm run -config /config/config.json -mapping /config/mapping.json -expiretiles-zoom 13 -connection $connection_param
+imposm run -config /config/config.json -mapping /config/mapping.json -expiretiles-zoom 11 -connection $connection_param

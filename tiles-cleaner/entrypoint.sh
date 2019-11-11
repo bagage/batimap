@@ -31,7 +31,7 @@ while true; do
             )
             for bbox in "${france_bboxes[@]}"; do
                 echo "Regenerating tiles in bbox $bbox"
-                tegola --config /app/config.toml cache purge --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom 13
+                tegola --config /app/config.toml cache purge --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom 11
                 tegola --config /app/config.toml cache seed --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom $INITIAL_MAX_ZOOM
             done
         else
@@ -51,7 +51,7 @@ while true; do
             # if bbox not empty
             if [ ! -z $bbox ]; then
                 echo "Regenrating tiles in bbox $bbox"
-                tegola --config /app/config.toml cache purge --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom 13
+                tegola --config /app/config.toml cache purge --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom 11
                 tegola --config /app/config.toml cache seed --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom $INITIAL_MAX_ZOOM
             fi
         done < $WORK_FILE
