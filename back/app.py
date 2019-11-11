@@ -18,7 +18,7 @@ from flask_cors import CORS
 from celery import Celery
 from celery.result import AsyncResult
 
-import batimap
+from batimap import Batimap
 from city import City
 from citydto import CityEncoder, CityDTO
 from overpassw import Overpass
@@ -132,11 +132,12 @@ logging.basicConfig(
     format="%(asctime)s %(message)s",
     datefmt="%H:%M:%S",
     level=verbosity[
-        os.environ.get("CONFLATION_VERBOSITY")
+        os.environ.get("BATIMAP_VERBOSITY")
         or app.config["VERBOSITY"]
         or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")
     ],
 )
+batimap = Batimap()
 
 db = Postgis(
     app.config["DB_NAME"],
@@ -145,6 +146,7 @@ db = Postgis(
     app.config["DB_PORT"],
     app.config["DB_HOST"],
     app.config["TILESERVER_URI"],
+    batimap,
 )
 
 db.create_tables()
