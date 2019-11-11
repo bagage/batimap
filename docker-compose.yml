@@ -19,11 +19,11 @@ services:
     volumes:
     - ./data/imposm:/data
 
-  citystats-refresher:
-    build: citystats-refresher
+  imposm-watcher:
+    build: imposm-watcher
     volumes:
-    - ./citystats-refresher/:/code
-    - ./data/tiles:/data/tiles
+    - ./imposm-watcher/:/code
+    - ./data/imposm/updated-tiles:/data
     restart: always
 
   tiles:
