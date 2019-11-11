@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+from .city import City
+
 import logging
-
-from city import City
-
 from bs4 import BeautifulSoup, SoupStrainer
 import http.cookiejar
 import urllib.request

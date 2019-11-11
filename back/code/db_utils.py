@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+from .bbox import Bbox
+from .point import Point
+from .citydto import CityDTO
+
 import json
 from math import sqrt
-
 import psycopg2
 import psycopg2.extras
 import logging
 from geojson import Feature, FeatureCollection, loads
-from bbox import Bbox
-from point import Point
-from citydto import CityDTO
 
 LOG = logging.getLogger(__name__)
 
