@@ -3,7 +3,7 @@ stages:
   - test
 
 test:
-  image: registry.gitlab.com/bagage/cadastre-conflation/ci-test
+  image: registry.gitlab.com/bagage/batimap/ci-test
   stage: test
   cache:
     untracked: true
@@ -34,10 +34,10 @@ test:
   only:
     - master
   script:
-    - docker build -t registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG -f ${BASE_DIR:-$CONTAINER}/$DOCKERFILE ${BASE_DIR:-$CONTAINER}
-    - docker tag registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:latest
-    - docker push registry.gitlab.com/bagage/cadastre-conflation/$CONTAINER:$CI_COMMIT_REF_SLUG
+    - docker build -t registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG -f ${BASE_DIR:-$CONTAINER}/$DOCKERFILE ${BASE_DIR:-$CONTAINER}
+    - docker tag registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/batimap/$CONTAINER:latest
+    - docker push registry.gitlab.com/bagage/batimap/$CONTAINER:latest
+    - docker push registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG
 
 build_ci_test:
   <<: *build_docker_image
