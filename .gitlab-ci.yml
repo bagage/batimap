@@ -2,7 +2,7 @@ stages:
   - build
   - test
 
-test:
+test:front:
   image: registry.gitlab.com/bagage/batimap/ci-test
   stage: test
   cache:
@@ -39,50 +39,50 @@ test:
     - docker push registry.gitlab.com/bagage/batimap/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG
 
-build_ci_test:
+build:ci_test:
   <<: *build_docker_image
   variables:
     CONTAINER: ci-test
     DOCKERFILE: Dockerfile.ci
     BASE_DIR: front
 
-build_tiles_cleaner:
+build:tiles_cleaner:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles-cleaner
     DOCKERFILE: Dockerfile
 
-build_postgis:
+build:postgis:
   <<: *build_docker_image
   variables:
     CONTAINER: postgis
     DOCKERFILE: Dockerfile
 
-build_imposm:
+build:imposm:
   <<: *build_docker_image
   variables:
     CONTAINER: imposm
     DOCKERFILE: Dockerfile
 
-imposm-watcher:
+build:imposm-watcher:
   <<: *build_docker_image
   variables:
     CONTAINER: imposm-watcher
     DOCKERFILE: Dockerfile
 
-build_back:
+build:back:
   <<: *build_docker_image
   variables:
     CONTAINER: back
     DOCKERFILE: Dockerfile
 
-build_tiles:
+build:tiles:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles
     DOCKERFILE: Dockerfile
 
-build_front:
+build:front:
   <<: *build_docker_image
   variables:
     CONTAINER: front
