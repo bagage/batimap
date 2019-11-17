@@ -31,7 +31,7 @@ export class MapComponent {
             })
         ],
         zoom: 5,
-        maxZoom: 13,
+        maxZoom: 14,
         center: L.latLng(46.111, 3.977)
     };
     map: L.Map;

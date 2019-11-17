@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+from .bbox import Bbox
+from .point import Point
+from .citydto import CityDTO
+
 import json
 from math import sqrt
-
 import psycopg2
 import psycopg2.extras
 import logging
 from geojson import Feature, FeatureCollection, loads
-from bbox import Bbox
-from point import Point
-from batimap import IGNORED_BUILDINGS, date_for_buildings
-from citydto import CityDTO
 
 LOG = logging.getLogger(__name__)
 
 
 class Postgis(object):
-    def __init__(self, db, user, passw, port, host, tileserver):
+    def __init__(self, db, user, passw, port, host, tileserver, batimap):
         self.db = db
         self.user = user
         self.passw = passw
@@ -24,6 +24,7 @@ class Postgis(object):
         self.host = host
         self.tileserver = tileserver
         self.cursor = None
+        self.batimap = batimap
 
     def execute(self, req, args=None):
         try:
@@ -473,7 +474,7 @@ class Postgis(object):
                     c.insee
             """
 
-        self.execute(query, [department.zfill(2), ", ".join(IGNORED_BUILDINGS)])
+        self.execute(query, [department.zfill(2), ", ".join(self.batimap.IGNORED_BUILDINGS)])
 
         for (insee, name, source, count, is_raster) in self.cursor.fetchall():
             if is_raster:
@@ -536,9 +537,11 @@ class Postgis(object):
 
             tuples = []
             for insee, buildings in buildings.items():
-                (date, counts) = date_for_buildings(insee, buildings, insee in simplified_cities)
+                (date, counts) = self.batimap.date_for_buildings(insee, buildings, insee in simplified_cities)
                 simplified = [x[1] for x in simplified_buildings if x[0] == insee]
-                tuples.append((insee, insee_name[insee], date, json.dumps({"dates": counts, "simplified": simplified})))
+                tuples.append(
+                    (insee, insee_name[insee], date, json.dumps({"dates": counts, "simplified": simplified}))
+                )
 
             self.update_stats_for_insee(tuples)
             yield idx + 1

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-
+# This program is watching for Imposm database updates (eg OSM data changes)
+# When update occurs, this script will refresh stats on data's cities
 import requests
 import configparser
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-
+from math import pi, degrees, atan, sinh
 import time
 import logging
 import os
@@ -24,16 +25,17 @@ verbosity = {
 logging.basicConfig(
     format="%(asctime)s %(message)s",
     datefmt="%H:%M:%S",
-    level=verbosity[os.environ.get("INITDB_VERBOSITY") or config["DEFAULT"]["VERBOSITY"] or "CRITICAL"],
+    level=verbosity[os.environ.get("IMPOSM_VERBOSITY") or config["DEFAULT"]["VERBOSITY"] or "CRITICAL"],
 )
 
-BACK_CITIES_IN_BBOX_URL = config["DEFAULT"]["BACK_URL"] + "/cities/in_bbox/{lonNW}/{latNW}/{lonSE}/{latSE}"
-BACK_INITDB_URL = config["DEFAULT"]["BACK_URL"] + "/initdb"
-BACK_TASKS_URL = config["DEFAULT"]["BACK_URL"] + "/tasks/{task_id}"
+BACK_URL = config["DEFAULT"]["BACK_URL"]
+BACK_CITIES_IN_BBOX_URL = BACK_URL + "/cities/in_bbox/{lonNW}/{latNW}/{lonSE}/{latSE}"
+BACK_INITDB_URL = BACK_URL + "/initdb"
+BACK_TASKS_URL = BACK_URL + "/tasks/{task_id}"
 
 
 class Watcher:
-    DIRECTORY_TO_WATCH = "/data/tiles"
+    DIRECTORY_TO_WATCH = "/data/"
 
     def __init__(self):
         self.observer = Observer()
@@ -54,19 +56,22 @@ class Watcher:
 
 class Handler(FileSystemEventHandler):
     @staticmethod
+    def convert_zxy_to_lonlat(z, x, y):
+        n = pow(2, z)
+        lon = x / n * 360.0 - 180.0
+        lat = degrees(atan(sinh(pi * (1 - (2 * y / n)))))
+        return [lon, lat]
+
+    @staticmethod
     def on_any_event(event):
         LOG.debug(f"New event: {event}, is_directory={event.is_directory}, event_type={event.event_type}")
         if event.is_directory:
-            path = None
-        elif event.event_type == "modified":
-            path = event.src_path
-        elif event.event_type == "moved":
-            path = event.dest_path
-        else:
-            path = None
+            return
 
-        if path and "outdated.txt" in path:
-            return Handler.parse_entries(path)
+        if event.event_type == "modified":
+            Handler.parse_entries(event.src_path)
+        elif event.event_type == "moved":
+            Handler.parse_entries(event.dest_path)
 
     @staticmethod
     def parse_entries(file_path):
@@ -80,10 +85,12 @@ class Handler(FileSystemEventHandler):
             return None
         cities = []
         for i, line in enumerate(lines):
-            LOG.debug(f"entry {i} / {len(lines)} : {line}")
-            # each line is like: '4.39307577596182,48.7899945842883,4.4969189229214,48.8514051846223\n'
-            (lonW, latS, lonE, latN) = line.strip().split(",")
-            args = {"lonNW": lonW, "latNW": latN, "lonSE": lonE, "latSE": latS}
+            LOG.debug(f"entry {i+1} / {len(lines)}: {line}")
+            # line is Z/X/Y format like '11/1058/702'
+            z, x, y = map(int, line.split("/"))
+            lonNW, latNW = Handler.convert_zxy_to_lonlat(z, x, y)
+            lonSE, latSE = Handler.convert_zxy_to_lonlat(z, x + 1, y + 1)
+            args = {"lonNW": lonNW, "latNW": latNW, "lonSE": lonSE, "latSE": latSE}
             LOG.debug(BACK_CITIES_IN_BBOX_URL.format(**args))
             r = requests.get(url=BACK_CITIES_IN_BBOX_URL.format(**args))
             cities += [x["insee"] for x in r.json()]

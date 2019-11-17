@@ -3,7 +3,7 @@ port = ":9999"
 
 [cache]
 type = "file"
-max_zoom = 13
+max_zoom = 11
 basepath = "/data/cache"
 
 # register data providers
@@ -104,7 +104,7 @@ name = "batimap"
   [[maps.layers]]
   provider_layer = "cadastre.cities"
   min_zoom = 9
-  max_zoom = 13
+  max_zoom = 11
 
   [[maps.layers]]
   provider_layer = "cadastre.cities-point"

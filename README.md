@@ -4,7 +4,7 @@ Outil de suivi du bâti [OpenStreetMap](https://openstreetmap.org) en France, pa
 
 L'état actuel des données peut être visualisé sur https ://cadastre.damsy.net
 
-![Visualisation de l'état du cadastre](https://gitlab.com/bagage/cadastre-conflation/wikis/uploads/20819cf4464309a987e55caaf1cc58da/Capture_d_%C3%A9cran_de_2018-10-29_18-34-52.png)
+![Visualisation de l'état du cadastre](https://gitlab.com/bagage/batimap/wikis/uploads/20819cf4464309a987e55caaf1cc58da/Capture_d_%C3%A9cran_de_2018-10-29_18-34-52.png)
 
 # Getting started
 
