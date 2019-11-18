@@ -46,7 +46,7 @@ build:ci_test:
     DOCKERFILE: Dockerfile.ci
     BASE_DIR: front
 
-build:tiles_cleaner:
+build:tiles-cleaner:
   <<: *build_docker_image
   variables:
     CONTAINER: tiles-cleaner
