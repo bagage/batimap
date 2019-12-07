@@ -23,11 +23,11 @@ class Overpass(object):
                 time.sleep(5 * round((10 - retry) / 3))
         return None
 
-    def get_city_buildings(self, city, with_timestamp=False):
+    def get_city_buildings(self, city, ignored_buildings):
         """
         Compute the latest import date for given city
         """
-        ignored_buildings = "".join(['[building!="' + x + '"]' for x in self.IGNORED_BUILDINGS])
+        ignored_buildings = "".join(['[building!="' + x + '"]' for x in ignored_buildings])
         request = f"""[out:json];
             area[boundary='administrative'][admin_level~'8|9']['ref:INSEE'='{city.insee}']->.a;
             (
@@ -36,4 +36,4 @@ class Overpass(object):
               relation['building']{ignored_buildings}(area.a);
             );
             out tags qt meta;"""
-        return self.request_with_retries(request)
+        return self.request_with_retries(request).get("elements")

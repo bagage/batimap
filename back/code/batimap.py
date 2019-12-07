@@ -201,14 +201,16 @@ class Batimap(object):
         if force or date is None:
             sources_date = []
             simplified_buildings = []
-            if city.is_raster:
+            if city.insee in self.NO_BUILDING_CITIES:
+                LOG.info(f"{city} est considéré sans bâti existant, la date d'import est supposée être l'année en cours")
+                date = str(datetime.date.today().year)
+            elif city.is_raster:
                 date = "raster"
             else:
                 try:
-                    response = overpass.get_city_buildings(city)
                     # iterate on every building
                     buildings = []
-                    for element in response.get("elements"):
+                    for element in overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
                         if element.get("type") == "node":
                             LOG.info(
                                 f"{city} contient des bâtiments "
@@ -217,10 +219,9 @@ class Batimap(object):
                             simplified_buildings.append(element.get("id"))
 
                         tags = element.get("tags")
-                        buildings.append((tags.get("source") or "") + (tags.get("source:date") or ""))
-                    (date, sources_date) = self.date_for_buildings(
-                        city.insee, buildings, len(simplified_buildings) > 0
-                    )
+                        buildings.append(tags.get("source") or tags.get("source:date") or element.get("timestamp")[:4])
+                    has_simplified = len(simplified_buildings) > 0
+                    (date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
                 except Exception as e:
                     LOG.error(f"Failed to count buildings for {city}: {e}")
                     return (None, None)
@@ -229,17 +230,12 @@ class Batimap(object):
             db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details))])
         return (city, date)
 
-    def date_for_buildings(self, insee, buildings, has_simplified_buildings):
+    def date_for_buildings(self, insee, dates, has_simplified_buildings):
         """
-        Computes the city buildings import date, given a list of buildings with their indiviual import date
+        Computes the city import date, given a list of buildings date
         """
-
-        if insee in self.NO_BUILDING_CITIES:
-            LOG.info(f"City {insee} is a no-buildings city. Assuming it was imported this year.")
-            return (str(datetime.date.today().year), [])
-
         sources_date = []
-        for b in buildings:
+        for b in dates:
             source = (b or "unknown").lower()
             date = re.sub(self.cadastre_src2date_regex, r"\2", source)
             sources_date.append(date)
@@ -253,8 +249,8 @@ class Batimap(object):
             # If a city has a few buildings, and **even if a date could be computed**, we assume
             # it was never imported (sometime only 1 building on the boundary is wrongly computed)
             # Almost all cities have at least church/school/townhall manually mapped
-            if len(buildings) < 10:
-                LOG.info(f"City {insee}: few buildings found ({len(buildings)}), assuming it was never imported!")
+            if len(dates) < 10:
+                LOG.info(f"City {insee}: too few buildings found ({len(dates)}), assuming it was never imported!")
                 date = "never"
             elif has_simplified_buildings:
                 date = "unfinished"
