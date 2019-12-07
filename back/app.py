@@ -10,6 +10,7 @@ import logging
 import os
 from pathlib import Path
 import json
+import itertools
 
 from flask import Flask, request, Response, url_for
 from flask_restful import inputs
@@ -71,12 +72,19 @@ def task_initdb(self, items):
         migration_file.unlink()
 
     # fill table with cities from cadastre website
+    p = 25
     for d in batimap.update_departments_raster_state(db, departments):
-        task_progress(self, d / len(departments) * 33)
+        task_progress(self, 0 * p + d / len(departments) * p)
     for d in batimap.fetch_departments_osm_state(db, departments):
-        task_progress(self, 33 + d / len(departments) * 33)
+        task_progress(self, 1 * p + d / len(departments) * p)
     for d in db.import_city_stats_from_osmplanet(items):
-        task_progress(self, 66 + d / len(items) * 33)
+        task_progress(self, 2 * p + d / len(items) * p)
+    # we could use city.details instead but almost half of cities have at least one building with no date...
+    cities = items if items_are_cities else list(itertools.chain.from_iterable([db.within_department(d) for d in items]))
+    unknowns = [x for x in cities if City(db, x).get_last_import_date() == "unknown"]
+    LOG.info(f"Using overpass for {len(unknowns)} unknown cities: {unknowns}")
+    for idx, d in enumerate(batimap.stats(db, op, cities=unknowns, force=True)):
+        task_progress(self, 3 * p + (idx + 1) / len(unknowns) * p)
 
     initdb_is_done_file.touch()
     task_progress(self, 100)
@@ -107,16 +115,17 @@ def task_josm_data(self, insee):
 
 @celery.task(bind=True)
 def task_update_insee_list(self, insee):
-    (_, date) = next(batimap.stats(db, op, cities=[insee], force=False))
     task_progress(self, 50)
-    (city, date2) = next(batimap.stats(db, op, cities=[insee], force=True))
+    (city, date) = next(batimap.stats(db, op, cities=[insee], force=True))
     task_progress(self, 99)
 
-    if date != date2:
+    dto = CityDTO(date, city)
+
+    if dto.date != date:
         batimap.clear_tiles(db, insee)
     task_progress(self, 100)
 
-    return json.dumps(CityDTO(date2, city), cls=CityEncoder)
+    return json.dumps(dto, cls=CityEncoder)
 
 
 LOG = logging.getLogger(__name__)
@@ -131,11 +140,7 @@ verbosity = {
 logging.basicConfig(
     format="%(asctime)s %(message)s",
     datefmt="%H:%M:%S",
-    level=verbosity[
-        os.environ.get("BATIMAP_VERBOSITY")
-        or app.config["VERBOSITY"]
-        or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")
-    ],
+    level=verbosity[os.environ.get("BATIMAP_VERBOSITY") or app.config["VERBOSITY"] or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")],
 )
 batimap = Batimap()
 
@@ -163,19 +168,12 @@ def api_status() -> dict:
 
 @app.route("/status/<department>", methods=["GET"])
 def api_department_status(department) -> str:
-    return json.dumps(
-        [
-            {x[0].insee: x[1]}
-            for x in batimap.stats(db, op, department=department, force=request.args.get("force", False))
-        ]
-    )
+    return json.dumps([{x[0].insee: x[1]} for x in batimap.stats(db, op, department=department, force=request.args.get("force", False))])
 
 
 @app.route("/status/<department>/<city>", methods=["GET"])
 def api_city_status(department, city) -> str:
-    for (city, date) in batimap.stats(
-        db, op, cities=[city], force=request.args.get("force", default=False, type=inputs.boolean)
-    ):
+    for (city, date) in batimap.stats(db, op, cities=[city], force=request.args.get("force", default=False, type=inputs.boolean)):
         return json.dumps({city.insee: date})
     return ""
 
@@ -226,9 +224,7 @@ def api_update_insee_list(insee) -> dict:
 
     new_task = task_update_insee_list.delay(insee)
     return Response(
-        response=json.dumps({"task_id": new_task.id}),
-        status=202,
-        headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
+        response=json.dumps({"task_id": new_task.id}), status=202, headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
     )
 
 
@@ -237,9 +233,7 @@ def api_josm_data(insee) -> dict:
     LOG.debug(f"Receive an josm request for {insee}")
     new_task = task_josm_data.delay(insee)
     return Response(
-        response=json.dumps({"task_id": new_task.id}),
-        status=202,
-        headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
+        response=json.dumps({"task_id": new_task.id}), status=202, headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
     )
 
 
@@ -311,7 +305,5 @@ def get_city_stats(items, fast, all):
             c = items
 
     for department in d:
-        for (city, date) in batimap.stats(
-            db, op, department=department, cities=c, force=not fast, refresh_cadastre_state=not fast
-        ):
+        for (city, date) in batimap.stats(db, op, department=department, cities=c, force=not fast, refresh_cadastre_state=not fast):
             click.echo("{}: date={}".format(city, date))
