@@ -79,9 +79,10 @@ def task_initdb(self, items):
         task_progress(self, 1 * p + d / len(departments) * p)
     for d in db.import_city_stats_from_osmplanet(items):
         task_progress(self, 2 * p + d / len(items) * p)
-    # we could use city.details instead but almost half of cities have at least one building with no date...
+    # we do not store building changeset timestamp in database, so we need to ask Overpass for cities which such
+    # buildings. For now, we only ask for cities with a majority of unknown buildings, but we could whenever there is one
     cities = items if items_are_cities else list(itertools.chain.from_iterable([db.within_department(d) for d in items]))
-    unknowns = [x for x in cities if City(db, x).get_last_import_date() == "unknown"]
+    unknowns = [x for x in cities if City(db, x).get_last_import_date() in ["unknown", "unfinished"]]
     LOG.info(f"Using overpass for {len(unknowns)} unknown cities: {unknowns}")
     for idx, d in enumerate(batimap.stats(db, op, cities=unknowns, force=True)):
         task_progress(self, 3 * p + (idx + 1) / len(unknowns) * p)
