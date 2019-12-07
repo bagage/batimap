@@ -212,11 +212,13 @@ class Batimap(object):
                     buildings = []
                     for element in overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
                         if element.get("type") == "node":
-                            LOG.info(
-                                f"{city} contient des bâtiments "
-                                f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
-                            )
-                            simplified_buildings.append(element.get("id"))
+                            # some buildings are mainly nodes, but we don't care much about them
+                            if not element.get("power") and not element.get("ruins") and not element.get("historic"):
+                                LOG.info(
+                                    f"{city} contient des bâtiments "
+                                    f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
+                                )
+                                simplified_buildings.append(element.get("id"))
 
                         tags = element.get("tags")
                         buildings.append(tags.get("source") or tags.get("source:date") or element.get("timestamp")[:4])
