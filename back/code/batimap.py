@@ -204,34 +204,26 @@ class Batimap(object):
             if city.is_raster:
                 date = "raster"
             else:
-                ignored_buildings = "".join(['[building!="' + x + '"]' for x in self.IGNORED_BUILDINGS])
-                request = f"""[out:json];
-                    area[boundary='administrative'][admin_level~'8|9']['ref:INSEE'='{city.insee}']->.a;
-                    (
-                      node['building'](area.a);
-                      way['building']{ignored_buildings}(area.a);
-                      relation['building']{ignored_buildings}(area.a);
-                    );
-                    out tags qt meta;"""
                 try:
-                    response = overpass.request_with_retries(request)
+                    response = overpass.get_city_buildings(city)
+                    # iterate on every building
+                    buildings = []
+                    for element in response.get("elements"):
+                        if element.get("type") == "node":
+                            LOG.info(
+                                f"{city} contient des bâtiments "
+                                f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
+                            )
+                            simplified_buildings.append(element.get("id"))
+
+                        tags = element.get("tags")
+                        buildings.append((tags.get("source") or "") + (tags.get("source:date") or ""))
+                    (date, sources_date) = self.date_for_buildings(
+                        city.insee, buildings, len(simplified_buildings) > 0
+                    )
                 except Exception as e:
                     LOG.error(f"Failed to count buildings for {city}: {e}")
                     return (None, None)
-                # iterate on every building
-                elements = response.get("elements")
-                buildings = []
-                for element in elements:
-                    if element.get("type") == "node":
-                        LOG.info(
-                            f"{city} contient des bâtiments "
-                            f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
-                        )
-                        simplified_buildings.append(element.get("id"))
-
-                    tags = element.get("tags")
-                    buildings.append((tags.get("source") or "") + (tags.get("source:date") or ""))
-                (date, sources_date) = self.date_for_buildings(city.insee, buildings, len(simplified_buildings) > 0)
             # only update date if we did not use cache files for buildings
             city.details = {"simplified": simplified_buildings, "dates": sources_date}
             db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details))])
