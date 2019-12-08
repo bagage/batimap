@@ -201,10 +201,7 @@ class Batimap(object):
         if force or date is None:
             sources_date = []
             simplified_buildings = []
-            if city.insee in self.NO_BUILDING_CITIES:
-                LOG.info(f"{city} est considéré sans bâti existant, la date d'import est supposée être l'année en cours")
-                date = str(datetime.date.today().year)
-            elif city.is_raster:
+            if city.is_raster:
                 date = "raster"
             else:
                 try:
@@ -251,7 +248,7 @@ class Batimap(object):
             # If a city has a few buildings, and **even if a date could be computed**, we assume
             # it was never imported (sometime only 1 building on the boundary is wrongly computed)
             # Almost all cities have at least church/school/townhall manually mapped
-            if len(dates) < 10:
+            if len(dates) < 10 and insee not in self.NO_BUILDING_CITIES:
                 LOG.info(f"City {insee}: too few buildings found ({len(dates)}), assuming it was never imported!")
                 date = "never"
             elif has_simplified_buildings:
