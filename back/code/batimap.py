@@ -211,16 +211,16 @@ class Batimap(object):
                     # iterate on every building
                     buildings = []
                     for element in overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
+                        tags = element.get("tags")
                         if element.get("type") == "node":
                             # some buildings are mainly nodes, but we don't care much about them
-                            if not element.get("power") and not element.get("ruins") and not element.get("historic"):
+                            if not tags.get("power") and not tags.get("ruins") and not tags.get("historic"):
                                 LOG.info(
                                     f"{city} contient des bâtiments "
                                     f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
                                 )
                                 simplified_buildings.append(element.get("id"))
 
-                        tags = element.get("tags")
                         buildings.append(tags.get("source") or tags.get("source:date") or element.get("timestamp")[:4])
                     has_simplified = len(simplified_buildings) > 0
                     (date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
