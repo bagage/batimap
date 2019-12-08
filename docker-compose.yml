@@ -52,7 +52,7 @@ services:
     build: back
     env_file:
     - ./.env
-    command: sh /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
+    command: bash /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
     volumes:
     - ./back/:/code
     - ./back/app-docker.conf/:/code/app.conf:ro
@@ -64,7 +64,7 @@ services:
     build: back
     env_file:
     - ./.env
-    command: sh /wait-for-it.sh -- sh /entrypoint.sh
+    command: bash /wait-for-it.sh -- sh /entrypoint.sh
     ports:
     - "5000:5000"
     volumes:

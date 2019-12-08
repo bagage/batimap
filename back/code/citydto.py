@@ -1,7 +1,6 @@
-from json import JSONEncoder
+from json import JSONEncoder, loads
 
-import datetime
-from dateutil import parser
+from .db import City
 
 
 class CityDTO:
@@ -11,23 +10,12 @@ class CityDTO:
     josm_ready = False
     details = None
 
-    def __init__(self, date, city=None, name=None, insee=None, details=None, date_cadastre=None):
-        self.date = date
-        if city:
-            self.name = city.name
-            self.insee = city.insee
-            self.details = city.details
-            self.josm_ready = city.is_josm_ready()
-        else:
-            self.name = name
-            self.insee = insee
-            self.details = details
-            # this check should be useless...
-            if isinstance(date_cadastre, str):
-                date_cadastre = parser.parse(date_cadastre)
-            self.josm_ready = (
-                date_cadastre is not None and (datetime.datetime.now() - date_cadastre).days < 30
-            )
+    def __init__(self, city: City):
+        self.date = city.import_date
+        self.name = city.name
+        self.insee = city.insee
+        self.details = loads(city.import_details)
+        self.josm_ready = city.is_josm_ready()
 
     @property
     def __geo_interface__(self):
