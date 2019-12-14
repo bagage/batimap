@@ -107,24 +107,11 @@ export class BatimapService {
     }
 
     obsoleteCity(ignored: string[]): Observable<ObsoleteCityDTO> {
-        return this.http
-            .get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
-                params: {
-                    ignored: ignored.join(',')
-                }
-            })
-            .pipe(
-                map(data => {
-                    data.city.details = data.city.details
-                        ? deserialize(
-                              CityDetailsDTO,
-                              data.city.details.toString()
-                          )
-                        : undefined;
-
-                    return data;
-                })
-            );
+        return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
+            params: {
+                ignored: ignored.join(',')
+            }
+        });
     }
 
     cityOsmID(insee: string): Observable<number> {
