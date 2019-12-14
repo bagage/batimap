@@ -126,6 +126,11 @@ export class BatimapService {
                 })
             );
     }
+
+    cityOsmID(insee: string): Observable<number> {
+        return this.http.get<number>(this.URL_CITY_OSM_ID(insee));
+    }
+
     private URL_TASK(task: Task): string {
         return `${this.configService.getConfig().backServerUrl}/tasks/${
             task.task_id
@@ -168,6 +173,12 @@ export class BatimapService {
 
     private URL_CITY_OBSOLETE() {
         return `${this.configService.getConfig().backServerUrl}cities/obsolete`;
+    }
+
+    private URL_CITY_OSM_ID(insee: string) {
+        return `${
+            this.configService.getConfig().backServerUrl
+        }cities/${insee}/osm_id`;
     }
 
     private longRunningAPI<T>(

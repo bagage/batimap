@@ -10,7 +10,15 @@
     </button>
 </h2>
 <mat-dialog-content>
-    <h3>{{ city.insee }} - {{ city.name }}</h3>
+    <h3>
+        {{ city.insee }} - {{ city.name }}
+        <a
+            *ngIf="osmID$ | async as osmID"
+            href="https://www.openstreetmap.org/relation/{{ osmID }}"
+            target="_blank"
+            ><mat-icon>link</mat-icon></a
+        >
+    </h3>
     {{ lastImport }}
 
     <div *ngIf="city.details?.dates?.size > 0">

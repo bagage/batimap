@@ -1,4 +1,10 @@
-import { Component, HostListener, Inject, OnInit } from '@angular/core';
+import {
+    Component,
+    HostListener,
+    Inject,
+    OnInit,
+    SimpleChanges
+} from '@angular/core';
 import {
     MAT_DIALOG_DATA,
     MatDialog,
@@ -19,17 +25,10 @@ import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
     styleUrls: ['./city-details-dialog.component.css']
 })
 export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
-    get city(): CityDTO {
-        return this._city;
-    }
-
-    set city(value: CityDTO) {
-        this._city = value;
-        this.lastImport = this.computeLastImport();
-    }
-    private _city: CityDTO;
+    city: CityDTO;
 
     josmIsStarted: Observable<boolean>;
+    osmID$: Observable<number>;
 
     cadastreLayer: any;
 
@@ -58,6 +57,9 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         super();
         this.city = data[0];
         this.cadastreLayer = data[1];
+        this.lastImport = this.computeLastImport();
+        if (this.city)
+            this.osmID$ = this.batimapService.cityOsmID(this.city.insee);
     }
 
     ngOnInit(): void {
@@ -80,7 +82,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     @HostListener('document:keydown.r') updateCity() {
         this.updateButtonOpts.active = true;
         this.autoUnsubscribe(
-            this.batimapService.updateCity(this._city.insee).subscribe(
+            this.batimapService.updateCity(this.city.insee).subscribe(
                 task => {
                     this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
                     if (task.state === TaskState.SUCCESS) {
@@ -98,7 +100,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     computeLastImport(): string {
-        const d = this._city ? this._city.date : undefined;
+        const d = this.city ? this.city.date : undefined;
         if (!d || d === 'never') {
             return "Le bâti n'a jamais été importé.";
         }
@@ -117,11 +119,11 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
 
     cityDateChanged(newDate: string) {
         this.moreRecentDate = newDate;
-        this._city.date = newDate;
+        this.city.date = newDate;
         this.lastImport = this.computeLastImport();
     }
 
     editNode(node: number) {
-        this.josmService.openNode(node, this._city).subscribe();
+        this.josmService.openNode(node, this.city).subscribe();
     }
 }

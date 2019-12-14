@@ -226,6 +226,11 @@ def api_update_insee_list(insee) -> dict:
     )
 
 
+@app.route("/cities/<insee>/osm_id", methods=["GET"])
+def api_city_osm_id(insee) -> dict:
+    return str(db.get_city_osm_id(insee))
+
+
 @app.route("/cities/<insee>/josm", methods=["GET"])
 def api_josm_data(insee) -> dict:
     LOG.debug(f"Receive an josm request for {insee}")
