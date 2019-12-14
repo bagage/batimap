@@ -21,7 +21,7 @@
     </h3>
     {{ lastImport }}
 
-    <div *ngIf="city.details?.dates?.size > 0">
+    <div *ngIf="city.details?.dates">
         <h4>Bâtiments par date</h4>
         <ul>
             <li *ngFor="let i of city.details.dates | keyvalue">
@@ -30,7 +30,7 @@
         </ul>
     </div>
 
-    <div *ngIf="city.details?.simplified?.length > 0">
+    <div *ngIf="city.details?.simplified">
         <h4>Bâtiments simplifiés</h4>
         <ul>
             <li *ngFor="let i of city.details.simplified">
