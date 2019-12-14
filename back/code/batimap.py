@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from .city import City
-
-import logging
-from bs4 import BeautifulSoup, SoupStrainer
+import datetime
 import http.cookiejar
+import logging
+import re
 import urllib.request
 import zlib
-import requests
-import datetime
-from contextlib import closing
-import re
-import json
 from collections import Counter
+from contextlib import closing
+
+import requests
+from bs4 import BeautifulSoup, SoupStrainer
+
+from .db import City
 
 LOG = logging.getLogger(__name__)
 
@@ -23,21 +23,35 @@ class Batimap(object):
     NO_BUILDING_CITIES = ["55139", "55039", "55307", "55050", "55239"]
     cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
 
-    def stats(self, db, overpass, department=None, cities=[], force=False, refresh_cadastre_state=False):
+    def __init__(self, db, overpass):
+        self.db = db
+        self.overpass = overpass
+
+    def stats(self, department=None, names_or_insees=[], force=False, refresh_cadastre_state=False):
+        if department:
+            cities = self.db.get_cities_for_department(department)
+        else:
+            cities = [self.db.get_city_for_insee(x) or self.db.get_city_for_name(x) for x in names_or_insees]
+
         if refresh_cadastre_state:
             if department:
-                next(self.update_departments_raster_state(db, [department]))
+                depts = [department]
             else:
-                depts = set([City(db, c).department for c in cities])
-                list(self.update_departments_raster_state(db, depts))
+                depts = set([c.department for c in cities])
+            list(self.update_departments_raster_state(depts))
 
-        if department:
-            cities = db.within_department(department)
         for city in cities:
-            c = City(db, city)
-            yield self.fetch_osm_data(db, c, overpass, force)
+            yield self.fetch_osm_data(city, force)
 
-    def update_departments_raster_state(self, db, departments):
+    def compute_date_for_undated_cities(self, departments):
+        # we do not store building changeset timestamp in database, so we need to ask Overpass for cities which such
+        # buildings. For now, only ask for cities with a majority of unknown buildings, but we could whenever there is one
+        unknowns = [c.insee for c in self.db.get_undated_cities(departments)]
+        LOG.info(f"Using overpass for {len(unknowns)} unknown cities: {unknowns}")
+        for idx, d in enumerate(self.stats(names_or_insees=unknowns, force=True)):
+            yield (idx + 1, len(unknowns))
+
+    def update_departments_raster_state(self, departments):
         url = "https://www.cadastre.gouv.fr/scpc/rechercherPlan.do"
         cj = http.cookiejar.CookieJar()
         op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
@@ -48,7 +62,7 @@ class Batimap(object):
         LOG.info(f"Récupération des infos cadastrales pour les départements {departments}")
         for idx, d in enumerate(departments):
             LOG.info(f"Récupération des infos cadastrales pour le département {d}")
-            if len(db.within_department(d)) > 0 and len(db.within_department_raster(d)) == 0:
+            if len(self.db.get_cities_for_department(d)) > 0 and self.db.get_raster_cities_count(d) == 0:
                 LOG.info(f"Le département {d} ne contient que des communes vectorisées, rien à faire")
                 continue
             tuples = []
@@ -77,27 +91,37 @@ class Batimap(object):
                 insee = dept + code_commune[start:]
                 is_raster = format_type == "IMAG"
 
-                name = db.name_for_insee(insee)
+                name = self.db.get_osm_city_name_for_insee(insee)
                 if not name:
                     LOG.error(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
                     continue
 
-                date = "raster" if is_raster else "never"
-                tuples.append((insee, dept, name, f"{code_commune}-{nom_commune}", is_raster, date))
+                city = City()
+                city.insee = insee
+                city.department = dept
+                city.name = name
+                city.name_cadastre = f"{code_commune}-{nom_commune}"
+                city.import_date = "raster" if is_raster else "never"
+                city.is_raster = is_raster
+                tuples.append(city)
             LOG.debug(f"Inserting {len(tuples)} cities in database…")
-            db.insert_stats_for_insee(tuples)
+            self.db.add_cities(tuples)
             yield idx + 1
 
-    def fetch_departments_osm_state(self, db, departments):
+    def fetch_departments_osm_state(self, departments):
         LOG.info(f"Récupération du statut OSM pour les départements {departments}")
         for idx, d in enumerate(departments):
             LOG.info(f"Récupération du statut OSM pour le département {d}")
-            tuples = []
             url = "https://cadastre.openstreetmap.fr"
             dept = d.zfill(3)
             r = requests.get(f"{url}/data/{dept}/")
             bs = BeautifulSoup(r.content, "lxml")
             refresh_tiles = []
+
+            cities = self.db.get_cities_for_department(d)
+            no_cadastre_cities = cities
+            cities_name_cadastre = [c.name_cadastre for c in cities]
+
             for e in bs.select("tr"):
                 osm_data = e.select("td > a")
                 if len(osm_data):
@@ -107,28 +131,32 @@ class Batimap(object):
                     name_cadastre = "-".join(osm_data.split("-")[:-2])
                     date = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
 
-                    tuples.append((name_cadastre, date))
-
-                    c = City(db, name_cadastre)
-                    if c.insee and c.date_cadastre != date:
-                        LOG.debug(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
+                    c = cities[cities_name_cadastre.index(name_cadastre)]
+                    no_cadastre_cities.remove(c)
+                    if c.date_cadastre != date:
+                        LOG.info(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
                         refresh_tiles.append(c.insee)
 
-            db.upsert_city_status(d, tuples)
+            for c in no_cadastre_cities:
+                # removing date for cities that are not listed on the website anymore
+                c.date_cadastre = None
+
+            self.db.session.commit()
+
             for insee in refresh_tiles:
-                self.clear_tiles(db, insee)
+                self.clear_tiles(insee)
             yield idx + 1
 
-    def josm_data(self, db, insee, overpass):
-        c = City(db, insee)
+    def josm_data(self, insee):
+        c = self.db.get_city_for_insee(insee)
         if not c:
             return None
 
         base_url = f"https://cadastre.openstreetmap.fr/data/{c.department.zfill(3)}/{c.name_cadastre}-houses-"
-        bbox = c.get_bbox()
+        bbox = self.db.bbox_for_insee(insee)
 
         # force refreshing city latest import date
-        (_, date) = self.fetch_osm_data(db, c, overpass, True)
+        (_, date) = self.fetch_osm_data(c, True)
         return {
             "buildingsUrl": base_url + "simplifie.osm",
             "segmententationPredictionssUrl": base_url + "prediction_segmente.osm",
@@ -136,10 +164,10 @@ class Batimap(object):
             "date": date,
         }
 
-    def fetch_cadastre_data(self, city):
-        __total_pdfs_regex = re.compile(r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$")
-        __pdf_progression_regex = re.compile(r".*\d+-(\d+)-(\d+).pdf$")
+    __total_pdfs_regex = re.compile(r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$")
+    __pdf_progression_regex = re.compile(r".*\d+-(\d+)-(\d+).pdf$")
 
+    def fetch_cadastre_data(self, city):
         if not city or not city.name_cadastre:
             return
 
@@ -165,11 +193,11 @@ class Batimap(object):
         with closing(requests.post(url, data=data, stream=True)) as r:
             (total_y, total) = (0, 0)
             for line in r.iter_lines(decode_unicode=True):
-                match = __total_pdfs_regex.match(line)
+                match = self.__total_pdfs_regex.match(line)
                 if match:
                     total_y = int(match.groups()[1])
                     total = int(match.groups()[2])
-                match = __pdf_progression_regex.match(line)
+                match = self.__pdf_progression_regex.match(line)
                 if match:
                     x = int(match.groups()[0])
                     y = int(match.groups()[1])
@@ -187,27 +215,28 @@ class Batimap(object):
                     # may happen when cadastre.gouv.fr is in maintenance mode
                     raise Exception(line)
 
-    def clear_tiles(self, db, insee):
-        bbox = db.bbox_for_insee(insee)
-        LOG.info(f"{insee} tiles must be cleared: {str(bbox)}")
+    def clear_tiles(self, insee):
+        bbox = self.db.get_city_bbox(insee)
+        LOG.info(f"Tiles for city {insee} must be regenerated in bbox {str(bbox)}")
         with open("tiles/outdated.txt", "a") as fd:
             fd.write(str(bbox) + "\n")
 
-    def fetch_osm_data(self, db, city, overpass, force):
+    def fetch_osm_data(self, city, force):
         """
         Compute the latest import date for given city
         """
-        date = city.get_last_import_date()
-        if force or date is None:
+        import_date = city.import_date
+        bad_dates = [None, "unfinished", "unknown"]
+        if force or import_date in bad_dates:
             sources_date = []
             simplified_buildings = []
             if city.is_raster:
-                date = "raster"
+                import_date = "raster"
             else:
                 try:
                     # iterate on every building
                     buildings = []
-                    for element in overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
+                    for element in self.overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
                         tags = element.get("tags")
                         if element.get("type") == "node":
                             # some buildings are mainly nodes, but we don't care much about them
@@ -220,14 +249,15 @@ class Batimap(object):
 
                         buildings.append(tags.get("source") or tags.get("source:date") or element.get("timestamp")[:4])
                     has_simplified = len(simplified_buildings) > 0
-                    (date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
+                    (import_date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
                 except Exception as e:
                     LOG.error(f"Failed to count buildings for {city}: {e}")
                     return (None, None)
             # only update date if we did not use cache files for buildings
-            city.details = {"simplified": simplified_buildings, "dates": sources_date}
-            db.update_stats_for_insee([(city.insee, city.name, date, json.dumps(city.details))])
-        return (city, date)
+            city.import_date = import_date
+            city.import_details = {"simplified": simplified_buildings, "dates": sources_date}
+            self.db.session.commit()
+        return (city, import_date)
 
     def date_for_buildings(self, insee, dates, has_simplified_buildings):
         """
@@ -254,3 +284,46 @@ class Batimap(object):
             elif has_simplified_buildings:
                 date = "unfinished"
         return (date, counter)
+
+    def import_city_stats_from_osmplanet(self, departments):
+        LOG.info(f"Calcul des statistiques du bâti pour les départements {departments}…")
+        for idx, dept in enumerate(departments):
+            # 1. fetch global stats for current department of all buildings
+            LOG.info(f"Calcul des statistiques du bâti pour le département {dept}…")
+            result = self.db.get_building_dates_per_city_for_department(dept, self.IGNORED_BUILDINGS)
+
+            buildings = {}
+            insee_name = {}
+            for (insee, name, source, count, is_raster) in result:
+                if is_raster:
+                    insee_name[insee] = name
+                    buildings[insee] = ["raster"]
+                else:
+                    if not buildings.get(insee):
+                        buildings[insee] = []
+                    insee_name[insee] = name
+                    buildings[insee] += [source] * count
+
+            # 2. fetch all simplified buildings in current department
+            LOG.info(f"Récupération du bâti simplifié pour le département {dept}…")
+            city_with_simplified_building = self.db.get_point_buildings_per_city_for_department(dept)
+
+            simplified_cities = list(set([x[0] for x in city_with_simplified_building]))
+            if len(simplified_cities) > 0:
+                LOG.info(f"Les villes {simplified_cities} contiennent des bâtiments " "avec une géométrie simplifée, import à vérifier")
+
+            # 3. finally compute city import date and update database
+            LOG.info(f"Mise à jour des statistiques pour le département {dept}…")
+            for insee, buildings in buildings.items():
+                # compute city import date based on all its buildings date
+                (import_date, counts) = self.date_for_buildings(insee, buildings, insee in simplified_cities)
+                simplified = [x[1] for x in city_with_simplified_building if x[0] == insee]
+
+                city = self.db.get_city_for_insee(insee)
+                city.name = insee_name[insee]
+                city.import_date = import_date
+                city.last_update = datetime.datetime.now()
+                city.import_details = {"dates": counts, "simplified": simplified}
+
+            self.db.session.commit()
+            yield idx + 1

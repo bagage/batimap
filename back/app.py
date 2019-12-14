@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import gevent.monkey
+from geojson import Feature, FeatureCollection
 
 gevent.monkey.patch_all()
 
@@ -10,9 +11,9 @@ import logging
 import os
 from pathlib import Path
 import json
-import itertools
 
 from flask import Flask, request, Response, url_for
+from flask_sqlalchemy import SQLAlchemy
 from flask_restful import inputs
 from flask_cors import CORS
 
@@ -20,14 +21,35 @@ from celery import Celery
 from celery.result import AsyncResult
 
 from code.batimap import Batimap
-from code.city import City
+from code.bbox import Bbox
+from code.point import Point
 from code.citydto import CityEncoder, CityDTO
-from code.overpassw import Overpass
-from code.db_utils import Postgis
+from code.overpass import Overpass
 
 app = Flask(__name__)
 app.config.from_pyfile(app.root_path + "/app.conf")
 CORS(app)
+
+verbosity = {
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO,
+    "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR,
+    "CRITICAL": logging.CRITICAL,
+}
+logging.basicConfig(
+    format="%(asctime)s %(message)s",
+    datefmt="%H:%M:%S",
+    level=verbosity[os.environ.get("BATIMAP_VERBOSITY") or app.config["VERBOSITY"] or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")],
+)
+LOG = logging.getLogger(__name__)
+sql = SQLAlchemy(app)
+from code.db import Db
+
+db = Db(sql)
+
+overpass = Overpass(app.config["OVERPASS_URI"])
+batimap = Batimap(db, overpass)
 
 
 def make_celery(app):
@@ -58,11 +80,12 @@ def task_progress(task, current):
 def task_initdb(self, items):
     items_are_cities = len([1 for x in items if len(x) > 3]) > 0
     if items_are_cities:
-        departments = list(set([City(db, insee).department for insee in items]))
+        departments = list(set([db.get_city_for_insee(insee).department for insee in items]))
         departments = sorted([d for d in departments if d is not None])
+        LOG.debug(f"Will run initdb on departments {departments} from cities {items}")
     else:
         departments = items
-    LOG.debug(f"Will run initdb on departments {departments}")
+        LOG.debug(f"Will run initdb on departments {departments}")
 
     initdb_is_done_file = Path("tiles/initdb_is_done")
     migration_file = Path("html/maintenance.html")
@@ -73,19 +96,14 @@ def task_initdb(self, items):
 
     # fill table with cities from cadastre website
     p = 25
-    for d in batimap.update_departments_raster_state(db, departments):
+    for d in batimap.update_departments_raster_state(departments):
         task_progress(self, 0 * p + d / len(departments) * p)
-    for d in batimap.fetch_departments_osm_state(db, departments):
+    for d in batimap.fetch_departments_osm_state(departments):
         task_progress(self, 1 * p + d / len(departments) * p)
-    for d in db.import_city_stats_from_osmplanet(items):
+    for d in batimap.import_city_stats_from_osmplanet(items):
         task_progress(self, 2 * p + d / len(items) * p)
-    # we do not store building changeset timestamp in database, so we need to ask Overpass for cities which such
-    # buildings. For now, we only ask for cities with a majority of unknown buildings, but we could whenever there is one
-    cities = items if items_are_cities else list(itertools.chain.from_iterable([db.within_department(d) for d in items]))
-    unknowns = [x for x in cities if City(db, x).get_last_import_date() in ["unknown", "unfinished"]]
-    LOG.info(f"Using overpass for {len(unknowns)} unknown cities: {unknowns}")
-    for idx, d in enumerate(batimap.stats(db, op, cities=unknowns, force=True)):
-        task_progress(self, 3 * p + (idx + 1) / len(unknowns) * p)
+    for (d, total) in batimap.compute_date_for_undated_cities(departments):
+        task_progress(self, 3 * p + d / total * p)
 
     initdb_is_done_file.touch()
     task_progress(self, 100)
@@ -94,22 +112,22 @@ def task_initdb(self, items):
 @celery.task(bind=True)
 def task_josm_data(self, insee):
     task_progress(self, 1)
-    c = City(db, insee)
+    c = db.get_city_for_insee(insee)
     # force refreshing cadastre date
-    next(batimap.fetch_departments_osm_state(db, [c.department]))
-    c = City(db, insee)
+    next(batimap.fetch_departments_osm_state([c.department]))
+    c = db.get_city_for_insee(insee)
     is_ready = c.is_josm_ready()
     if not is_ready:
         # first, generate cadastre data for that city
         for d in batimap.fetch_cadastre_data(c):
             task_progress(self, d / 100 * 80)
         task_progress(self, 80)
-        next(batimap.fetch_departments_osm_state(db, [c.department]))
+        next(batimap.fetch_departments_osm_state([c.department]))
     task_progress(self, 90)
-    result = batimap.josm_data(db, insee, op)
+    result = batimap.josm_data(insee)
     task_progress(self, 95)
-    if c.get_last_import_date() != result["date"] or not is_ready:
-        batimap.clear_tiles(db, insee)
+    if db.get_city_for_insee(insee).import_date != result["date"] or not is_ready:
+        batimap.clear_tiles(insee)
     task_progress(self, 99)
     return json.dumps(result)
 
@@ -117,88 +135,64 @@ def task_josm_data(self, insee):
 @celery.task(bind=True)
 def task_update_insee_list(self, insee):
     task_progress(self, 50)
-    (city, date) = next(batimap.stats(db, op, cities=[insee], force=True))
+    (city, date) = next(batimap.stats(names_or_insees=[insee], force=True))
     task_progress(self, 99)
 
-    dto = CityDTO(date, city)
+    dto = CityDTO(city)
 
     if dto.date != date:
-        batimap.clear_tiles(db, insee)
+        batimap.clear_tiles(insee)
     task_progress(self, 100)
 
     return json.dumps(dto, cls=CityEncoder)
 
 
-LOG = logging.getLogger(__name__)
-
-verbosity = {
-    "DEBUG": logging.DEBUG,
-    "INFO": logging.INFO,
-    "WARNING": logging.WARNING,
-    "ERROR": logging.ERROR,
-    "CRITICAL": logging.CRITICAL,
-}
-logging.basicConfig(
-    format="%(asctime)s %(message)s",
-    datefmt="%H:%M:%S",
-    level=verbosity[os.environ.get("BATIMAP_VERBOSITY") or app.config["VERBOSITY"] or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")],
-)
-batimap = Batimap()
-
-db = Postgis(
-    app.config["DB_NAME"],
-    app.config["DB_USER"],
-    app.config["DB_PASSWORD"],
-    app.config["DB_PORT"],
-    app.config["DB_HOST"],
-    app.config["TILESERVER_URI"],
-    batimap,
-)
-
-db.create_tables()
-
-op = Overpass(app.config["OVERPASS_URI"])
-
 # ROUTES
-
-
 @app.route("/status", methods=["GET"])
 def api_status() -> dict:
-    return json.dumps(db.get_dates_count())
+    return json.dumps(db.get_imports_count_per_year())
 
 
 @app.route("/status/<department>", methods=["GET"])
 def api_department_status(department) -> str:
-    return json.dumps([{x[0].insee: x[1]} for x in batimap.stats(db, op, department=department, force=request.args.get("force", False))])
+    return json.dumps([{x[0].insee: x[1]} for x in batimap.stats(department=department, force=request.args.get("force", False))])
 
 
 @app.route("/status/<department>/<city>", methods=["GET"])
 def api_city_status(department, city) -> str:
-    for (city, date) in batimap.stats(db, op, cities=[city], force=request.args.get("force", default=False, type=inputs.boolean)):
+    for (city, date) in batimap.stats(names_or_insees=[city], force=request.args.get("force", default=False, type=inputs.boolean)):
         return json.dumps({city.insee: date})
     return ""
 
 
 @app.route("/status/by_date/<date>")
 def api_cities_for_date(date) -> str:
-    return json.dumps(db.get_cities_for_date(date))
+    return json.dumps(db.get_cities_for_year(date))
 
 
 @app.route("/insee/<insee>", methods=["GET"])
 def api_insee(insee) -> dict:
-    color_city = db.get_insee(insee)
-    return json.dumps(color_city)
+    city = db.get_city_for_insee(insee)
+    geo = db.get_city_geometry(insee)
+    feature = Feature(properties={"name": f"{city.name} - {city.insee}", "date": city.import_date}, geometry=json.loads(geo))
+    return json.dumps(FeatureCollection(feature))  # fixme: no need for FeatureCollection here
 
 
 @app.route("/cities/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def api_color(lonNW, latNW, lonSE, latSE) -> dict:
-    cities = db.get_cities_in_bbox(float(lonNW), float(latNW), float(lonSE), float(latSE))
+    result = db.get_cities_for_bbox(Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW)))
+    cities = [CityDTO(x) for x in result]
     return json.dumps(cities, cls=CityEncoder)
 
 
 @app.route("/legend/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
-    return json.dumps(db.get_legend_in_bbox(float(lonNW), float(latNW), float(lonSE), float(latSE)))
+    result = db.get_imports_count_for_bbox(Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW)))
+    total = sum([x[1] for x in result])
+
+    return json.dumps(
+        [{"name": import_date, "count": count, "percent": round(count * 100.0 / total, 2)} for (import_date, count) in result]
+    )
 
 
 @app.route("/departments", methods=["GET"])
@@ -207,16 +201,19 @@ def api_departments() -> dict:
 
 
 @app.route("/departments/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
-def api_departments_in_bbox(lonNW, latNW, lonSE, latSE) -> dict:
-    departments = db.get_departments_in_bbox(float(lonNW), float(latNW), float(lonSE), float(latSE))
+def get_departments_for_bbox(lonNW, latNW, lonSE, latSE) -> dict:
+    departments = db.get_departments_for_bbox(Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW)))
     return json.dumps(departments)
 
 
 @app.route("/cities/obsolete", methods=["GET"])
 def api_obsolete_city() -> dict:
     ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
-    (city, position) = db.get_obsolete_city(ignored)
-    return json.dumps({"position": [position.x, position.y], "city": city}, cls=CityEncoder)
+    result = db.get_obsolete_city(ignored)
+    if result:
+        city = CityDTO(result.City)
+        position = Point.from_pg(result.position)
+        return json.dumps({"position": [position.x, position.y], "city": city}, cls=CityEncoder)
 
 
 @app.route("/cities/<insee>/update", methods=["GET"])
@@ -227,6 +224,11 @@ def api_update_insee_list(insee) -> dict:
     return Response(
         response=json.dumps({"task_id": new_task.id}), status=202, headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
     )
+
+
+@app.route("/cities/<insee>/osm_id", methods=["GET"])
+def api_city_osm_id(insee) -> dict:
+    return str(db.get_city_osm_id(insee))
 
 
 @app.route("/cities/<insee>/josm", methods=["GET"])
@@ -306,5 +308,5 @@ def get_city_stats(items, fast, all):
             c = items
 
     for department in d:
-        for (city, date) in batimap.stats(db, op, department=department, cities=c, force=not fast, refresh_cadastre_state=not fast):
+        for (city, date) in batimap.stats(department=department, names_or_insees=c, force=not fast, refresh_cadastre_state=not fast):
             click.echo("{}: date={}".format(city, date))

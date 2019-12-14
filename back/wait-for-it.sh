@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 cmdname=$(basename $0)
 POSTGRES_PORT=${POSTGRES_PORT:-5432}
