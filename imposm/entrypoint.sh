@@ -34,6 +34,10 @@ fi
 
 DO_IMPORT=true
 if [ "$FORCE_IMPORT" != "true" ]; then
+    # wait for postgres to have started
+    while ! PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select 1"; do
+        sleep 1
+    done
     count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select count(*) from osm_buildings where osm_id > 0"`
     result=$?
     if [[ $result -eq 0 ]]; then
