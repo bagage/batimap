@@ -30,6 +30,10 @@ class City(Base):
     def is_josm_ready(self):
         return self.date_cadastre is not None and (datetime.datetime.now() - parser.parse(str(self.date_cadastre))).days < 30
 
+    @staticmethod
+    def bad_dates():
+        return [None, "unfinished", "unknown"]
+
 
 class Building(Base):
     __tablename__ = "osm_buildings"
@@ -158,7 +162,7 @@ class Db(object):
         return (
             self.session.query(City)
             .filter(City.department.in_(departments))
-            .filter(City.import_date.in_(["unfinished", "unknown"]))
+            .filter(City.import_date.in_(City.bad_dates()))
             .order_by(City.insee)
             .all()
         )

@@ -226,8 +226,7 @@ class Batimap(object):
         Compute the latest import date for given city
         """
         import_date = city.import_date
-        bad_dates = [None, "unfinished", "unknown"]
-        if force or import_date in bad_dates:
+        if force or import_date in City.bad_dates():
             sources_date = []
             simplified_buildings = []
             if city.is_raster:
@@ -321,7 +320,9 @@ class Batimap(object):
 
                 city = self.db.get_city_for_insee(insee)
                 city.name = insee_name[insee]
-                city.import_date = import_date
+                # do not erase date if what we found here is a bad date (unknown)
+                if city.import_date in City.bad_dates() or import_date not in City.bad_dates():
+                    city.import_date = import_date
                 city.last_update = datetime.datetime.now()
                 city.import_details = {"dates": counts, "simplified": simplified}
 
