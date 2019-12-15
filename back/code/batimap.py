@@ -104,7 +104,7 @@ class Batimap(object):
                 city.department = dept
                 city.name = name
                 city.name_cadastre = f"{code_commune}-{nom_commune}"
-                city.import_date = "raster" if is_raster else "never"
+                city.import_date = "raster" if is_raster else city.import_date or "never"
                 city.is_raster = is_raster
             LOG.debug(f"Inserting {len(tuples)} cities in database…")
             self.db.session.commit()
