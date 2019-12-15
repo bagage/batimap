@@ -86,7 +86,7 @@ class Db(object):
         return self.__filter_city(self.session.query(Boundary.name), insee).first().name
 
     def get_cities_for_department(self, department) -> [City]:
-        return self.session.query(City).filter(City.department == department).order_by(City.insee).all()
+        return self.session.query(City).filter(City.department == department.zfill(2)).order_by(City.insee).all()
 
     def get_city_for_insee(self, insee) -> City:
         return self.session.query(City).filter(City.insee == insee).first()
@@ -159,7 +159,7 @@ class Db(object):
     def get_undated_cities(self, departments) -> [City]:
         return (
             self.session.query(City)
-            .filter(City.department.in_(departments))
+            .filter(City.department.in_([x.zfill(2) for x in departments]))
             .filter(City.import_date.in_(City.bad_dates()))
             .order_by(City.insee)
             .all()
@@ -188,7 +188,7 @@ class Db(object):
         )
 
     def get_raster_cities_count(self, department):
-        return self.session.query(func.count("*")).filter(City.department == department).filter(City.is_raster).scalar()
+        return self.session.query(func.count("*")).filter(City.department == department.zfill(2)).filter(City.is_raster).scalar()
 
     def add_cities(self, cities):
         self.session.add_all(cities)
