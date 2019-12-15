@@ -294,20 +294,18 @@ def get_city_stats(items, fast, all):
     Returns cadastral status of given items.
     If status is unknown, it is computed first.
     """
-    d = []
-    c = []
-    if all:
-        click.echo("Will stats ALL available cities")
-        d = db.get_departments()
+    are_depts = len([x for x in items if len(x) < 4]) > 0
+    if not all and not are_depts:
+        click.echo(f"Will stats given cities {items}")
+        for (city, date) in batimap.stats(names_or_insees=items, force=not fast, refresh_cadastre_state=not fast):
+            click.echo("{}: date={}".format(city, date))
     else:
-        are_depts = len([x for x in items if len(x) < 4]) > 0
-        if are_depts:
+        if all:
+            click.echo("Will stats ALL available cities")
+            d = db.get_departments()
+        else:
             click.echo(f"Will stats given departments {items}")
             d = items
-        else:
-            click.echo(f"Will stats given cities {items}")
-            c = items
-
-    for department in d:
-        for (city, date) in batimap.stats(department=department, names_or_insees=c, force=not fast, refresh_cadastre_state=not fast):
-            click.echo("{}: date={}".format(city, date))
+        for department in d:
+            for (city, date) in batimap.stats(department=department, force=not fast, refresh_cadastre_state=not fast):
+                click.echo("{}: date={}".format(city, date))

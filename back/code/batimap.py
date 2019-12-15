@@ -37,7 +37,7 @@ class Batimap(object):
             if department:
                 depts = [department]
             else:
-                depts = set([c.department for c in cities])
+                depts = list(set([c.department for c in cities]))
             list(self.update_departments_raster_state(depts))
 
         for city in cities:
