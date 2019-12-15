@@ -103,10 +103,7 @@ class Db(object):
     def get_city_bbox(self, insee):
         # first() is required because of multipolygons cities (76218 - Doudeauville for instance)
         return Bbox.from_pg(
-            self.__filter_city(self.session.query(func.Box2D(Boundary.geometry)).label("bbox"), insee)
-            .order_by(Boundary.admin_level)
-            .first()
-            .bbox
+            self.__filter_city(self.session.query(func.Box2D(Boundary.geometry)), insee).order_by(Boundary.admin_level).first()[0]
         )
 
     def get_imports_count_per_year(self):

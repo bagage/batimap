@@ -116,8 +116,8 @@ def task_josm_data(self, insee):
     # force refreshing cadastre date
     next(batimap.fetch_departments_osm_state([c.department]))
     c = db.get_city_for_insee(insee)
-    is_ready = c.is_josm_ready()
-    if not is_ready:
+    must_generate_data = not c.is_josm_ready()
+    if must_generate_data:
         # first, generate cadastre data for that city
         for d in batimap.fetch_cadastre_data(c):
             task_progress(self, d / 100 * 80)
@@ -126,7 +126,8 @@ def task_josm_data(self, insee):
     task_progress(self, 90)
     result = batimap.josm_data(insee)
     task_progress(self, 95)
-    if db.get_city_for_insee(insee).import_date != result["date"] or not is_ready:
+    # refresh tiles if import date has changed or josm data was generated
+    if db.get_city_for_insee(insee).import_date != result["date"] or must_generate_data:
         batimap.clear_tiles(insee)
     task_progress(self, 99)
     return json.dumps(result)
