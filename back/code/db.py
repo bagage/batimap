@@ -28,7 +28,7 @@ class City(Base):
         return f"{self.name}({self.insee})"
 
     def is_josm_ready(self):
-        return self.date_cadastre is not None and (datetime.datetime.now() - parser.parse(str(self.date_cadastre))).days < 30
+        return self.date_cadastre is not None and (datetime.now() - parser.parse(str(self.date_cadastre))).days < 30
 
     @staticmethod
     def bad_dates():
