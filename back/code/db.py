@@ -206,7 +206,7 @@ class Db(object):
             .filter(Building.building is not None)
             .filter(Building.building.notin_(ignored_buildings))
             .filter(Building.geometry.ST_GeometryType() != "ST_Point")
-            .filter(City.geometry.ST_Contains(Building.geometry))
+            .filter(Boundary.geometry.ST_Contains(Building.geometry))
             .group_by(City.insee, City.name, "dated_source", City.is_raster)
             .all()
         )
