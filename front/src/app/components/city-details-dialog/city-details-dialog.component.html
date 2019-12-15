@@ -16,12 +16,13 @@
             *ngIf="osmID$ | async as osmID"
             href="https://www.openstreetmap.org/relation/{{ osmID }}"
             target="_blank"
-            ><mat-icon>link</mat-icon></a
         >
+            <mat-icon>link</mat-icon>
+        </a>
     </h3>
     {{ lastImport }}
 
-    <div *ngIf="city.details?.dates">
+    <div *ngIf="(city.details?.dates | count) > 0">
         <h4>Bâtiments par date</h4>
         <ul>
             <li *ngFor="let i of city.details.dates | keyvalue">
@@ -30,7 +31,7 @@
         </ul>
     </div>
 
-    <div *ngIf="city.details?.simplified">
+    <div *ngIf="(city.details?.simplified | count) > 0">
         <h4>Bâtiments simplifiés</h4>
         <ul>
             <li *ngFor="let i of city.details.simplified">
@@ -38,8 +39,10 @@
                     href="https://www.openstreetmap.org/node/{{ i }}"
                     target="_blank"
                     >{{ i }}</a
-                ><button mat-button color="primary" (click)="editNode(i)">
-                    <mat-icon>edit</mat-icon>JOSM
+                >
+                <button mat-button color="primary" (click)="editNode(i)">
+                    <mat-icon>edit</mat-icon>
+                    JOSM
                 </button>
             </li>
         </ul>

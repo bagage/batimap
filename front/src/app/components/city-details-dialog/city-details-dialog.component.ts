@@ -1,10 +1,4 @@
-import {
-    Component,
-    HostListener,
-    Inject,
-    OnInit,
-    SimpleChanges
-} from '@angular/core';
+import { Component, HostListener, Inject, OnInit } from '@angular/core';
 import {
     MAT_DIALOG_DATA,
     MatDialog,
@@ -102,10 +96,10 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     computeLastImport(): string {
         const d = this.city ? this.city.date : undefined;
         if (!d || d === 'never') {
-            return "Le bâti n'a jamais été importé.";
+            return 'Le bâti n\'a jamais été importé.';
         }
         if (d === 'raster') {
-            return "Ville raster, pas d'import possible.";
+            return 'Ville raster, pas d\'import possible.';
         }
         if (d === 'unfinished') {
             return 'Des bâtiments sont de géométrie simple, à vérifier.';

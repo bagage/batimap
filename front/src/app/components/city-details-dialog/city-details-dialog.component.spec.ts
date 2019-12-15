@@ -11,6 +11,7 @@ import { MockAppConfigService } from '../../services/app-config.service.mock';
 import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
 import { JosmButtonComponent } from '../josm-button/josm-button.component';
 import { CityDetailsDialogComponent } from './city-details-dialog.component';
+import { PipesModule } from '../../pipes/pipes.module';
 
 @NgModule({
     imports: [MatLibModule],
@@ -31,7 +32,8 @@ describe('CityDetailsDialogComponent', () => {
                 MatLibModule,
                 HttpClientTestingModule,
                 DialogTestModule,
-                NoopAnimationsModule
+                NoopAnimationsModule,
+                PipesModule
             ],
             providers: [
                 { provide: MAT_DIALOG_DATA, useValue: {} },
