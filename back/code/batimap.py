@@ -13,7 +13,7 @@ from contextlib import closing
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 
-from .db import City
+from .db import City, Db
 
 LOG = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class Batimap(object):
     NO_BUILDING_CITIES = ["55139", "55039", "55307", "55050", "55239"]
     cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
 
-    def __init__(self, db, overpass):
+    def __init__(self, db: Db, overpass):
         self.db = db
         self.overpass = overpass
 
@@ -119,7 +119,7 @@ class Batimap(object):
             refresh_tiles = []
 
             cities = self.db.get_cities_for_department(d)
-            no_cadastre_cities = cities
+            no_cadastre_cities = [c for c in cities]
             cities_name_cadastre = [c.name_cadastre for c in cities]
 
             for e in bs.select("tr"):
@@ -129,13 +129,14 @@ class Batimap(object):
                     if not osm_data.endswith("simplifie.osm") or "-extrait-" in osm_data:
                         continue
                     name_cadastre = "-".join(osm_data.split("-")[:-2])
-                    date = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
+                    date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
 
                     c = cities[cities_name_cadastre.index(name_cadastre)]
                     no_cadastre_cities.remove(c)
-                    if c.date_cadastre != date:
-                        LOG.info(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date}")
+                    if c.date_cadastre != date_cadastre:
+                        LOG.info(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date_cadastre}")
                         refresh_tiles.append(c.insee)
+                        c.date_cadastre = date_cadastre
 
             for c in no_cadastre_cities:
                 # removing date for cities that are not listed on the website anymore
@@ -153,7 +154,7 @@ class Batimap(object):
             return None
 
         base_url = f"https://cadastre.openstreetmap.fr/data/{c.department.zfill(3)}/{c.name_cadastre}-houses-"
-        bbox = self.db.bbox_for_insee(insee)
+        bbox = self.db.get_city_bbox(insee)
 
         # force refreshing city latest import date
         (_, date) = self.fetch_osm_data(c, True)
