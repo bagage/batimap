@@ -9,9 +9,10 @@ import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog/jos
 import { LegendButtonComponent } from './legend-button/legend-button.component';
 import { LoaderComponent } from './loader/loader.component';
 import { MapDateLegendComponent } from './map-date-legend/map-date-legend.component';
+import { PipesModule } from '../pipes/pipes.module';
 
 @NgModule({
-    imports: [CommonModule, MatLibModule],
+    imports: [CommonModule, MatLibModule, PipesModule],
     declarations: [
         CityDetailsDialogComponent,
         AboutDialogComponent,
