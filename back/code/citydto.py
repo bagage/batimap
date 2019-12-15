@@ -14,7 +14,7 @@ class CityDTO:
         self.date = city.import_date
         self.name = city.name
         self.insee = city.insee
-        self.details = loads(city.import_details)
+        self.details = loads(city.import_details) if city.import_details else None
         self.josm_ready = city.is_josm_ready()
 
     @property
