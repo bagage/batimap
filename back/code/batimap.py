@@ -96,16 +96,18 @@ class Batimap(object):
                     LOG.error(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
                     continue
 
-                city = City()
-                city.insee = insee
+                city = self.db.get_city_for_insee(insee)
+                if not city:
+                    city = City()
+                    city.insee = insee
+                    self.db.session.add(city)
                 city.department = dept
                 city.name = name
                 city.name_cadastre = f"{code_commune}-{nom_commune}"
                 city.import_date = "raster" if is_raster else "never"
                 city.is_raster = is_raster
-                tuples.append(city)
             LOG.debug(f"Inserting {len(tuples)} cities in database…")
-            self.db.add_cities(tuples)
+            self.db.session.commit()
             yield idx + 1
 
     def fetch_departments_osm_state(self, departments):

@@ -190,10 +190,6 @@ class Db(object):
     def get_raster_cities_count(self, department):
         return self.session.query(func.count("*")).filter(City.department == department.zfill(2)).filter(City.is_raster).scalar()
 
-    def add_cities(self, cities):
-        self.session.add_all(cities)
-        self.session.commit()
-
     def get_building_dates_per_city_for_department(self, department, ignored_buildings):
         return (
             self.__filter_city(
