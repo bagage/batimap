@@ -249,7 +249,7 @@ class Batimap(object):
                                 )
                                 simplified_buildings.append(element.get("id"))
 
-                        buildings.append(tags.get("source") or tags.get("source:date") or element.get("timestamp")[:4])
+                        buildings.append(element.get("timestamp")[:4])
                     has_simplified = len(simplified_buildings) > 0
                     (import_date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
                 except Exception as e:
