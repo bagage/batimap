@@ -242,12 +242,14 @@ class Batimap(object):
                         tags = element.get("tags")
                         if element.get("type") == "node":
                             # some buildings are mainly nodes, but we don't care much about them
-                            if not tags.get("power") and not tags.get("ruins") and not tags.get("historic"):
-                                LOG.info(
-                                    f"{city} contient des bâtiments "
-                                    f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
-                                )
-                                simplified_buildings.append(element.get("id"))
+                            if tags.get("power") or tags.get("ruins") or tags.get("historic") or tags.get("building") == "hut":
+                                continue
+
+                            LOG.info(
+                                f"{city} contient des bâtiments "
+                                f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
+                            )
+                            simplified_buildings.append(element.get("id"))
 
                         buildings.append(element.get("timestamp")[:4])
                     has_simplified = len(simplified_buildings) > 0
