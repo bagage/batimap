@@ -239,7 +239,7 @@ class Batimap(object):
                         tags = element.get("tags")
                         if element.get("type") == "node":
                             # some buildings are mainly nodes, but we don't care much about them
-                            ignored_node_buildings = ["hut", "shed", "no"]
+                            ignored_node_buildings = ["hut", "shed", "no", "ruins", "bunker"]
                             if (
                                 tags.get("power")
                                 or tags.get("ruins")
