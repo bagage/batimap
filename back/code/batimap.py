@@ -48,7 +48,7 @@ class Batimap(object):
         # buildings. For now, only ask for cities with a majority of unknown buildings, but we could whenever there is one
         unknowns = [c.insee for c in self.db.get_undated_cities(departments)]
         LOG.info(f"Using overpass for {len(unknowns)} unknown cities: {unknowns}")
-        for idx, d in enumerate(self.stats(names_or_insees=unknowns, force=True)):
+        for idx, _ in enumerate(self.stats(names_or_insees=unknowns, force=True)):
             yield (idx + 1, len(unknowns))
 
     def update_departments_raster_state(self, departments):
@@ -228,13 +228,10 @@ class Batimap(object):
         """
         Compute the latest import date for given city
         """
-        import_date = city.import_date
-        if force or import_date in City.bad_dates():
+        if force or city.import_date in City.bad_dates():
             sources_date = []
             simplified_buildings = []
-            if city.is_raster:
-                import_date = "raster"
-            else:
+            if not city.is_raster:
                 try:
                     # iterate on every building
                     buildings = []
@@ -260,14 +257,13 @@ class Batimap(object):
                         buildings.append(element.get("timestamp")[:4])
                     has_simplified = len(simplified_buildings) > 0
                     (import_date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
+                    # only update date if we did not use cache files for buildings
+                    city.import_date = import_date
+                    city.import_details = {"simplified": simplified_buildings, "dates": sources_date}
+                    self.db.session.commit()
                 except Exception as e:
                     LOG.error(f"Failed to count buildings for {city}: {e}")
-                    return (None, None)
-            # only update date if we did not use cache files for buildings
-            city.import_date = import_date
-            city.import_details = {"simplified": simplified_buildings, "dates": sources_date}
-            self.db.session.commit()
-        return (city, import_date)
+        return city
 
     def date_for_buildings(self, insee, dates, has_simplified_buildings):
         """

@@ -135,17 +135,16 @@ def task_josm_data(self, insee):
 
 @celery.task(bind=True)
 def task_update_insee_list(self, insee):
+    before = next(batimap.stats(names_or_insees=[insee], force=False))
     task_progress(self, 50)
-    (city, date) = next(batimap.stats(names_or_insees=[insee], force=True))
+    city = next(batimap.stats(names_or_insees=[insee], force=True))
     task_progress(self, 99)
 
-    dto = CityDTO(city)
-
-    if dto.date != date:
+    if city.import_date != before.import_date:
         batimap.clear_tiles(insee)
     task_progress(self, 100)
 
-    return json.dumps(dto, cls=CityEncoder)
+    return json.dumps(CityDTO(city), cls=CityEncoder)
 
 
 # ROUTES
@@ -156,13 +155,13 @@ def api_status() -> dict:
 
 @app.route("/status/<department>", methods=["GET"])
 def api_department_status(department) -> str:
-    return json.dumps([{x[0].insee: x[1]} for x in batimap.stats(department=department, force=request.args.get("force", False))])
+    return json.dumps([{x.insee: x.import_date} for x in batimap.stats(department=department, force=request.args.get("force", False))])
 
 
 @app.route("/status/<department>/<city>", methods=["GET"])
 def api_city_status(department, city) -> str:
-    for (city, date) in batimap.stats(names_or_insees=[city], force=request.args.get("force", default=False, type=inputs.boolean)):
-        return json.dumps({city.insee: date})
+    for city in batimap.stats(names_or_insees=[city], force=request.args.get("force", default=False, type=inputs.boolean)):
+        return json.dumps({city.insee: city.import_date})
     return ""
 
 
@@ -297,8 +296,8 @@ def get_city_stats(items, fast, all):
     are_depts = len([x for x in items if len(x) < 4]) > 0
     if not all and not are_depts:
         click.echo(f"Will stats given cities {items}")
-        for (city, date) in batimap.stats(names_or_insees=items, force=not fast, refresh_cadastre_state=not fast):
-            click.echo("{}: date={}".format(city, date))
+        for city in batimap.stats(names_or_insees=items, force=not fast, refresh_cadastre_state=not fast):
+            click.echo("{}: date={}".format(city, city.import_date))
     else:
         if all:
             click.echo("Will stats ALL available cities")
@@ -307,5 +306,5 @@ def get_city_stats(items, fast, all):
             click.echo(f"Will stats given departments {items}")
             d = items
         for department in d:
-            for (city, date) in batimap.stats(department=department, force=not fast, refresh_cadastre_state=not fast):
-                click.echo("{}: date={}".format(city, date))
+            for city in batimap.stats(department=department, force=not fast, refresh_cadastre_state=not fast):
+                click.echo("{}: date={}".format(city, city.import_date))
