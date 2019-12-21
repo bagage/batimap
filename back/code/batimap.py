@@ -159,12 +159,12 @@ class Batimap(object):
         bbox = self.db.get_city_bbox(insee)
 
         # force refreshing city latest import date
-        (_, date) = self.fetch_osm_data(c, True)
+        city = self.fetch_osm_data(c, True)
         return {
             "buildingsUrl": base_url + "simplifie.osm",
             "segmententationPredictionssUrl": base_url + "prediction_segmente.osm",
             "bbox": [bbox.xmin, bbox.xmax, bbox.ymin, bbox.ymax],
-            "date": date,
+            "date": city.import_date,
         }
 
     __total_pdfs_regex = re.compile(r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$")
