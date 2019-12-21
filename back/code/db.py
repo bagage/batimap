@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from dateutil import parser
 from geoalchemy2 import Geometry
-from sqlalchemy import Column, Boolean, TIMESTAMP, String, JSON, Integer, BigInteger
+from sqlalchemy import Column, Boolean, TIMESTAMP, String, JSON, Integer, BigInteger, Index
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -62,9 +62,6 @@ class Boundary(Base):
 class Db(object):
     def __init__(self, db):
         City.metadata.create_all(db.engine)
-        # create a custom index to check building geometry, it boosts these filter by x5 factor
-        db.session.execute("CREATE INDEX IF NOT EXISTS building_geometrytype on osm_buildings (st_geometrytype(geometry))")
-        db.session.commit()
         self.session = db.session
 
     @staticmethod
