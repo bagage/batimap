@@ -1,7 +1,7 @@
 version: '3'
 services:
   postgis:
-    build: postgis
+    image: registry.gitlab.com/bagage/batimap/postgis
     env_file:
     - ./.env
     ports:
@@ -10,7 +10,7 @@ services:
     - ./data/postgis:/var/lib/postgresql/data
 
   imposm:
-    build: imposm
+    image: registry.gitlab.com/bagage/batimap/imposm
     env_file:
     - ./.env
     entrypoint: bash /wait-for-it.sh -- /entrypoint.sh $$REGIONS
@@ -20,67 +20,53 @@ services:
     - ./data/imposm:/data
 
   imposm-watcher:
-    build: imposm-watcher
+    image: registry.gitlab.com/bagage/batimap/imposm-watcher
     volumes:
-    - ./imposm-watcher/:/code
     - ./data/imposm/updated-tiles:/data
     restart: always
 
   tiles:
-    build: tiles
+    image: registry.gitlab.com/bagage/batimap/tiles
     env_file:
     - ./.env
     command: bash /wait-for-it.sh -- tegola --config $$CONFIG serve
     volumes:
-    - ./tiles/:/app
     - ./data/tiles/cache:/data/cache
-    ports:
-    - "9999:9999"
     depends_on:
     - postgis
 
   tiles-cleaner:
-    build: tiles-cleaner
+    image: registry.gitlab.com/bagage/batimap/tiles-cleaner
     env_file:
     - ./.env
     command: bash /entrypoint.sh
     volumes:
-    - ./tiles/:/app
     - ./data/tiles:/data
 
   celery:
-    build: back
+    image: registry.gitlab.com/bagage/batimap/back
     env_file:
     - ./.env
     command: bash /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
     volumes:
-    - ./back/:/code
     - ./back/app-docker.conf/:/code/app.conf:ro
     - ./data/tiles:/code/tiles
     depends_on:
     - postgis
 
   back:
-    build: back
+    image: registry.gitlab.com/bagage/batimap/back
     env_file:
     - ./.env
     command: bash /wait-for-it.sh -- sh /entrypoint.sh
-    ports:
-    - "5000:5000"
     volumes:
-    - ./back/:/code
     - ./back/app-docker.conf/:/code/app.conf:ro
     - ./data/tiles:/code/tiles
     depends_on:
     - postgis
 
   front:
-    build: front
-    ports:
-    - "4200:4200"
-    volumes:
-    - ./front/:/usr/src/app
-    - ./data/front/node_modules/:/usr/src/app/node_modules
+    image: registry.gitlab.com/bagage/batimap/front
     depends_on:
     - tiles
     - back
@@ -90,5 +76,3 @@ services:
     command: redis-server
     volumes:
       - ./data/redis:/var/lib/redis/data
-    ports:
-      - '6379:6379'
