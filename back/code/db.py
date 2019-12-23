@@ -147,11 +147,7 @@ class Db(object):
         )
 
     def get_city_geometry(self, insee):
-        return (
-            self.__filter_city(self.session.query(City.name, City.insee, City.import_date, Boundary.geometry.ST_AsGeoJSON()), insee)
-            .filter(Boundary.insee == City.insee)
-            .first()
-        )
+        return self.__filter_city(self.session.query(Boundary.geometry.ST_AsGeoJSON()), insee).filter(Boundary.insee == City.insee).first()
 
     def get_undated_cities(self, departments) -> [City]:
         return (
