@@ -80,7 +80,8 @@ class Db(object):
         return [x[0] for x in req]
 
     def get_osm_city_name_for_insee(self, insee) -> str:
-        return self.__filter_city(self.session.query(Boundary.name), insee).first().name
+        # there might be no result for this query, but this is OK
+        return self.__filter_city(self.session.query(Boundary.name), insee).first()
 
     def get_cities_for_department(self, department) -> [City]:
         return self.session.query(City).filter(City.department == department.zfill(2)).order_by(City.insee).all()
