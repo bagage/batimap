@@ -23,7 +23,6 @@ services:
     image: registry.gitlab.com/bagage/batimap/imposm-watcher
     volumes:
     - ./data/imposm/updated-tiles:/data
-    restart: always
 
   tiles:
     image: registry.gitlab.com/bagage/batimap/tiles
