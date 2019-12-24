@@ -70,7 +70,6 @@ class Batimap(object):
             if len(self.db.get_cities_for_department(d)) > 0 and self.db.get_raster_cities_count(d) == 0:
                 LOG.info(f"Le département {d} ne contient que des communes vectorisées, rien à faire")
                 continue
-            tuples = []
             d = f"{d}"
             r2 = op.open(
                 f"https://www.cadastre.gouv.fr/scpc/listerCommune.do?CSRF_TOKEN={csrf_token}"
@@ -83,6 +82,7 @@ class Batimap(object):
                 y = e.find(title="Ajouter au panier")
                 if not y:
                     continue
+                LOG.debug(f"Parsing next city: {e}")
 
                 # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
                 (_, code_commune, _, format_type, _, _, _) = y.get("onclick").split("'")
@@ -111,7 +111,7 @@ class Batimap(object):
                 city.name_cadastre = f"{code_commune}-{nom_commune}"
                 city.import_date = "raster" if is_raster else city.import_date or "never"
                 city.is_raster = is_raster
-            LOG.debug(f"Inserting {len(tuples)} cities in database…")
+            LOG.debug("Inserting cities in database…")
             self.db.session.commit()
             yield idx + 1
 
