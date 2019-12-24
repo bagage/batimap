@@ -14,6 +14,8 @@ if [ $result != 0 ] || [ "$count" -lt 10 ]; then
 else
     # create ready file
     touch tiles/initdb_is_done
+    # maintenance mode is terminated
+    rm -f html/maintenance.html
 fi
 
 GUNICORN_TIMEOUT_VALUE=${GUNICORN_TIMEOUT_VALUE:=60}

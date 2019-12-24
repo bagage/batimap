@@ -91,8 +91,6 @@ def task_initdb(self, items):
     migration_file = Path("html/maintenance.html")
     if initdb_is_done_file.exists():
         initdb_is_done_file.unlink()
-    if migration_file.exists():
-        migration_file.unlink()
 
     # fill table with cities from cadastre website
     p = 25
@@ -106,6 +104,9 @@ def task_initdb(self, items):
         task_progress(self, 3 * p + d / total * p)
 
     initdb_is_done_file.touch()
+    if migration_file.exists():
+        migration_file.unlink()
+
     task_progress(self, 100)
 
 
