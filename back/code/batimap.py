@@ -55,7 +55,12 @@ class Batimap(object):
         url = "https://www.cadastre.gouv.fr/scpc/rechercherPlan.do"
         cj = http.cookiejar.CookieJar()
         op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
-        r = op.open(url)
+        try:
+            r = op.open(url)
+        except Exception as e:
+            LOG.warn(f"Could not reach cadastre website: {e}, skipping for now")
+            return
+
         csrf_token = r.read().split(b"CSRF_TOKEN=")[1].split(b'"')[0].decode("utf-8")
         op.addheaders = [("Accept-Encoding", "gzip")]
 
