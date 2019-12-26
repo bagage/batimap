@@ -28,7 +28,7 @@ sql = """
     oa.osm_id,
     oa.name,
     cs.insee,
-    cs.details,
+    cast(cs.details as text) as details,
     cs.date,
     case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready
   FROM
@@ -52,7 +52,7 @@ sql = """
     ST_AsBinary(ST_Centroid(oa.geometry)) AS geometry,
     oa.osm_id,
     oa.name,
-    cs.details,
+    cast(cs.details as text) as details,
     cs.insee,
     cs.date,
     case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready
