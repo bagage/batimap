@@ -41,7 +41,7 @@
         "mat-progress-buttons": "8.0.7",
         "protractor": "5.4.2",
         "reflect-metadata": "0.1.13",
-        "rxjs": "6.5.3",
+        "rxjs": "6.5.4",
         "zone.js": "0.10.2"
     },
     "devDependencies": {
