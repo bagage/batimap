@@ -135,8 +135,8 @@ def task_josm_data(self, insee):
 
 
 @celery.task(bind=True)
-def task_update_insee_list(self, insee):
-    before = next(batimap.stats(names_or_insees=[insee], force=False))
+def task_update_insee(self, insee):
+    before = db.get_city_for_insee(insee)
     task_progress(self, 50)
     city = next(batimap.stats(names_or_insees=[insee], force=True))
     task_progress(self, 99)
@@ -221,7 +221,7 @@ def api_obsolete_city() -> dict:
 def api_update_insee_list(insee) -> dict:
     LOG.debug(f"Receive an update request for {insee}")
 
-    new_task = task_update_insee_list.delay(insee)
+    new_task = task_update_insee.delay(insee)
     return Response(
         response=json.dumps({"task_id": new_task.id}), status=202, headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
     )
@@ -282,7 +282,7 @@ def initdb_command(departments):
 @app.cli.command("update")
 @click.argument("insee")
 def update_command(insee):
-    click.echo(task_update_insee_list(insee))
+    click.echo(task_update_insee(insee))
 
 
 @app.cli.command("stats")
