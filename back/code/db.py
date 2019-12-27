@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from dateutil import parser
 from geoalchemy2 import Geometry
-from sqlalchemy import Column, Boolean, TIMESTAMP, String, JSON, Integer, BigInteger, Index
+from sqlalchemy import Column, Boolean, TIMESTAMP, String, JSON, Integer, BigInteger
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declarative_base
 
