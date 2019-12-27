@@ -321,7 +321,7 @@ class Batimap(object):
 
             simplified_cities = list(set([x[0] for x in city_with_simplified_building]))
             if len(simplified_cities) > 0:
-                LOG.info(f"Les villes {simplified_cities} contiennent des bâtiments " "avec une géométrie simplifée, import à vérifier")
+                LOG.info(f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifée, import à vérifier")
 
             # 3. finally compute city import date and update database
             LOG.info(f"Mise à jour des statistiques pour le département {dept}…")
