@@ -102,6 +102,7 @@ def task_initdb(self, items):
         task_progress(self, 2 * p + d / len(departments) * p)
     for (d, total) in batimap.compute_date_for_undated_cities(departments):
         task_progress(self, 3 * p + d / total * p)
+    db.session.commit()
 
     initdb_is_done_file.touch()
     if migration_file.exists():
@@ -277,12 +278,6 @@ def initdb_command(departments):
     Creates required tables in PostgreSQL server.
     """
     task_initdb(departments or db.get_departments())
-
-
-@app.cli.command("update")
-@click.argument("insee")
-def update_command(insee):
-    click.echo(task_update_insee(insee))
 
 
 @app.cli.command("stats")
