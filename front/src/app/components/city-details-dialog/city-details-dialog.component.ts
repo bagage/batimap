@@ -80,7 +80,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
                 task => {
                     this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
                     if (task.state === TaskState.SUCCESS) {
-                        this.city = task.result;
+                        this.cityDateChanged(task.result.date);
                         this.cadastreLayer.redraw();
                     }
                 },

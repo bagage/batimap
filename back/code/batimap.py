@@ -9,6 +9,7 @@ import urllib.request
 import zlib
 from collections import Counter
 from contextlib import closing
+import copy
 
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
@@ -41,7 +42,9 @@ class Batimap(object):
             list(self.update_departments_raster_state(depts))
 
         for city in cities:
-            yield self.fetch_osm_data(city, force)
+            if force:
+                city = self.__compute_city_date(city)
+            yield city
 
     def compute_date_for_undated_cities(self, departments):
         # we do not store building changeset timestamp in database, so we need to ask Overpass for cities which such
@@ -164,7 +167,7 @@ class Batimap(object):
         bbox = self.db.get_city_bbox(insee)
 
         # force refreshing city latest import date
-        city = self.fetch_osm_data(c, True)
+        city = self.__compute_city_date(c)
         return {
             "buildingsUrl": base_url + "simplifie.osm",
             "segmententationPredictionssUrl": base_url + "prediction_segmente.osm",
@@ -229,45 +232,43 @@ class Batimap(object):
         with open("tiles/outdated.txt", "a") as fd:
             fd.write(str(bbox) + "\n")
 
-    def fetch_osm_data(self, city, force):
+    def __compute_city_date(self, c):
         """
         Compute the latest import date for given city
         """
-        if force or city.import_date in City.bad_dates():
-            sources_date = []
+        city = copy.copy(c)
+        if not city.is_raster:
             simplified_buildings = []
-            if not city.is_raster:
-                try:
-                    # iterate on every building
-                    buildings = []
-                    for element in self.overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
-                        tags = element.get("tags")
-                        if element.get("type") == "node":
-                            # some buildings are mainly nodes, but we don't care much about them
-                            ignored_node_buildings = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine"]
-                            if (
-                                tags.get("power")
-                                or tags.get("ruins")
-                                or tags.get("historic")
-                                or tags.get("building") in ignored_node_buildings
-                            ):
-                                continue
+            try:
+                # iterate on every building
+                buildings = []
+                for element in self.overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
+                    tags = element.get("tags")
+                    if element.get("type") == "node":
+                        # some buildings are mainly nodes, but we don't care much about them
+                        ignored_node_buildings = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine"]
+                        if (
+                            tags.get("power")
+                            or tags.get("ruins")
+                            or tags.get("historic")
+                            or tags.get("building") in ignored_node_buildings
+                        ):
+                            continue
 
-                            LOG.info(
-                                f"{city} contient des bâtiments "
-                                f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
-                            )
-                            simplified_buildings.append(element.get("id"))
+                        LOG.info(
+                            f"{city} contient des bâtiments " f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
+                        )
+                        simplified_buildings.append(element.get("id"))
 
-                        buildings.append(element.get("timestamp")[:4])
-                    has_simplified = len(simplified_buildings) > 0
-                    (import_date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
-                    # only update date if we did not use cache files for buildings
-                    city.import_date = import_date
-                    city.import_details = {"simplified": simplified_buildings, "dates": sources_date}
-                    self.db.session.commit()
-                except Exception as e:
-                    LOG.error(f"Failed to count buildings for {city}: {e}")
+                    buildings.append(element.get("timestamp")[:4])
+                has_simplified = len(simplified_buildings) > 0
+                (import_date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
+                # only update date if we did not use cache files for buildings
+                city.import_date = import_date
+                city.import_details = {"simplified": simplified_buildings, "dates": sources_date}
+                self.db.session.commit()
+            except Exception as e:
+                LOG.error(f"Failed to count buildings for {city}: {e}")
         return city
 
     def date_for_buildings(self, insee, dates, has_simplified_buildings):
