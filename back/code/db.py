@@ -32,7 +32,7 @@ class City(Base):
 
     @staticmethod
     def bad_dates():
-        return [None, "unfinished", "unknown"]
+        return [None, "unfinished", "unknown", "never"]
 
 
 class Building(Base):
@@ -150,11 +150,11 @@ class Db(object):
     def get_city_geometry(self, insee):
         return self.__filter_city(self.session.query(Boundary.geometry.ST_AsGeoJSON()), insee).filter(Boundary.insee == City.insee).first()
 
-    def get_undated_cities(self, departments) -> [City]:
+    def get_unknown_cities(self, departments) -> [City]:
         return (
             self.session.query(City)
             .filter(City.department.in_([x.zfill(2) for x in departments]))
-            .filter(City.import_date.in_(City.bad_dates()))
+            .filter(City.import_date == "unknown")
             .order_by(City.insee)
             .all()
         )
