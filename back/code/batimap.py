@@ -9,7 +9,6 @@ import urllib.request
 import zlib
 from collections import Counter
 from contextlib import closing
-import copy
 
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
@@ -49,10 +48,11 @@ class Batimap(object):
     def compute_date_for_undated_cities(self, departments):
         # we do not store building changeset timestamp in database, so we need to ask Overpass for cities which such
         # buildings. For now, only ask for cities with a majority of unknown buildings, but we could whenever there is one
-        unknowns = [c.insee for c in self.db.get_undated_cities(departments)]
-        LOG.info(f"Using overpass for {len(unknowns)} unknown cities: {unknowns}")
-        for idx, _ in enumerate(self.stats(names_or_insees=unknowns, force=True)):
-            yield (idx + 1, len(unknowns))
+        unknowns = [c.insee for c in self.db.get_unknown_cities(departments)]
+        if len(unknowns):
+            LOG.info(f"Using overpass for {len(unknowns)} unknown cities: {unknowns}")
+            for idx, _ in enumerate(self.stats(names_or_insees=unknowns, force=True)):
+                yield (idx + 1, len(unknowns))
 
     def update_departments_raster_state(self, departments):
         url = "https://www.cadastre.gouv.fr/scpc/rechercherPlan.do"
@@ -232,11 +232,10 @@ class Batimap(object):
         with open("tiles/outdated.txt", "a") as fd:
             fd.write(str(bbox) + "\n")
 
-    def __compute_city_date(self, c):
+    def __compute_city_date(self, city):
         """
         Compute the latest import date for given city
         """
-        city = copy.copy(c)
         if not city.is_raster:
             simplified_buildings = []
             try:
@@ -262,7 +261,7 @@ class Batimap(object):
 
                     buildings.append(element.get("timestamp")[:4])
                 has_simplified = len(simplified_buildings) > 0
-                (import_date, sources_date) = self.date_for_buildings(city.insee, buildings, has_simplified)
+                (import_date, sources_date) = self.__date_for_buildings(city.insee, buildings, has_simplified)
                 # only update date if we did not use cache files for buildings
                 city.import_date = import_date
                 city.import_details = {"simplified": simplified_buildings, "dates": sources_date}
@@ -271,7 +270,7 @@ class Batimap(object):
                 LOG.error(f"Failed to count buildings for {city}: {e}")
         return city
 
-    def date_for_buildings(self, insee, dates, has_simplified_buildings):
+    def __date_for_buildings(self, insee, dates, has_simplified_buildings):
         """
         Computes the city import date, given a list of buildings date
         """
@@ -281,7 +280,6 @@ class Batimap(object):
             date = re.sub(self.cadastre_src2date_regex, r"\2", source)
             sources_date.append(date)
         counter = Counter(sources_date)
-        LOG.debug(f"City {insee} stats: {counter}")
 
         date = max(counter, key=sources_date.count) if len(sources_date) else "never"
         if date != "never" and date != "raster":
@@ -295,6 +293,7 @@ class Batimap(object):
                 date = "never"
             elif has_simplified_buildings:
                 date = "unfinished"
+        LOG.debug(f"City {insee} stats: date={date}, details={counter}")
         return (date, counter)
 
     def import_city_stats_from_osmplanet(self, departments):
@@ -328,7 +327,7 @@ class Batimap(object):
             LOG.info(f"Mise à jour des statistiques pour le département {dept}…")
             for insee, buildings in buildings.items():
                 # compute city import date based on all its buildings date
-                (import_date, counts) = self.date_for_buildings(insee, buildings, insee in simplified_cities)
+                (import_date, counts) = self.__date_for_buildings(insee, buildings, insee in simplified_cities)
                 simplified = [x[1] for x in city_with_simplified_building if x[0] == insee]
 
                 city = self.db.get_city_for_insee(insee)
