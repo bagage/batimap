@@ -68,7 +68,7 @@ class Handler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        if event.event_type == "modified":
+        if event.event_type in ["modified", "created"]:
             Handler.parse_entries(event.src_path)
         elif event.event_type == "moved":
             Handler.parse_entries(event.dest_path)
