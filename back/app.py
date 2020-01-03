@@ -244,7 +244,7 @@ def api_josm_data(insee) -> dict:
 
 @app.route("/initdb", methods=["POST"])
 def api_initdb():
-    items = request.get_json()["cities"]
+    items = (request.get_json() or {}).get("cities")
     LOG.debug("Receive an initdb request for " + str(items))
     if items:
         new_task = task_initdb.delay(items)
