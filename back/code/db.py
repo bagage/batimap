@@ -96,7 +96,7 @@ class Db(object):
         return self.session.query(City).filter(City.name_cadastre == name_cadastre).first()
 
     def get_city_osm_id(self, insee) -> int:
-        return self.__filter_city(self.session.query(Boundary.osm_id), insee).first().osm_id * -1
+        return self.__filter_city(self.session.query(-1 * Boundary.osm_id), insee).first()
 
     def get_city_bbox(self, insee):
         # first() is required because of multipolygons cities (76218 - Doudeauville for instance)
