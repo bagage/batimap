@@ -184,7 +184,7 @@ class Db(object):
     def get_raster_cities_count(self, department):
         return self.session.query(func.count("*")).filter(City.department == department.zfill(2)).filter(City.is_raster).scalar()
 
-    def get_building_dates_per_city_for_department(self, department, ignored_buildings):
+    def get_building_dates_per_city_for_insee(self, insee, ignored_buildings):
         return (
             self.__filter_city(
                 self.session.query(
@@ -195,7 +195,7 @@ class Db(object):
                     City.is_raster,
                 )
             )
-            .filter(City.department == department.zfill(2))
+            .filter(City.insee.startswith(insee.zfill(2)))
             .filter(City.insee == Boundary.insee)
             .filter(Building.building is not None)
             .filter(Building.building.notin_(ignored_buildings))
@@ -205,12 +205,12 @@ class Db(object):
             .all()
         )
 
-    def get_point_buildings_per_city_for_department(self, department):
+    def get_point_buildings_per_city_for_insee(self, insee):
         GeoCities = (
             self.__filter_city(self.session.query(Boundary.insee, Boundary.name, City.is_raster, Boundary.geometry))
             .filter(Boundary.admin_level >= 8)
             .filter(City.insee == Boundary.insee)
-            .filter(City.department == department.zfill(2))
+            .filter(City.insee.startswith(insee.zfill(2)))
             .filter(City.is_raster is False)
             .subquery(name="GeoCities")
         )

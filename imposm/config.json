@@ -2,7 +2,7 @@
     "cachedir": "/data/cache",
     "diffdir": "/data/diff",
     "expiretiles_dir": "/data/updated-tiles",
-    "expiretiles_zoom": 14,
+    "expiretiles_zoom": 13,
     "replication_interval": "24h",
     "replication_url": "http://download.geofabrik.de/europe/france-updates/",
     "srid": 4326

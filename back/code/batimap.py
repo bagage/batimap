@@ -45,14 +45,13 @@ class Batimap(object):
                 city = self.__compute_city_date(city)
             yield city
 
-    def compute_date_for_undated_cities(self, departments):
+    def compute_date_for_undated_cities(self, unknown_insees):
         # we do not store building changeset timestamp in database, so we need to ask Overpass for cities which such
         # buildings. For now, only ask for cities with a majority of unknown buildings, but we could whenever there is one
-        unknowns = [c.insee for c in self.db.get_unknown_cities(departments)]
-        if len(unknowns):
-            LOG.info(f"Using overpass for {len(unknowns)} unknown cities: {unknowns}")
-            for idx, _ in enumerate(self.stats(names_or_insees=unknowns, force=True)):
-                yield (idx + 1, len(unknowns))
+        if len(unknown_insees):
+            LOG.info(f"Using overpass for {len(unknown_insees)} unknown cities: {unknown_insees}")
+            for idx, _ in enumerate(self.stats(names_or_insees=unknown_insees, force=True)):
+                yield (idx + 1, len(unknown_insees))
 
     def update_departments_raster_state(self, departments):
         url = "https://www.cadastre.gouv.fr/scpc/rechercherPlan.do"
@@ -296,12 +295,12 @@ class Batimap(object):
         LOG.debug(f"City {insee} stats: date={date}, details={counter}")
         return (date, counter)
 
-    def import_city_stats_from_osmplanet(self, departments):
-        LOG.info(f"Calcul des statistiques du bâti pour les départements {departments}…")
-        for idx, dept in enumerate(departments):
+    def import_city_stats_from_osmplanet(self, insees):
+        LOG.info(f"Calcul des statistiques du bâti pour les INSEEs {insees}…")
+        for idx, insee_in in enumerate(insees):
             # 1. fetch global stats for current department of all buildings
-            LOG.info(f"Calcul des statistiques du bâti pour le département {dept}…")
-            result = self.db.get_building_dates_per_city_for_department(dept, self.IGNORED_BUILDINGS)
+            LOG.info(f"Calcul des statistiques du bâti pour l'INSEE {insee_in}…")
+            result = self.db.get_building_dates_per_city_for_insee(insee_in, self.IGNORED_BUILDINGS)
 
             buildings = {}
             insee_name = {}
@@ -316,15 +315,15 @@ class Batimap(object):
                     buildings[insee] += [source] * count
 
             # 2. fetch all simplified buildings in current department
-            LOG.info(f"Récupération du bâti simplifié pour le département {dept}…")
-            city_with_simplified_building = self.db.get_point_buildings_per_city_for_department(dept)
+            LOG.info(f"Récupération du bâti simplifié pour l'INSEE {insee_in}…")
+            city_with_simplified_building = self.db.get_point_buildings_per_city_for_insee(insee_in)
 
             simplified_cities = list(set([x[0] for x in city_with_simplified_building]))
             if len(simplified_cities) > 0:
                 LOG.info(f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifée, import à vérifier")
 
             # 3. finally compute city import date and update database
-            LOG.info(f"Mise à jour des statistiques pour le département {dept}…")
+            LOG.info(f"Mise à jour des statistiques pour l'INSEE {insee_in}…")
             for insee, buildings in buildings.items():
                 # compute city import date based on all its buildings date
                 (import_date, counts) = self.__date_for_buildings(insee, buildings, insee in simplified_cities)
