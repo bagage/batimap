@@ -112,8 +112,10 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     cityDateChanged(newDate: string) {
-        this.moreRecentDate = newDate;
-        this.city.date = newDate;
+        if (this.city.date !== newDate) {
+            this.moreRecentDate = newDate;
+            this.city.date = newDate;
+        }
         this.lastImport = this.computeLastImport();
     }
 
