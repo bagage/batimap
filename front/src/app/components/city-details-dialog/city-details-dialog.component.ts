@@ -80,7 +80,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
                 task => {
                     this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
                     if (task.state === TaskState.SUCCESS) {
-                        this.cityDateChanged(task.result.date);
+                        this.cityDateChanged(task.result);
                         this.cadastreLayer.redraw();
                     }
                 },
@@ -111,11 +111,11 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         return 'Le bâti existant ne semble pas provenir du cadastre.';
     }
 
-    cityDateChanged(newDate: string) {
-        if (this.city.date !== newDate) {
-            this.moreRecentDate = newDate;
-            this.city.date = newDate;
+    cityDateChanged(city: CityDTO) {
+        if (this.city.date !== city.date) {
+            this.moreRecentDate = city.date;
         }
+        this.city = city;
         this.lastImport = this.computeLastImport();
     }
 
