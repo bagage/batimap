@@ -39,7 +39,7 @@
         "leaflet-hash": "0.2.1",
         "leaflet-search": "2.9.8",
         "mat-progress-buttons": "8.0.7",
-        "protractor": "5.4.2",
+        "protractor": "5.4.3",
         "reflect-metadata": "0.1.13",
         "rxjs": "6.5.4",
         "zone.js": "0.10.2"
