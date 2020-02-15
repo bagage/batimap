@@ -107,15 +107,15 @@ function do_work() {
 
 if (housesLayer == null && segmentedLayer == null) {
     josm.alert(
-        "Impossible de trouver les calques de travail (<insee>-<ville>-houses-prediction_segmente.osm et <insee>-<ville>-houses-simplifie.osm)"
+        "Impossible de trouver les calques de travail (IDENTIFIANT-VILLE-houses-prediction_segmente.osm et IDENTIFIANT-VILLE-houses-simplifie.osm)"
     );
 } else if (housesLayer == null) {
     josm.alert(
-        "Impossible de trouver le calque de travail (<insee>-<ville>-houses-simplifie.osm)"
+        "Impossible de trouver le calque de travail (IDENTIFIANT-VILLE-houses-simplifie.osm)"
     );
 } else if (segmentedLayer == null) {
     josm.alert(
-        "Impossible de trouver le calque de travail (<insee>-<ville>-houses-prediction_segmente.osm)"
+        "Impossible de trouver le calque de travail (IDENTIFIANT-VILLE-houses-prediction_segmente.osm)"
     );
     // check that insee match
 } else if (

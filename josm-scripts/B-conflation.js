@@ -244,11 +244,11 @@ function do_work() {
 
 if (housesLayer == null) {
     josm.alert(
-        "Impossible de trouver le calque de travail (<insee>-<ville>-houses-simplifie.osm)"
+        "Impossible de trouver le calque de travail (IDENTIFIANT-VILLE-houses-simplifie.osm)"
     );
 } else if (osmLayer == null) {
     josm.alert(
-        "Impossible de trouver le calque de travail (Données OSM pour <insee> - <ville>)"
+        "Impossible de trouver le calque de travail (Données OSM pour INSEE - VILLE)"
     );
 } else {
     do_work();
