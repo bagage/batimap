@@ -176,6 +176,17 @@ function do_work() {
     ds2.selection.clearAll();
     ds2.selection.add(city);
 
+    if (ds2.getSelected().size() == 0) {
+        josm.alert(
+            "La limite administrative de la ville (insee " +
+                insee +
+                ") n'a pas pu être trouvé dans le calque " +
+                osmLayer.name +
+                ". Assurez-vous d'avoir bien suivi l'aide ?"
+        );
+        return;
+    }
+
     var utils2Classloader = org.openstreetmap.josm.plugins.PluginHandler.getPluginClassLoader(
         "utilsplugin2"
     );
@@ -244,11 +255,11 @@ function do_work() {
 
 if (housesLayer == null) {
     josm.alert(
-        "Impossible de trouver le calque de travail (<insee>-<ville>-houses-simplifie.osm)"
+        "Impossible de trouver le calque de travail (IDENTIFIANT-VILLE-houses-simplifie.osm)"
     );
 } else if (osmLayer == null) {
     josm.alert(
-        "Impossible de trouver le calque de travail (Données OSM pour <insee> - <ville>)"
+        "Impossible de trouver le calque de travail (Données OSM pour INSEE - VILLE)"
     );
 } else {
     do_work();
