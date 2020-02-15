@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { AppConfigService } from './app-config.service';
 
-import { deserialize, plainToClass } from 'class-transformer';
+import { HttpClient } from '@angular/common/http';
+import { plainToClass } from 'class-transformer';
+import { ClassType } from 'class-transformer/ClassTransformer';
 import { LatLngBounds } from 'leaflet';
 import { Observable, of, timer } from 'rxjs';
 import { debounceTime, map, switchMap, takeWhile, tap } from 'rxjs/operators';
-import { HttpClient } from '../../../node_modules/@angular/common/http';
-import { ClassType } from '../../../node_modules/class-transformer/ClassTransformer';
-import { CityDetailsDTO, CityDTO } from '../classes/city.dto';
+import { CityDTO } from '../classes/city.dto';
 import { ConflateCityDTO } from '../classes/conflate-city.dto';
 import { LegendDTO } from '../classes/legend.dto';
 import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';

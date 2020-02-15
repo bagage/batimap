@@ -26,6 +26,21 @@ import { JosmService } from '../../services/josm.service';
     styleUrls: ['./josm-button.component.css']
 })
 export class JosmButtonComponent extends Unsubscriber {
+    @Output() readonly newestDate = new EventEmitter<string>();
+
+    options = {
+        active: false,
+        text: '',
+        buttonColor: 'primary',
+        barColor: 'primary',
+        raised: true,
+        stroked: false,
+        mode: 'indeterminate',
+        value: 0,
+        disabled: false,
+        tooltip: ''
+    };
+    private _city: CityDTO;
     @Input()
     set city(value: CityDTO) {
         this._city = value;
@@ -47,22 +62,6 @@ export class JosmButtonComponent extends Unsubscriber {
     set josmReady(value: boolean) {
         this.options.disabled = this._city.josm_ready && !value;
     }
-
-    @Output() readonly newestDate = new EventEmitter<string>();
-
-    options = {
-        active: false,
-        text: '',
-        buttonColor: 'primary',
-        barColor: 'primary',
-        raised: true,
-        stroked: false,
-        mode: 'indeterminate',
-        value: 0,
-        disabled: false,
-        tooltip: ''
-    };
-    private _city: CityDTO;
 
     constructor(
         private readonly josmService: JosmService,
