@@ -231,7 +231,7 @@ def api_update_insee_list(insee) -> dict:
 
 @app.route("/cities/<insee>/osm_id", methods=["GET"])
 def api_city_osm_id(insee) -> dict:
-    osm_id = db.get_city_osm_id(insee)
+    (osm_id,) = db.get_city_osm_id(insee)
     return str(osm_id)
 
 
