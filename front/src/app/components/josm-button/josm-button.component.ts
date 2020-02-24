@@ -77,6 +77,12 @@ export class JosmButtonComponent extends Unsubscriber {
         const obs = this._city.josm_ready
             ? this.conflateCity()
             : this.prepareCity();
+        const onEnd = () => {
+            this.options.active = false;
+            this.options.text = this.options.text.replace(/ \(.*\)/, '');
+            this.changeDetector.detectChanges();
+        };
+
         this.autoUnsubscribe(
             obs.subscribe(
                 progress => {
@@ -93,15 +99,8 @@ export class JosmButtonComponent extends Unsubscriber {
                         this.changeDetector.detectChanges();
                     }
                 },
-                undefined,
-                () => {
-                    this.options.active = false;
-                    this.options.text = this.options.text.replace(
-                        / \(.*\)/,
-                        ''
-                    );
-                    this.changeDetector.detectChanges();
-                }
+                onEnd,
+                onEnd
             )
         );
     }
