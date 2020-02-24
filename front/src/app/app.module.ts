@@ -2,7 +2,7 @@ import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
@@ -11,6 +11,7 @@ import { AppComponent } from './app.component';
 import { MapComponent } from './pages/map/map.component';
 import { PagesModule } from './pages/pages.module';
 import { AppConfigService } from './services/app-config.service';
+import { HttpErrorInterceptor } from './services/http-error.interceptor';
 import { JosmService } from './services/josm.service';
 
 const appInitializerFn = (appConfig: AppConfigService) => () => appConfig.loadAppConfig();
@@ -38,6 +39,11 @@ const appRoutes: Routes = [{ path: '**', component: MapComponent }];
             useFactory: appInitializerFn,
             multi: true,
             deps: [AppConfigService],
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: HttpErrorInterceptor,
+            multi: true,
         },
         // allow custom icons in howto stepper
         {
