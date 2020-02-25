@@ -74,6 +74,11 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     @HostListener('document:keydown.r') updateCity() {
+        const onEnd = () => {
+            this.updateButtonOpts.active = false;
+            this.updateButtonOpts.text = 'Rafraîchir';
+        };
+
         this.updateButtonOpts.active = true;
         this.autoUnsubscribe(
             this.batimapService.updateCity(this.city.insee).subscribe(
@@ -84,11 +89,8 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
                         this.cadastreLayer.redraw();
                     }
                 },
-                undefined,
-                () => {
-                    this.updateButtonOpts.active = false;
-                    this.updateButtonOpts.text = 'Rafraîchir';
-                }
+                onEnd,
+                onEnd
             )
         );
     }
