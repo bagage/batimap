@@ -299,7 +299,7 @@ class Batimap(object):
         LOG.info(f"Calcul des statistiques du bâti pour les INSEEs {insees}…")
         for idx, insee_in in enumerate(insees):
             # 1. fetch global stats for current department of all buildings
-            LOG.info(f"Calcul des statistiques du bâti pour l'INSEE {insee_in}…")
+            LOG.debug(f"Calcul des statistiques du bâti pour l'INSEE {insee_in}…")
             result = self.db.get_building_dates_per_city_for_insee(insee_in, self.IGNORED_BUILDINGS)
 
             buildings = {}
@@ -315,7 +315,7 @@ class Batimap(object):
                     buildings[insee] += [source] * count
 
             # 2. fetch all simplified buildings in current department
-            LOG.info(f"Récupération du bâti simplifié pour l'INSEE {insee_in}…")
+            LOG.debug(f"Récupération du bâti simplifié pour l'INSEE {insee_in}…")
             city_with_simplified_building = self.db.get_point_buildings_per_city_for_insee(insee_in)
 
             simplified_cities = list(set([x[0] for x in city_with_simplified_building]))
@@ -323,7 +323,7 @@ class Batimap(object):
                 LOG.info(f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifée, import à vérifier")
 
             # 3. finally compute city import date and update database
-            LOG.info(f"Mise à jour des statistiques pour l'INSEE {insee_in}…")
+            LOG.debug(f"Mise à jour des statistiques pour l'INSEE {insee_in}…")
             for insee, buildings in buildings.items():
                 # compute city import date based on all its buildings date
                 (import_date, counts) = self.__date_for_buildings(insee, buildings, insee in simplified_cities)
