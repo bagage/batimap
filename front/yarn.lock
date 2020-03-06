@@ -5107,10 +5107,10 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-mat-progress-buttons@8.0.7:
-  version "8.0.7"
-  resolved "https://registry.yarnpkg.com/mat-progress-buttons/-/mat-progress-buttons-8.0.7.tgz#fdff13b38dcbc3ae04e43e9d69e427adbb15cf7a"
-  integrity sha512-ig31QgJAYrYbWXuvn+UVNAkWHEUdQA62Y8vifxPAlut+DSk94u5VlPDds8Qr9Z2bzB3TM9uYSG4VTxJh/+2S8Q==
+mat-progress-buttons@8.0.8:
+  version "8.0.8"
+  resolved "https://registry.yarnpkg.com/mat-progress-buttons/-/mat-progress-buttons-8.0.8.tgz#710af77acf930a462ec8ed50f5e3d611f78f1e9f"
+  integrity sha512-3w1DqNwQpyq8RE/BEXUBZFBVauiDb5puD7tg/3P4m6G7Tyk2Nfjj3DdOvnoYo9qhEZ8xL9dS2FGPdKJ4Osmkxw==
 
 md5.js@^1.3.4:
   version "1.3.5"
