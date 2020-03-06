@@ -1146,10 +1146,10 @@
   dependencies:
     "@types/jasmine" "*"
 
-"@types/leaflet@1.5.9":
-  version "1.5.9"
-  resolved "https://registry.yarnpkg.com/@types/leaflet/-/leaflet-1.5.9.tgz#3e56efd5dab7c2d1f56200620939d11c973946c2"
-  integrity sha512-vFj2Y764lC6PpmmoFTui3yEMAKf+Dy08eGIaFgM+efJoKNxDP/bsEr2UHloP6kkJqc+4VO9+KYea2ZhiZCnNrQ==
+"@types/leaflet@1.5.10":
+  version "1.5.10"
+  resolved "https://registry.yarnpkg.com/@types/leaflet/-/leaflet-1.5.10.tgz#a728752877980216b3215bf07359fa7765f9825b"
+  integrity sha512-KD9sIS9F/Mp6KiXFeN7tyXbF2EUnm1WCYR5fUq30OCUXeJmK9raWPHtB9uwdWm6k26KTsy9etp9XSPNpbJooOQ==
   dependencies:
     "@types/geojson" "*"
 
