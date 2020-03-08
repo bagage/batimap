@@ -1,21 +1,35 @@
 import logging
 import time
 
-import overpass as o
+import overpass
 
 LOG = logging.getLogger(__name__)
 
 
 class Overpass(object):
-    def __init__(self, uri="https://overpass-api.de/api/interpreter"):
-        self.__api = o.API(endpoint=uri, timeout=300)
+    # from https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
+    instances_endpoints = [
+        "https://overpass-api.de/api/interpreter",
+        "http://overpass.openstreetmap.fr/api/interpreter",
+        "https://overpass.nchc.org.tw/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter",
+    ]
+
+    def __init__(self):
+        self.__apis = []
+        self.__request = 0
+        for uri in self.instances_endpoints:
+            self.__apis.append(overpass.API(endpoint=uri, timeout=300))
 
     def request_with_retries(self, request, output_format="json"):
+        apis = len(self.__apis)
         for retry in range(9, 0, -1):
             try:
-                LOG.debug(f"Executing Overpass request:\n{request}")
-                return self.__api.Get(request, responseformat=output_format, build=False)
-            except (o.errors.MultipleRequestsError, o.errors.ServerLoadError) as e:
+                self.__request += 1
+                api = self.__apis[(self.__request + retry) % apis]
+                LOG.warning(f"Executing Overpass on server {api.endpoint} with request:\n{request}")
+                return api.Get(request, responseformat=output_format, build=False)
+            except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
                 LOG.warning("{} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry))
                 if retry == 0:
                     raise e
