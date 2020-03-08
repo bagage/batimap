@@ -135,7 +135,13 @@ class Db(object):
     def get_departments(self):
         # admin_level 6 are departments, however some are handled differently by OSM and cadastre.
         # for instance, 69 (Rhône) exists as 69D and 60M in OSM at level 6, so we also take level 5
-        return self.__flat(self.session.query(Boundary.insee).filter(Boundary.admin_level.in_([5, 6])).order_by(Boundary.insee).all())
+        return self.__flat(
+            self.session.query(Boundary.insee)
+            .filter(Boundary.admin_level.in_([5, 6]))
+            .filter(Boundary.insee != "")
+            .order_by(Boundary.insee)
+            .all()
+        )
 
     def get_departments_for_bbox(self, bbox: Bbox):
         return self.__flat(
