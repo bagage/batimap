@@ -48,7 +48,7 @@ from code.db import Db
 
 db = Db(sql)
 
-overpass = Overpass(app.config["OVERPASS_URI"])
+overpass = Overpass()
 batimap = Batimap(db, overpass)
 
 
