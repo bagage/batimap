@@ -30,9 +30,7 @@
             </button>
         </div>
 
-        <ng-container
-            *ngIf="legendItems$ | async as legendItems; else dataHandler"
-        >
+        <ng-container *ngIf="legendItems$ | async as legendItems; else dataHandler">
             <ng-container *ngIf="legendItems?.length > 0; else noCities">
                 <ng-container *ngIf="!hideCheckboxes; else labels">
                     <div>
@@ -49,10 +47,7 @@
                 </ng-container>
                 <ng-template #labels>
                     <ul>
-                        <li
-                            *ngFor="let item of legendItems"
-                            [ngStyle]="{ color: item.color }"
-                        >
+                        <li *ngFor="let item of legendItems" [ngStyle]="{ color: item.color }">
                             {{ item.displayName }} ({{ item.percent }}%)
                         </li>
                     </ul>
@@ -61,8 +56,7 @@
         </ng-container>
         <ng-template #noCities>
             <p>
-                Il semblerait qu'il n'y ait aucune commune disponible dans cette
-                zone.
+                Il semblerait qu'il n'y ait aucune commune disponible dans cette zone.
             </p>
         </ng-template>
         <ng-template #dataHandler>

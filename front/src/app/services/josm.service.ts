@@ -24,9 +24,7 @@ export class JosmService {
 
     openCityInJosm(city: CityDTO, dto: ConflateCityDTO): Observable<any> {
         if (!dto) {
-            console.log(
-                `Asked to open ${city.name} in JOSM, but no data. Ignoring`
-            );
+            console.log(`Asked to open ${city.name} in JOSM, but no data. Ignoring`);
 
             return EMPTY;
         }
@@ -50,10 +48,7 @@ export class JosmService {
     openNode(node: number, city: CityDTO): Observable<any> {
         return forkJoin(
             this.JOSM_URL_BDORTHO_IMAGERY(),
-            this.JOSM_URL_LOAD_OBJECTS(
-                `n${node}`,
-                `Bâtiment simplifié ${node} dans ${city.insee} - ${city.name}`
-            )
+            this.JOSM_URL_LOAD_OBJECTS(`n${node}`, `Bâtiment simplifié ${node} dans ${city.insee} - ${city.name}`)
         );
     }
 
@@ -71,19 +66,11 @@ export class JosmService {
         });
     }
 
-    private JOSM_URL_OPEN_FILE(
-        url: string,
-        locked: boolean
-    ): Observable<string> {
+    private JOSM_URL_OPEN_FILE(url: string, locked: boolean): Observable<string> {
         // first ensure that the file exists, then load it into JOSM
         return this.http.head(url).pipe(
             catchError(e => {
-                console.warn(
-                    'OSM data at url',
-                    url,
-                    'could not be found, not opening it in JOSM',
-                    e
-                );
+                console.warn('OSM data at url', url, 'could not be found, not opening it in JOSM', e);
 
                 return of('no segmentation');
             }),
@@ -125,10 +112,7 @@ export class JosmService {
         });
     }
 
-    private JOSM_URL_LOAD_OBJECTS(
-        objects: string,
-        layerName: string
-    ): Observable<any> {
+    private JOSM_URL_LOAD_OBJECTS(objects: string, layerName: string): Observable<any> {
         return this.http.get(`${this.JOSM_URL_BASE}load_object`, {
             responseType: 'text',
             params: {

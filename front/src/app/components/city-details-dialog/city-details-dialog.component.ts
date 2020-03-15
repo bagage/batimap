@@ -1,13 +1,10 @@
 import { Component, HostListener, Inject, OnInit } from '@angular/core';
-import {
-    MatDialog,
-    MatDialogRef,
-    MAT_DIALOG_DATA
-} from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable } from 'rxjs';
 import { CityDTO } from '../../classes/city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
+import { MapComponent } from '../../pages/map/map.component';
 import { BatimapService, TaskState } from '../../services/batimap.service';
 import { JosmService } from '../../services/josm.service';
 import { LegendService } from '../../services/legend.service';
@@ -19,6 +16,8 @@ import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
     styleUrls: ['./city-details-dialog.component.css']
 })
 export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
+    static storageIgnoredCities = 'deactivated-cities';
+
     city: CityDTO;
 
     josmIsStarted: Observable<boolean>;
@@ -72,6 +71,14 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
 
     @HostListener('document:keydown.f') close() {
         this.dialogRef.close(0);
+    }
+
+    @HostListener('document:keydown.i') ignoreCity() {
+        // tslint:disable
+        const ignoredCities = localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || '';
+        localStorage.setItem(CityDetailsDialogComponent.storageIgnoredCities, `${this.city.insee},${ignoredCities}`);
+        this.dialogRef.close(0);
+        this.cadastreLayer.redraw();
     }
 
     @HostListener('document:keydown.r') updateCity() {

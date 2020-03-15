@@ -1,10 +1,4 @@
-import {
-    Component,
-    EventEmitter,
-    HostListener,
-    OnInit,
-    Output
-} from '@angular/core';
+import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 
 @Component({
     selector: 'app-legend-button',

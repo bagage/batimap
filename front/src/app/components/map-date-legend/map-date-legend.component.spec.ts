@@ -17,20 +17,14 @@ describe('MapDateLegendComponent', () => {
         TestBed.configureTestingModule({
             declarations: [MapDateLegendComponent, LoaderComponent],
             imports: [MatLibModule, HttpClientTestingModule, LeafletModule],
-            providers: [
-                MapDateLegendComponent,
-                { provide: AppConfigService, useClass: MockAppConfigService }
-            ]
+            providers: [MapDateLegendComponent, { provide: AppConfigService, useClass: MockAppConfigService }]
         }).compileComponents();
     }));
 
     beforeEach(() => {
         fixture = TestBed.createComponent(MapDateLegendComponent);
         component = fixture.componentInstance;
-        component.map = new L.Map(document.createElement('div')).setView(
-            [0, 0],
-            10
-        );
+        component.map = new L.Map(document.createElement('div')).setView([0, 0], 10);
         fixture.detectChanges();
     });
 

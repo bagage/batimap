@@ -11,10 +11,7 @@ describe('AppConfigService', () => {
         });
     });
 
-    it('should be created', inject(
-        [AppConfigService],
-        (service: AppConfigService) => {
-            expect(service).toBeTruthy();
-        }
-    ));
+    it('should be created', inject([AppConfigService], (service: AppConfigService) => {
+        expect(service).toBeTruthy();
+    }));
 });

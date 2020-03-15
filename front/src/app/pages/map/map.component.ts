@@ -1,11 +1,6 @@
 import { Component, HostListener, NgZone, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import {
-    classToPlain,
-    deserialize,
-    plainToClass,
-    serialize
-} from 'class-transformer';
+import { classToPlain, deserialize, plainToClass, serialize } from 'class-transformer';
 import { CityDetailsDTO, CityDTO } from '../../classes/city.dto';
 import { CityDetailsDialogComponent } from '../../components/city-details-dialog/city-details-dialog.component';
 import { MapDateLegendComponent } from '../../components/map-date-legend/map-date-legend.component';
@@ -58,20 +53,21 @@ export class MapComponent {
     }
 
     stylingFunction(properties, zoom, type): any {
-        const date =
-            this.legendService.city2date.get(properties.insee) ||
-            properties.date;
+        const date = this.legendService.city2date.get(properties.insee) || properties.date;
         const color = this.legendService.date2color(date);
-        const hidden =
-            properties.insee.length > 3 && !this.legendService.isActive(date);
+        // tslint:disable
+        const ignoredCities = localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || '';
+        const visible =
+            properties.insee.length <= 3 ||
+            (this.legendService.isActive(date) && ignoredCities.indexOf(properties.insee) === -1);
 
         return {
             weight: 2,
             color,
-            opacity: hidden ? 0.08 : 1,
+            opacity: visible ? 1 : 0.08,
             fill: true,
             radius: type === 'point' ? (zoom === 8 ? 4 : 2) : 1,
-            fillOpacity: hidden ? 0.08 : properties.josm_ready ? 0.8 : 0.4
+            fillOpacity: visible ? (properties.josm_ready ? 0.8 : 0.4) : 0.08
         };
     }
 
@@ -79,20 +75,14 @@ export class MapComponent {
         // noinspection JSUnusedGlobalSymbols
         const vectorTileOptions = {
             vectorTileLayerStyles: {
-                cities: (properties, zoom) =>
-                    this.stylingFunction(properties, zoom, 'polygon'),
-                'cities-point': (properties, zoom) =>
-                    this.stylingFunction(properties, zoom, 'point'),
-                departments: (properties, zoom) =>
-                    this.stylingFunction(properties, zoom, 'polygon')
+                cities: (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),
+                'cities-point': (properties, zoom) => this.stylingFunction(properties, zoom, 'point'),
+                departments: (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon')
             },
             interactive: true // Make sure that this VectorGrid fires mouse/pointer events
         };
 
-        this.cadastreLayer = L.vectorGrid.protobuf(
-            this.configService.getConfig().tilesServerUrl,
-            vectorTileOptions
-        );
+        this.cadastreLayer = L.vectorGrid.protobuf(this.configService.getConfig().tilesServerUrl, vectorTileOptions);
         this.cadastreLayer.on('click', e => {
             this.zone.run(() => {
                 // do not open popup when clicking depts
@@ -118,9 +108,7 @@ export class MapComponent {
 
     private openPopup(cityJson: string) {
         const city = plainToClass(CityDTO, cityJson);
-        city.details = city.details
-            ? deserialize(CityDetailsDTO, city.details.toString())
-            : undefined;
+        city.details = city.details ? deserialize(CityDetailsDTO, city.details.toString()) : undefined;
         this.matDialog.open(CityDetailsDialogComponent, {
             data: [city, this.cadastreLayer]
         });

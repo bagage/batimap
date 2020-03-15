@@ -1,12 +1,4 @@
-import {
-    Component,
-    EventEmitter,
-    HostListener,
-    Input,
-    NgZone,
-    OnInit,
-    Output
-} from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import * as L from 'leaflet';
 import { Observable } from 'rxjs';
@@ -56,33 +48,28 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
 
     refreshLegend() {
         const bounds = this.map.getBounds();
-        if (
-            !this.bounds ||
-            this.bounds.toBBoxString() !== bounds.toBBoxString()
-        ) {
+        if (!this.bounds || this.bounds.toBBoxString() !== bounds.toBBoxString()) {
             this.bounds = bounds;
             this.error = false;
-            this.legendItems$ = this.batimapService
-                .legendForBbox(this.bounds)
-                .pipe(
-                    catchError(err => {
-                        this.error = true;
-                        throw err;
-                    }),
-                    map(items =>
-                        items.map(
-                            it =>
-                                new MapDateLegendModel(
-                                    it.name,
-                                    it.checked,
-                                    it.count,
-                                    it.percent,
-                                    this.legendService.date2name(it.name),
-                                    this.legendService.date2color(it.name)
-                                )
-                        )
+            this.legendItems$ = this.batimapService.legendForBbox(this.bounds).pipe(
+                catchError(err => {
+                    this.error = true;
+                    throw err;
+                }),
+                map(items =>
+                    items.map(
+                        it =>
+                            new MapDateLegendModel(
+                                it.name,
+                                it.checked,
+                                it.count,
+                                it.percent,
+                                this.legendService.date2name(it.name),
+                                this.legendService.date2color(it.name)
+                            )
                     )
-                );
+                )
+            );
         }
     }
 
@@ -103,14 +90,8 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         this.autoUnsubscribe(
             this.legendItems$
                 .pipe(
-                    map(items =>
-                        items
-                            .filter(it => !this.legendService.isActive(it))
-                            .map(it => it.name)
-                    ),
-                    switchMap(ignored =>
-                        this.batimapService.obsoleteCity(ignored)
-                    )
+                    map(items => items.filter(it => !this.legendService.isActive(it)).map(it => it.name)),
+                    switchMap(ignored => this.batimapService.obsoleteCity(ignored))
                 )
                 .subscribe((obsoleteCity: ObsoleteCityDTO) => {
                     this.map.setView(obsoleteCity.position, 10, {
@@ -118,16 +99,10 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                     });
                     setTimeout(() => {
                         this.matDialog.closeAll();
-                        const dialog = this.matDialog.open<
-                            CityDetailsDialogComponent
-                        >(CityDetailsDialogComponent, {
+                        const dialog = this.matDialog.open<CityDetailsDialogComponent>(CityDetailsDialogComponent, {
                             data: [obsoleteCity.city, this.cadastreLayer]
                         });
-                        dialog
-                            .afterOpened()
-                            .subscribe(() =>
-                                dialog.componentInstance.updateCity()
-                            );
+                        dialog.afterOpened().subscribe(() => dialog.componentInstance.updateCity());
                     }, 0);
                 })
         );

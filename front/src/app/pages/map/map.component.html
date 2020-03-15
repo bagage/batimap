@@ -1,8 +1,4 @@
-<div
-    leaflet
-    (leafletMapReady)="onMapReady($event)"
-    [leafletOptions]="options"
-></div>
+<div leaflet (leafletMapReady)="onMapReady($event)" [leafletOptions]="options"></div>
 
 <app-map-date-legend
     #legend
@@ -11,7 +7,6 @@
     (hideLegend)="displayLegend = false"
 ></app-map-date-legend>
 
-<app-legend-button *ngIf="!displayLegend" (showLegend)="displayLegend = true">
-</app-legend-button>
+<app-legend-button *ngIf="!displayLegend" (showLegend)="displayLegend = true"> </app-legend-button>
 <!--disable list for now, not ideal flow yet-->
 <app-cities-list *ngIf="false"></app-cities-list>

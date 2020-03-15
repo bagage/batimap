@@ -8,18 +8,12 @@ import { BatimapService } from './batimap.service';
 describe('BatimapService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [
-                BatimapService,
-                { provide: AppConfigService, useClass: MockAppConfigService }
-            ],
+            providers: [BatimapService, { provide: AppConfigService, useClass: MockAppConfigService }],
             imports: [HttpClientTestingModule]
         });
     });
 
-    it('should be created', inject(
-        [BatimapService],
-        (service: BatimapService) => {
-            expect(service).toBeTruthy();
-        }
-    ));
+    it('should be created', inject([BatimapService], (service: BatimapService) => {
+        expect(service).toBeTruthy();
+    }));
 });

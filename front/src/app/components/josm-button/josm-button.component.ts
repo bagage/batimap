@@ -12,11 +12,7 @@ import { filter, map, switchMap } from 'rxjs/operators';
 import { CityDTO } from '../../classes/city.dto';
 import { ConflateCityDTO } from '../../classes/conflate-city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
-import {
-    BatimapService,
-    TaskProgress,
-    TaskState
-} from '../../services/batimap.service';
+import { BatimapService, TaskProgress, TaskState } from '../../services/batimap.service';
 import { JosmService } from '../../services/josm.service';
 
 @Component({
@@ -26,7 +22,7 @@ import { JosmService } from '../../services/josm.service';
     styleUrls: ['./josm-button.component.css']
 })
 export class JosmButtonComponent extends Unsubscriber {
-    @Output() readonly newestDate = new EventEmitter<string>();
+    @Output() readonly newestDate = new EventEmitter<CityDTO>();
 
     options = {
         active: false,
@@ -51,10 +47,9 @@ export class JosmButtonComponent extends Unsubscriber {
             this.options.text = 'JOSM';
             this.options.barColor = this.options.buttonColor = 'primary';
         } else {
-            this.options.tooltip =
-                'Prépare les données pour pouvoir être ensuite éditer avec JOSM. [Raccourci : P]';
+            this.options.tooltip = 'Prépare les données pour pouvoir être ensuite éditer avec JOSM. [Raccourci : P]';
             this.options.text = 'Préparer';
-            this.options.barColor = this.options.buttonColor = 'secondary';
+            this.options.barColor = this.options.buttonColor = 'accent';
         }
     }
 
@@ -73,9 +68,7 @@ export class JosmButtonComponent extends Unsubscriber {
 
     @HostListener('document:keydown.j') onClick() {
         this.options.active = true;
-        const obs = this._city.josm_ready
-            ? this.conflateCity()
-            : this.prepareCity();
+        const obs = this._city.josm_ready ? this.conflateCity() : this.prepareCity();
         const onEnd = () => {
             this.options.active = false;
             this.options.text = this.options.text.replace(/ \(.*\)/, '');
@@ -90,10 +83,7 @@ export class JosmButtonComponent extends Unsubscriber {
                         if (this.options.text.indexOf('(') === -1) {
                             this.options.text += prog;
                         } else {
-                            this.options.text = this.options.text.replace(
-                                / \(.*\)/,
-                                prog
-                            );
+                            this.options.text = this.options.text.replace(/ \(.*\)/, prog);
                         }
                         this.changeDetector.detectChanges();
                     }
@@ -106,11 +96,7 @@ export class JosmButtonComponent extends Unsubscriber {
 
     private conflateCity(): Observable<any> {
         return this.prepareCity().pipe(
-            switchMap(dto =>
-                dto instanceof TaskProgress
-                    ? of(dto)
-                    : this.josmService.openCityInJosm(this._city, dto)
-            )
+            switchMap(dto => (dto instanceof TaskProgress ? of(dto) : this.josmService.openCityInJosm(this._city, dto)))
         );
     }
 
@@ -127,7 +113,7 @@ export class JosmButtonComponent extends Unsubscriber {
                     }
 
                     if (this._city.date !== progressConflateDTO.date) {
-                        this.newestDate.emit(progressConflateDTO.date);
+                        this.newestDate.emit(this.city);
 
                         return undefined;
                     }

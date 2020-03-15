@@ -8,13 +8,7 @@ import { PagesModule } from './pages/pages.module';
 describe('AppComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            imports: [
-                RouterTestingModule,
-                MatLibModule,
-                NoopAnimationsModule,
-                PagesModule,
-                SharedComponentsModule
-            ],
+            imports: [RouterTestingModule, MatLibModule, NoopAnimationsModule, PagesModule, SharedComponentsModule],
             declarations: [AppComponent]
         }).compileComponents();
     }));
