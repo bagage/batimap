@@ -55,15 +55,19 @@ export class MapComponent {
     stylingFunction(properties, zoom, type): any {
         const date = this.legendService.city2date.get(properties.insee) || properties.date;
         const color = this.legendService.date2color(date);
-        const hidden = properties.insee.length > 3 && !this.legendService.isActive(date);
+        // tslint:disable
+        const ignoredCities = localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || '';
+        const visible =
+            properties.insee.length <= 3 ||
+            (this.legendService.isActive(date) && ignoredCities.indexOf(properties.insee) === -1);
 
         return {
             weight: 2,
             color,
-            opacity: hidden ? 0.08 : 1,
+            opacity: visible ? 1 : 0.08,
             fill: true,
             radius: type === 'point' ? (zoom === 8 ? 4 : 2) : 1,
-            fillOpacity: hidden ? 0.08 : properties.josm_ready ? 0.8 : 0.4
+            fillOpacity: visible ? (properties.josm_ready ? 0.8 : 0.4) : 0.08
         };
     }
 

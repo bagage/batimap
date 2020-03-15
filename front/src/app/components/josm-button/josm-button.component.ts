@@ -22,7 +22,7 @@ import { JosmService } from '../../services/josm.service';
     styleUrls: ['./josm-button.component.css']
 })
 export class JosmButtonComponent extends Unsubscriber {
-    @Output() readonly newestDate = new EventEmitter<string>();
+    @Output() readonly newestDate = new EventEmitter<CityDTO>();
 
     options = {
         active: false,
@@ -49,7 +49,7 @@ export class JosmButtonComponent extends Unsubscriber {
         } else {
             this.options.tooltip = 'Prépare les données pour pouvoir être ensuite éditer avec JOSM. [Raccourci : P]';
             this.options.text = 'Préparer';
-            this.options.barColor = this.options.buttonColor = 'secondary';
+            this.options.barColor = this.options.buttonColor = 'accent';
         }
     }
 
@@ -113,7 +113,7 @@ export class JosmButtonComponent extends Unsubscriber {
                     }
 
                     if (this._city.date !== progressConflateDTO.date) {
-                        this.newestDate.emit(progressConflateDTO.date);
+                        this.newestDate.emit(this.city);
 
                         return undefined;
                     }

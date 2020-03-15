@@ -45,6 +45,9 @@
     >
         Fermer
     </button>
+    <button mat-raised-button (click)="ignoreCity()" matTooltip="Masquer cette commune de la carte. [Raccourci : I]">
+        Ignorer
+    </button>
     <mat-bar-button
         [options]="updateButtonOpts"
         (click)="updateCity()"
