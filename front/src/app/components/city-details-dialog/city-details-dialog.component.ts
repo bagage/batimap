@@ -1,8 +1,8 @@
 import { Component, HostListener, Inject, OnInit } from '@angular/core';
 import {
-    MAT_DIALOG_DATA,
     MatDialog,
-    MatDialogRef
+    MatDialogRef,
+    MAT_DIALOG_DATA
 } from '@angular/material/dialog';
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable } from 'rxjs';
@@ -52,8 +52,9 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.city = data[0];
         this.cadastreLayer = data[1];
         this.lastImport = this.computeLastImport();
-        if (this.city)
+        if (this.city) {
             this.osmID$ = this.batimapService.cityOsmID(this.city.insee);
+        }
     }
 
     ngOnInit(): void {

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatLibModule } from '../mat-lib.module';
+import { PipesModule } from '../pipes/pipes.module';
 import { AboutDialogComponent } from './about-dialog/about-dialog.component';
 import { CityDetailsDialogComponent } from './city-details-dialog/city-details-dialog.component';
 import { HowtoDialogComponent } from './howto-dialog/howto-dialog.component';
@@ -9,7 +10,6 @@ import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog/jos
 import { LegendButtonComponent } from './legend-button/legend-button.component';
 import { LoaderComponent } from './loader/loader.component';
 import { MapDateLegendComponent } from './map-date-legend/map-date-legend.component';
-import { PipesModule } from '../pipes/pipes.module';
 
 @NgModule({
     imports: [CommonModule, MatLibModule, PipesModule],
