@@ -45,10 +45,7 @@ export class BatimapService {
     ) {}
 
     cityData(insee: string): Observable<TaskResult<ConflateCityDTO>> {
-        return this.longRunningAPI<ConflateCityDTO>(
-            this.URL_CITY_DATA(insee),
-            ConflateCityDTO
-        );
+        return this.longRunningAPI<ConflateCityDTO>(this.URL_CITY_DATA(insee), ConflateCityDTO);
     }
 
     citiesInBbox(bbox: LatLngBounds): Observable<CityDTO[]> {
@@ -91,16 +88,10 @@ export class BatimapService {
     }
 
     updateCity(insee: string): Observable<TaskResult<CityDTO>> {
-        return this.longRunningAPI<CityDTO>(
-            this.URL_CITY_UPDATE(insee),
-            CityDTO
-        ).pipe(
+        return this.longRunningAPI<CityDTO>(this.URL_CITY_UPDATE(insee), CityDTO).pipe(
             tap(progress => {
                 if (progress.state === TaskState.SUCCESS) {
-                    this.legendService.city2date.set(
-                        progress.result.insee,
-                        progress.result.date
-                    );
+                    this.legendService.city2date.set(progress.result.insee, progress.result.date);
                 }
             })
         );
@@ -119,43 +110,23 @@ export class BatimapService {
     }
 
     private URL_TASK(task: Task): string {
-        return `${this.configService.getConfig().backServerUrl}/tasks/${
-            task.task_id
-        }`;
+        return `${this.configService.getConfig().backServerUrl}/tasks/${task.task_id}`;
     }
 
     private URL_CITY_DATA(insee: string): string {
-        return `${
-            this.configService.getConfig().backServerUrl
-        }cities/${insee}/josm`;
+        return `${this.configService.getConfig().backServerUrl}cities/${insee}/josm`;
     }
 
     private URL_CITY_UPDATE(insee: string): string {
-        return `${
-            this.configService.getConfig().backServerUrl
-        }cities/${insee}/update`;
+        return `${this.configService.getConfig().backServerUrl}cities/${insee}/update`;
     }
 
-    private URL_CITIES_BBOX(
-        lonNW: number,
-        latNW: number,
-        lonSE: number,
-        latSE: number
-    ) {
-        return `${
-            this.configService.getConfig().backServerUrl
-        }cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
+    private URL_CITIES_BBOX(lonNW: number, latNW: number, lonSE: number, latSE: number) {
+        return `${this.configService.getConfig().backServerUrl}cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
-    private URL_LEGEND(
-        lonNW: number,
-        latNW: number,
-        lonSE: number,
-        latSE: number
-    ) {
-        return `${
-            this.configService.getConfig().backServerUrl
-        }legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
+    private URL_LEGEND(lonNW: number, latNW: number, lonSE: number, latSE: number) {
+        return `${this.configService.getConfig().backServerUrl}legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
     private URL_CITY_OBSOLETE() {
@@ -163,27 +134,15 @@ export class BatimapService {
     }
 
     private URL_CITY_OSM_ID(insee: string) {
-        return `${
-            this.configService.getConfig().backServerUrl
-        }cities/${insee}/osm_id`;
+        return `${this.configService.getConfig().backServerUrl}cities/${insee}/osm_id`;
     }
 
-    private longRunningAPI<T>(
-        url,
-        cls: ClassType<T>
-    ): Observable<TaskResult<T>> {
+    private longRunningAPI<T>(url, cls: ClassType<T>): Observable<TaskResult<T>> {
         return this.http.get<Task>(url).pipe(
             switchMap(task =>
                 timer(0, 3000).pipe(
-                    switchMap(() =>
-                        this.http.get<TaskResult<T>>(this.URL_TASK(task))
-                    ),
-                    takeWhile(
-                        r =>
-                            r.state === TaskState.PENDING ||
-                            r.state === TaskState.PROGRESS,
-                        true
-                    ),
+                    switchMap(() => this.http.get<TaskResult<T>>(this.URL_TASK(task))),
+                    takeWhile(r => r.state === TaskState.PENDING || r.state === TaskState.PROGRESS, true),
                     tap(r => {
                         if (r.state === TaskState.PENDING) {
                             r.progress = new TaskProgress(0, 100);

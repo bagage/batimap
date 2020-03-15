@@ -13,13 +13,7 @@ import { SharedComponentsModule } from '../../components/shared-components.modul
 import { MatLibModule } from '../../mat-lib.module';
 
 @NgModule({
-    imports: [
-        CommonModule,
-        LeafletModule,
-        MatLibModule,
-        CitiesListModule,
-        SharedComponentsModule
-    ],
+    imports: [CommonModule, LeafletModule, MatLibModule, CitiesListModule, SharedComponentsModule],
     declarations: [MapComponent]
 })
 export class MapModule {}

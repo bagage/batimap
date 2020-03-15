@@ -16,25 +16,15 @@ describe('CitiesListComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [CitiesListComponent],
-            imports: [
-                MatLibModule,
-                SharedComponentsModule,
-                HttpClientTestingModule,
-                LeafletModule
-            ],
-            providers: [
-                { provide: AppConfigService, useClass: MockAppConfigService }
-            ]
+            imports: [MatLibModule, SharedComponentsModule, HttpClientTestingModule, LeafletModule],
+            providers: [{ provide: AppConfigService, useClass: MockAppConfigService }]
         }).compileComponents();
     }));
 
     beforeEach(() => {
         fixture = TestBed.createComponent(CitiesListComponent);
         component = fixture.componentInstance;
-        component.map = new L.Map(document.createElement('div')).setView(
-            [0, 0],
-            10
-        );
+        component.map = new L.Map(document.createElement('div')).setView([0, 0], 10);
         fixture.detectChanges();
     });
 

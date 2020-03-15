@@ -8,10 +8,7 @@ import { JosmService } from './josm.service';
 describe('JosmService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [
-                JosmService,
-                { provide: AppConfigService, useClass: MockAppConfigService }
-            ],
+            providers: [JosmService, { provide: AppConfigService, useClass: MockAppConfigService }],
             imports: [HttpClientTestingModule]
         });
     });

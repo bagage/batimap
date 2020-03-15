@@ -19,10 +19,7 @@ export class AboutDialogComponent implements OnDestroy {
 
     ngOnDestroy() {
         localStorage.setItem('first-time-help', 'false');
-        localStorage.setItem(
-            JosmScriptUpdateDialogComponent.storageKey,
-            environment.version
-        );
+        localStorage.setItem(JosmScriptUpdateDialogComponent.storageKey, environment.version);
     }
 
     @HostListener('document:keydown.m') showHowto() {

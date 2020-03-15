@@ -13,8 +13,7 @@ import { PagesModule } from './pages/pages.module';
 import { AppConfigService } from './services/app-config.service';
 import { JosmService } from './services/josm.service';
 
-const appInitializerFn = (appConfig: AppConfigService) => () =>
-    appConfig.loadAppConfig();
+const appInitializerFn = (appConfig: AppConfigService) => () => appConfig.loadAppConfig();
 
 const appRoutes: Routes = [{ path: '', component: MapComponent }];
 

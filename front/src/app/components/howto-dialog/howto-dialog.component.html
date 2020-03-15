@@ -9,8 +9,8 @@
             <ng-template matStepLabel>Mise en garde</ng-template>
             <p>
                 <b
-                    >Cette opération comporte des risques et demande une
-                    expérience avancée sur la contribution à OpenStreetMap,</b
+                    >Cette opération comporte des risques et demande une expérience avancée sur la contribution à
+                    OpenStreetMap,</b
                 >
                 consultez tout d'abord
                 <a
@@ -34,8 +34,8 @@
                 <li>scripting.</li>
             </ol>
             <p>
-                Cette étape n'est à faire qu'une unique fois et n'a pas besoin
-                d'être répétée si elle a déjà été faite dans le passé.
+                Cette étape n'est à faire qu'une unique fois et n'a pas besoin d'être répétée si elle a déjà été faite
+                dans le passé.
             </p>
             <div>
                 <button mat-button color="warn" matStepperNext>
@@ -47,17 +47,10 @@
             <ng-template matStepLabel>Téléchargement des scripts</ng-template>
             <p>
                 Pour faciliter la mise à jour du bâti avec JOSM, via le plugin
-                <a
-                    target="_blank"
-                    href="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/Conflation"
-                    >Conflation</a
-                >, l'utilisation de scripts, via le plugin
-                <a
-                    target="_blank"
-                    href="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/Scripting"
-                    >Scripting</a
-                >, permet d'éviter les tâches répétitives. Télécharger les
-                fichiers :
+                <a target="_blank" href="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/Conflation">Conflation</a>,
+                l'utilisation de scripts, via le plugin
+                <a target="_blank" href="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/Scripting">Scripting</a>,
+                permet d'éviter les tâches répétitives. Télécharger les fichiers :
             </p>
 
             <ol>
@@ -70,13 +63,8 @@
                         ></b
                     >
                     : crée une todolist, via le plugin
-                    <a
-                        target="_blank"
-                        href="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/TODO_list"
-                    >
-                        Todo</a
-                    >, des bâtiments segmentés nécessitant une revue humaine
-                    avant intégration dans OSM,
+                    <a target="_blank" href="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/TODO_list"> Todo</a>, des
+                    bâtiments segmentés nécessitant une revue humaine avant intégration dans OSM,
                 </li>
                 <li>
                     <b
@@ -90,8 +78,8 @@
                 </li>
             </ol>
             <p>
-                Cette étape n'est à faire qu'une unique fois et n'a pas besoin
-                d'être répétée si elle a déjà été faite dans le passé.
+                Cette étape n'est à faire qu'une unique fois et n'a pas besoin d'être répétée si elle a déjà été faite
+                dans le passé.
             </p>
             <div>
                 <button mat-button color="warn" matStepperNext>
@@ -102,16 +90,13 @@
         <mat-step>
             <ng-template matStepLabel>Préparation de la commune</ng-template>
             <p>
-                Choisissez une commune sur la carte, et sélectionner là en
-                cliquant dessus. Une fenêtre s'ouvre avec les détails de cette
-                commune. Afin de pouvoir réaliser la conflation, il faut
-                préparer les données cadastrales en cliquant sur le bouton
-                «Préparer». Lorsque la commune est prête (quelques minutes), un
+                Choisissez une commune sur la carte, et sélectionner là en cliquant dessus. Une fenêtre s'ouvre avec les
+                détails de cette commune. Afin de pouvoir réaliser la conflation, il faut préparer les données
+                cadastrales en cliquant sur le bouton «Préparer». Lorsque la commune est prête (quelques minutes), un
                 bouton «JOSM» s'affiche à la place.
             </p>
             <p>
-                Cliquer sur le bouton «JOSM» lorsqu'il est disponible. Cela va
-                ouvrir 4 calques dans JOSM :
+                Cliquer sur le bouton «JOSM» lorsqu'il est disponible. Cela va ouvrir 4 calques dans JOSM :
             </p>
             <ol>
                 <li>le fond de carte BDOrtho IGN,</li>
@@ -119,11 +104,8 @@
                 <li>le fichier du bâti segmenté, s'il existe,</li>
                 <li>
                     les données OSM de la commune.<br />
-                    Si la requête échoue (commune trop grosse), il est possible
-                    de la récupérer via
-                    <a target="_blank" href="http://overpass-turbo.eu/s/GRD"
-                        >la requête Overpass suivante</a
-                    >,
+                    Si la requête échoue (commune trop grosse), il est possible de la récupérer via
+                    <a target="_blank" href="http://overpass-turbo.eu/s/GRD">la requête Overpass suivante</a>,
                     <b>dans un calque nommé «Données OSM pour NOM COMMUNE»</b>.
                 </li>
             </ol>
@@ -137,17 +119,13 @@
             <ng-template matStepLabel>Segmentation du bâti</ng-template>
             <p>Corriger la segmentation du bâti. Pour cela :</p>
             <ol>
-                <li>
-                    Lancer le script <code>A-segmented.js</code>, via le menu
-                    <code>Scripting/Run…</code>,
-                </li>
+                <li>Lancer le script <code>A-segmented.js</code>, via le menu <code>Scripting/Run…</code>,</li>
                 <li>
                     Ouvrir la fenêtre Todo via le menu
                     <code>Fenêtres/Liste des tâches</code>,
                 </li>
                 <li>
-                    Enfin, vérifier les signalements et fusionner les bâtiments
-                    qui le nécessitent.
+                    Enfin, vérifier les signalements et fusionner les bâtiments qui le nécessitent.
                 </li>
             </ol>
             <div>
@@ -163,19 +141,16 @@
             </p>
             <ol>
                 <li>
-                    Lancer le script <code>B-conflation.js</code>, via le menu
-                    <code>Scripting/Run…</code> qui configure la liste des
-                    différences de bâti entre le cadastre et OSM,
+                    Lancer le script <code>B-conflation.js</code>, via le menu <code>Scripting/Run…</code> qui configure
+                    la liste des différences de bâti entre le cadastre et OSM,
                 </li>
                 <li>
                     Ouvrir la fenêtre Conflation via le menu
-                    <code>Fenêtres/Conflation</code>, puis réaliser la
-                    conflation,
+                    <code>Fenêtres/Conflation</code>, puis réaliser la conflation,
                 </li>
                 <li>
-                    Enfin, dans la fenêtre Todo se trouve la liste des bâtiments
-                    particuliers (<code>type:relation</code>) à traiter
-                    manuellement.
+                    Enfin, dans la fenêtre Todo se trouve la liste des bâtiments particuliers
+                    (<code>type:relation</code>) à traiter manuellement.
                 </li>
             </ol>
             <div>
@@ -187,8 +162,7 @@
         <mat-step>
             <ng-template matStepLabel>Validation</ng-template>
             <p>
-                Il ne reste plus qu'à vérifier qu'il n'y a pas d'erreurs dans
-                les données. Pour cela :
+                Il ne reste plus qu'à vérifier qu'il n'y a pas d'erreurs dans les données. Pour cela :
             </p>
             <ol>
                 <li>
@@ -197,8 +171,7 @@
                 </li>
                 <li>Cliquer sur «Valider»,</li>
                 <li>
-                    Corriger les erreurs éventuelles (chevauchement de bâtiments
-                    et routes, etc.).
+                    Corriger les erreurs éventuelles (chevauchement de bâtiments et routes, etc.).
                 </li>
             </ol>
             <div>
@@ -209,15 +182,10 @@
         </mat-step>
         <mat-step>
             <ng-template matStepLabel>Finaliser</ng-template>
-            Il ne vous reste plus qu'à envoyer vos changements ! Aprés quelques
-            instants, vous pouvez cliquer sur le bouton «Rafraîchir» du site
-            afin que la carte se mette à jour. Félicitations !
+            Il ne vous reste plus qu'à envoyer vos changements ! Aprés quelques instants, vous pouvez cliquer sur le
+            bouton «Rafraîchir» du site afin que la carte se mette à jour. Félicitations !
             <div>
-                <button
-                    mat-raised-button
-                    color="warn"
-                    [mat-dialog-close]="true"
-                >
+                <button mat-raised-button color="warn" [mat-dialog-close]="true">
                     Terminer
                 </button>
             </div>

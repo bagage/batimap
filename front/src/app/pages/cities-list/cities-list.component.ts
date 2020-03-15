@@ -17,21 +17,12 @@ export class CitiesListComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
     @ViewChild(MatSort, { static: true }) sort: MatSort;
 
-    displayedColumns: string[] = [
-        'name',
-        'insee',
-        'date',
-        'details',
-        'actions'
-    ];
+    displayedColumns: string[] = ['name', 'insee', 'date', 'details', 'actions'];
     dataSource = new MatTableDataSource<CityDTO>();
     isReady: boolean;
     josmReady$: Observable<boolean>;
 
-    constructor(
-        private readonly batimapService: BatimapService,
-        public josmService: JosmService
-    ) {
+    constructor(private readonly batimapService: BatimapService, public josmService: JosmService) {
         super();
     }
 
@@ -48,13 +39,11 @@ export class CitiesListComponent extends Unsubscriber implements OnInit {
     private refreshDataSource() {
         this.isReady = false;
         this.autoUnsubscribe(
-            this.batimapService
-                .citiesInBbox(this.map.getBounds())
-                .subscribe((cities: CityDTO[]) => {
-                    this.dataSource.data = undefined;
-                    this.dataSource.data = cities;
-                    this.isReady = true;
-                })
+            this.batimapService.citiesInBbox(this.map.getBounds()).subscribe((cities: CityDTO[]) => {
+                this.dataSource.data = undefined;
+                this.dataSource.data = cities;
+                this.isReady = true;
+            })
         );
     }
 }

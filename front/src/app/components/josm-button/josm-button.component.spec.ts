@@ -15,9 +15,7 @@ describe('JosmButtonComponent', () => {
         TestBed.configureTestingModule({
             declarations: [JosmButtonComponent, LoaderComponent],
             imports: [MatLibModule, HttpClientTestingModule],
-            providers: [
-                { provide: AppConfigService, useClass: MockAppConfigService }
-            ]
+            providers: [{ provide: AppConfigService, useClass: MockAppConfigService }]
         }).compileComponents();
     }));
 

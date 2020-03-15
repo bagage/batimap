@@ -28,13 +28,7 @@ describe('CityDetailsDialogComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [CityDetailsDialogComponent, JosmButtonComponent],
-            imports: [
-                MatLibModule,
-                HttpClientTestingModule,
-                DialogTestModule,
-                NoopAnimationsModule,
-                PipesModule
-            ],
+            imports: [MatLibModule, HttpClientTestingModule, DialogTestModule, NoopAnimationsModule, PipesModule],
             providers: [
                 { provide: MAT_DIALOG_DATA, useValue: {} },
                 { provide: MatDialogRef, useValue: {} },

@@ -9,10 +9,7 @@ describe('LegendService', () => {
         });
     });
 
-    it('should be created', inject(
-        [LegendService],
-        (service: LegendService) => {
-            expect(service).toBeTruthy();
-        }
-    ));
+    it('should be created', inject([LegendService], (service: LegendService) => {
+        expect(service).toBeTruthy();
+    }));
 });

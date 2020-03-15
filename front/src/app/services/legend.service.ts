@@ -12,9 +12,7 @@ export class LegendService {
 
     oldestYear = 2008;
     currentYear = new Date().getFullYear();
-    yearColors = palette('tol-sq', this.currentYear - this.oldestYear + 1).map(
-        it => `#${it}`
-    );
+    yearColors = palette('tol-sq', this.currentYear - this.oldestYear + 1).map(it => `#${it}`);
 
     constructor() {
         const ignored = localStorage.getItem(this.storageName);
