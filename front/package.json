@@ -37,7 +37,7 @@
         "leaflet-geocoder-ban": "1.0.7",
         "leaflet-hash": "0.2.1",
         "leaflet-search": "2.9.8",
-        "mat-progress-buttons": "9.0.1",
+        "mat-progress-buttons": "9.1.1",
         "protractor": "5.4.3",
         "reflect-metadata": "0.1.13",
         "rxjs": "6.5.4",
