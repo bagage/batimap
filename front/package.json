@@ -41,7 +41,7 @@
         "protractor": "5.4.3",
         "reflect-metadata": "0.1.13",
         "rxjs": "6.5.4",
-        "zone.js": "0.10.2"
+        "zone.js": "0.10.3"
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "0.900.6",
