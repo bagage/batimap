@@ -204,6 +204,11 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
 def api_departments() -> dict:
     return json.dumps(db.get_departments())
 
+@app.route("/departments/<dept>", methods=["GET"])
+def api_department_details(dept) -> dict:
+    stats = dict(db.get_department_import_stats(dept))
+    simplified = [ids for city in db.get_department_simplified_buildings(dept) for ids in city]
+    return json.dumps({'simplified': simplified, 'dates': stats})
 
 @app.route("/departments/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def get_departments_for_bbox(lonNW, latNW, lonSE, latSE) -> dict:

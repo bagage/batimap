@@ -4,6 +4,7 @@ import { MatLibModule } from '../mat-lib.module';
 import { PipesModule } from '../pipes/pipes.module';
 import { AboutDialogComponent } from './about-dialog/about-dialog.component';
 import { CityDetailsDialogComponent } from './city-details-dialog/city-details-dialog.component';
+import { DepartmentDetailsDialogComponent } from './department-details-dialog/department-details-dialog.component';
 import { HowtoDialogComponent } from './howto-dialog/howto-dialog.component';
 import { JosmButtonComponent } from './josm-button/josm-button.component';
 import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog/josm-script-update-dialog.component';
@@ -21,10 +22,12 @@ import { MapDateLegendComponent } from './map-date-legend/map-date-legend.compon
         LoaderComponent,
         MapDateLegendComponent,
         JosmScriptUpdateDialogComponent,
-        LegendButtonComponent
+        LegendButtonComponent,
+        DepartmentDetailsDialogComponent
     ],
     exports: [
         CityDetailsDialogComponent,
+        DepartmentDetailsDialogComponent,
         AboutDialogComponent,
         HowtoDialogComponent,
         JosmButtonComponent,
@@ -36,6 +39,7 @@ import { MapDateLegendComponent } from './map-date-legend/map-date-legend.compon
     entryComponents: [
         AboutDialogComponent,
         CityDetailsDialogComponent,
+        DepartmentDetailsDialogComponent,
         HowtoDialogComponent,
         JosmScriptUpdateDialogComponent
     ]

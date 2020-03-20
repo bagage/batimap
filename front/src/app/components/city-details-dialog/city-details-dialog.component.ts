@@ -21,7 +21,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     city: CityDTO;
 
     josmIsStarted: Observable<boolean>;
-    osmID$: Observable<number>;
+    osmID: number;
 
     cadastreLayer: any;
 
@@ -40,7 +40,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     lastImport: string;
 
     constructor(
-        @Inject(MAT_DIALOG_DATA) private readonly data: [CityDTO, any],
+        @Inject(MAT_DIALOG_DATA) private readonly data: [CityDTO, number, any],
         public josmService: JosmService,
         public batimapService: BatimapService,
         private readonly dialogRef: MatDialogRef<CityDetailsDialogComponent>,
@@ -49,11 +49,9 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     ) {
         super();
         this.city = data[0];
-        this.cadastreLayer = data[1];
+        this.osmID = data[1];
+        this.cadastreLayer = data[2];
         this.lastImport = this.computeLastImport();
-        if (this.city) {
-            this.osmID$ = this.batimapService.cityOsmID(this.city.insee);
-        }
     }
 
     ngOnInit(): void {
@@ -130,6 +128,6 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     editNode(node: number) {
-        this.josmService.openNode(node, this.city).subscribe();
+        this.josmService.openNode(node, this.city.insee, this.city.name).subscribe();
     }
 }
