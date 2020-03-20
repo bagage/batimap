@@ -1,0 +1,48 @@
+<h2 mat-dialog-title>
+    Détails commune
+    <button mat-mini-fab color="primary" (click)="openHelp()" matTooltip="Afficher l'aide. [Raccourci : shift+a]">
+        <mat-icon>live_help</mat-icon>
+    </button>
+</h2>
+<mat-dialog-content>
+    <h3>
+        {{ department.insee }} - {{ department.name }}
+        <a href="https://www.openstreetmap.org/relation/{{ osmId }}" target="_blank">
+            <mat-icon>link</mat-icon>
+        </a>
+    </h3>
+    {{ lastImport }}
+
+    <ng-container *ngIf="details$ | async as details">
+        <div *ngIf="(details?.dates | count) > 0">
+            <h4>Nombre de communes par date d'import</h4>
+            <ul>
+                <li *ngFor="let i of details.dates | keyvalue">{{ i.key }} - {{ i.value }}</li>
+            </ul>
+        </div>
+
+        <div *ngIf="(details?.simplified | count) > 0">
+            <h4>Bâtiments simplifiés</h4>
+            <ul>
+                <li *ngFor="let i of details.simplified">
+                    <a href="https://www.openstreetmap.org/node/{{ i }}" target="_blank">{{ i }}</a>
+                    <button mat-button color="primary" (click)="editNode(i)">
+                        <mat-icon>edit</mat-icon>
+                        JOSM
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </ng-container>
+</mat-dialog-content>
+<mat-dialog-actions class="row-wrapper">
+    <button
+        mat-raised-button
+        color="warn"
+        cdkFocusInitial
+        mat-dialog-close
+        matTooltip="Ferme la popup. [Raccourci : F]"
+    >
+        Fermer
+    </button>
+</mat-dialog-actions>

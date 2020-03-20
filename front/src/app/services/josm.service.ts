@@ -45,10 +45,10 @@ export class JosmService {
         return forkJoin(imagery, buildings, segmented, osm);
     }
 
-    openNode(node: number, city: CityDTO): Observable<any> {
+    openNode(node: number, insee: string, name: string): Observable<any> {
         return forkJoin(
             this.JOSM_URL_BDORTHO_IMAGERY(),
-            this.JOSM_URL_LOAD_OBJECTS(`n${node}`, `Bâtiment simplifié ${node} dans ${city.insee} - ${city.name}`)
+            this.JOSM_URL_LOAD_OBJECTS(`n${node}`, `Bâtiment simplifié ${node} dans ${insee} - ${name}`)
         );
     }
 

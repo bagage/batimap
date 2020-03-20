@@ -7,7 +7,7 @@ import { ClassType } from 'class-transformer/ClassTransformer';
 import { LatLngBounds } from 'leaflet';
 import { Observable, of, timer } from 'rxjs';
 import { debounceTime, map, switchMap, takeWhile, tap } from 'rxjs/operators';
-import { CityDTO } from '../classes/city.dto';
+import { CityDTO, StatsDetailsDTO } from '../classes/city.dto';
 import { ConflateCityDTO } from '../classes/conflate-city.dto';
 import { LegendDTO } from '../classes/legend.dto';
 import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
@@ -105,8 +105,8 @@ export class BatimapService {
         });
     }
 
-    cityOsmID(insee: string): Observable<number> {
-        return this.http.get<number>(this.URL_CITY_OSM_ID(insee));
+    departmentDetails(insee: string): Observable<StatsDetailsDTO> {
+        return this.http.get<StatsDetailsDTO>(this.URL_DEPARMENT_DETAILS(insee));
     }
 
     private URL_TASK(task: Task): string {
@@ -133,8 +133,8 @@ export class BatimapService {
         return `${this.configService.getConfig().backServerUrl}cities/obsolete`;
     }
 
-    private URL_CITY_OSM_ID(insee: string) {
-        return `${this.configService.getConfig().backServerUrl}cities/${insee}/osm_id`;
+    private URL_DEPARMENT_DETAILS(insee: string) {
+        return `${this.configService.getConfig().backServerUrl}departments/${insee}`;
     }
 
     private longRunningAPI<T>(url, cls: ClassType<T>): Observable<TaskResult<T>> {

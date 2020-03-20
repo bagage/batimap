@@ -1,13 +1,13 @@
 import { Type } from 'class-transformer';
 
-export class CityDetailsDTO {
+export class StatsDetailsDTO {
     @Type(() => Number) dates: Map<string, number>;
     simplified: number[];
 }
 
 export class CityDTO {
     name: string;
-    @Type(() => CityDetailsDTO) details: CityDetailsDTO; // number of buildings imported per year date
+    @Type(() => StatsDetailsDTO) details: StatsDetailsDTO; // number of buildings imported per year date
     date: string; // date of latest cadastral import, or unknown, or never
     insee: string;
     // tslint:disable-next-line:variable-name

@@ -1,13 +1,15 @@
 import { Component, HostListener, NgZone, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { classToPlain, deserialize, plainToClass, serialize } from 'class-transformer';
-import { CityDetailsDTO, CityDTO } from '../../classes/city.dto';
+import { CityDTO, StatsDetailsDTO } from '../../classes/city.dto';
 import { CityDetailsDialogComponent } from '../../components/city-details-dialog/city-details-dialog.component';
 import { MapDateLegendComponent } from '../../components/map-date-legend/map-date-legend.component';
 import { AppConfigService } from '../../services/app-config.service';
 import { LegendService } from '../../services/legend.service';
 
 import * as L from 'leaflet';
+import { DepartmentDTO } from '../../classes/department.dto';
+import { DepartmentDetailsDialogComponent } from '../../components/department-details-dialog/department-details-dialog.component';
 
 @Component({
     selector: 'app-map',
@@ -85,11 +87,7 @@ export class MapComponent {
         this.cadastreLayer = L.vectorGrid.protobuf(this.configService.getConfig().tilesServerUrl, vectorTileOptions);
         this.cadastreLayer.on('click', e => {
             this.zone.run(() => {
-                // do not open popup when clicking depts
-                if (e.layer.properties.insee.length <= 3) {
-                    return;
-                }
-                // do not open popup when clicking hiden cities
+                // do not open popup when clicking hidden cities
                 if (e.layer.options.opacity !== 1) {
                     return;
                 }
@@ -106,11 +104,19 @@ export class MapComponent {
         (this.searchControl as any).toggle();
     }
 
-    private openPopup(cityJson: string) {
-        const city = plainToClass(CityDTO, cityJson);
-        city.details = city.details ? deserialize(CityDetailsDTO, city.details.toString()) : undefined;
-        this.matDialog.open(CityDetailsDialogComponent, {
-            data: [city, this.cadastreLayer]
-        });
+    private openPopup(properties: any) {
+        if (properties.insee.length <= 3) {
+            console.log(properties);
+            const department = plainToClass(DepartmentDTO, properties);
+            this.matDialog.open(DepartmentDetailsDialogComponent, {
+                data: [department, properties.osmid]
+            });
+        } else {
+            const city = plainToClass(CityDTO, properties);
+            city.details = city.details ? deserialize(StatsDetailsDTO, city.details.toString()) : undefined;
+            this.matDialog.open(CityDetailsDialogComponent, {
+                data: [city, properties.osmid, this.cadastreLayer]
+            });
+        }
     }
 }
