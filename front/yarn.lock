@@ -1419,7 +1419,7 @@ anymatch@~3.1.1:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-apexcharts@^3.17.0:
+apexcharts@3.17.0:
   version "3.17.0"
   resolved "https://registry.yarnpkg.com/apexcharts/-/apexcharts-3.17.0.tgz#53fd87fa899373ad04784d86c17b54019ec1fdab"
   integrity sha512-h72kJQzX/OWsdWPD/WTWYUctmZVKcuNzqca2MxXb9lmauD/5R+IAKLMHpsDeSMTA9UcmedkWIcjnnWvYrVUzhw==
@@ -3872,11 +3872,6 @@ globby@^7.1.1:
     pify "^3.0.0"
     slash "^1.0.0"
 
-google-palette@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/google-palette/-/google-palette-1.1.0.tgz#37e508568b8ca904e57976dfe28d92f701624a9a"
-  integrity sha512-rg4XQMVYQ83fQUylt2qrzCQ0C06ZrGl3+gh0XIXanyX+7SOkDCtFIn7gV3UMumg/R9HUL1zHtz5Myw3Z5BHCPg==
-
 graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.2:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.3.tgz#4a12ff1b60376ef09862c2093edd908328be8423"
@@ -5627,7 +5622,7 @@ neo-async@^2.5.0, neo-async@^2.6.1:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
-ng-apexcharts@^1.2.1:
+ng-apexcharts@1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/ng-apexcharts/-/ng-apexcharts-1.2.1.tgz#0a5da7dac9d1a93682d9c4e1462e71c951ec631c"
   integrity sha512-gXcgyjI4g9YcsXCpyT0yec/2R4nOBMM6lr4AbnGaUJGfPjeTXpTwOepNqOEgPSYIJkh0iO0jR15ThIj2RPUaSQ==
