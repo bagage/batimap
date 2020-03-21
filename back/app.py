@@ -204,11 +204,13 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
 def api_departments() -> dict:
     return json.dumps(db.get_departments())
 
+
 @app.route("/departments/<dept>", methods=["GET"])
 def api_department_details(dept) -> dict:
     stats = dict(db.get_department_import_stats(dept))
     simplified = [ids for city in db.get_department_simplified_buildings(dept) for ids in city]
-    return json.dumps({'simplified': simplified, 'dates': stats})
+    return json.dumps({"simplified": simplified, "dates": stats})
+
 
 @app.route("/departments/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def get_departments_for_bbox(lonNW, latNW, lonSE, latSE) -> dict:
@@ -222,8 +224,9 @@ def api_obsolete_city() -> dict:
     result = db.get_obsolete_city(ignored)
     if result:
         city = CityDTO(result.City)
+        (osm_id,) = db.get_city_osm_id(city.insee)
         position = Point.from_pg(result.position)
-        return json.dumps({"position": [position.x, position.y], "city": city}, cls=CityEncoder)
+        return json.dumps({"position": [position.x, position.y], "city": city, "osmid": osm_id}, cls=CityEncoder)
 
 
 @app.route("/cities/<insee>/update", methods=["GET"])
