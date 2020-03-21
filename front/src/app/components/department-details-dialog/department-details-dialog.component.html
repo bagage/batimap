@@ -17,7 +17,7 @@
         <div *ngIf="(details?.dates | count) > 0">
             <h4>Nombre de communes par date d'import</h4>
             <ul>
-                <li *ngFor="let i of details.dates | keyvalue">{{ i.key }} - {{ i.value }}</li>
+                <li *ngFor="let i of details.dates | keyvalue">{{ i.key | legend }} - {{ i.value }}</li>
             </ul>
         </div>
 

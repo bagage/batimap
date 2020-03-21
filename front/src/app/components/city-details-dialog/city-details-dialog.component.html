@@ -16,7 +16,7 @@
     <div *ngIf="(city.details?.dates | count) > 0">
         <h4>Nombre de bâtiments par date d'import</h4>
         <ul>
-            <li *ngFor="let i of city.details.dates | keyvalue">{{ i.key }} - {{ i.value }}</li>
+            <li *ngFor="let i of city.details.dates | keyvalue">{{ i.key | legend }} - {{ i.value }}</li>
         </ul>
     </div>
 
