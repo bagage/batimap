@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Title } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer, Title } from '@angular/platform-browser';
 import { environment } from '../environments/environment';
 import { AboutDialogComponent } from './components/about-dialog/about-dialog.component';
 import { JosmScriptUpdateDialogComponent } from './components/josm-script-update-dialog/josm-script-update-dialog.component';
@@ -11,7 +12,12 @@ import { JosmScriptUpdateDialogComponent } from './components/josm-script-update
     styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-    constructor(private readonly matDialog: MatDialog, titleService: Title) {
+    constructor(
+        private readonly matDialog: MatDialog,
+        titleService: Title,
+        matIconRegistry: MatIconRegistry,
+        domSanitizer: DomSanitizer
+    ) {
         const version = environment.version;
         titleService.setTitle(`État du bâti dans OSM (${version})`);
 
@@ -20,6 +26,8 @@ export class AppComponent {
         } else if (JosmScriptUpdateDialogComponent.shouldDisplayDialog()) {
             this.openDialog(JosmScriptUpdateDialogComponent);
         }
+
+        matIconRegistry.addSvgIcon('josm', domSanitizer.bypassSecurityTrustResourceUrl('../assets/josm.svg'));
     }
 
     private openDialog(dialog) {

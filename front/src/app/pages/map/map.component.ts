@@ -106,7 +106,6 @@ export class MapComponent {
 
     private openPopup(properties: any) {
         if (properties.insee.length <= 3) {
-            console.log(properties);
             const department = plainToClass(DepartmentDTO, properties);
             this.matDialog.open(DepartmentDetailsDialogComponent, {
                 data: [department, properties.osmid]

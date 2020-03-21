@@ -27,8 +27,7 @@
                 <li *ngFor="let i of details.simplified">
                     <a href="https://www.openstreetmap.org/node/{{ i }}" target="_blank">{{ i }}</a>
                     <button mat-button color="primary" (click)="editNode(i)">
-                        <mat-icon>edit</mat-icon>
-                        JOSM
+                        <mat-icon svgIcon="josm"></mat-icon>
                     </button>
                 </li>
             </ul>
