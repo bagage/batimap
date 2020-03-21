@@ -15,10 +15,14 @@
 
     <ng-container *ngIf="details$ | async as details">
         <div *ngIf="(details?.dates | count) > 0">
-            <h4>Nombre de communes par date d'import</h4>
-            <ul>
-                <li *ngFor="let i of details.dates | keyvalue">{{ i.key | legend }} - {{ i.value }}</li>
-            </ul>
+            <apx-chart
+                [labels]="details.dates | keyvalue | map: 'key' | legend"
+                [series]="details.dates | keyvalue | map: 'value'"
+                [colors]="details.dates | keyvalue | map: 'key' | legend: 'color'"
+                [chart]="{ type: 'donut', height: 300 }"
+                [legend]="{ position: 'bottom' }"
+                [title]="{ text: 'Nombre de communes par date d\'import', align: 'center' }"
+            ></apx-chart>
         </div>
 
         <div *ngIf="(details?.simplified | count) > 0">
@@ -35,13 +39,7 @@
     </ng-container>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
-    <button
-        mat-raised-button
-        color="warn"
-        cdkFocusInitial
-        mat-dialog-close
-        matTooltip="Ferme la popup. [Raccourci : F]"
-    >
+    <button mat-raised-button cdkFocusInitial mat-dialog-close matTooltip="Ferme la popup. [Raccourci : F]">
         Fermer
     </button>
 </mat-dialog-actions>
