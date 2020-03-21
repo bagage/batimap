@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { NgApexchartsModule } from 'ng-apexcharts';
 import { MatLibModule } from '../mat-lib.module';
 import { PipesModule } from '../pipes/pipes.module';
 import { AboutDialogComponent } from './about-dialog/about-dialog.component';
@@ -13,7 +14,7 @@ import { LoaderComponent } from './loader/loader.component';
 import { MapDateLegendComponent } from './map-date-legend/map-date-legend.component';
 
 @NgModule({
-    imports: [CommonModule, MatLibModule, PipesModule],
+    imports: [CommonModule, MatLibModule, PipesModule, NgApexchartsModule],
     declarations: [
         CityDetailsDialogComponent,
         AboutDialogComponent,

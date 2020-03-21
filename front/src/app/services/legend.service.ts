@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as palette from 'google-palette';
+import { palette } from '../classes/colors';
 import { LegendDTO } from '../classes/legend.dto';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class LegendService {
 
     oldestYear = 2008;
     currentYear = new Date().getFullYear();
-    yearColors = palette('tol-sq', this.currentYear - this.oldestYear + 1).map(it => `#${it}`);
+    yearColors = palette(this.currentYear - this.oldestYear + 1);
 
     constructor() {
         const ignored = localStorage.getItem(this.storageName);

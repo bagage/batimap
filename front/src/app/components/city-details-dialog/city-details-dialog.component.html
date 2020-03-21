@@ -14,10 +14,14 @@
     {{ lastImport }}
 
     <div *ngIf="(city.details?.dates | count) > 0">
-        <h4>Nombre de bâtiments par date d'import</h4>
-        <ul>
-            <li *ngFor="let i of city.details.dates | keyvalue">{{ i.key }} - {{ i.value }}</li>
-        </ul>
+        <apx-chart
+            [labels]="city.details.dates | keyvalue | map: 'key' | legend"
+            [series]="city.details.dates | keyvalue | map: 'value'"
+            [colors]="city.details.dates | keyvalue | map: 'key' | legend: 'color'"
+            [chart]="{ type: 'donut', height: 300 }"
+            [legend]="{ position: 'bottom' }"
+            [title]="{ text: 'Nombre de bâtiments par date d\'import', align: 'center' }"
+        ></apx-chart>
     </div>
 
     <div *ngIf="(city.details?.simplified | count) > 0">
@@ -26,8 +30,7 @@
             <li *ngFor="let i of city.details.simplified">
                 <a href="https://www.openstreetmap.org/node/{{ i }}" target="_blank">{{ i }}</a>
                 <button mat-button color="primary" (click)="editNode(i)">
-                    <mat-icon>edit</mat-icon>
-                    JOSM
+                    <mat-icon svgIcon="josm"></mat-icon>
                 </button>
             </li>
         </ul>
@@ -36,13 +39,7 @@
     <div *ngIf="moreRecentDate">La date d'import du bâti a été mise à jour !<br /></div>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
-    <button
-        mat-raised-button
-        color="warn"
-        cdkFocusInitial
-        mat-dialog-close
-        matTooltip="Ferme la popup. [Raccourci : F]"
-    >
+    <button mat-raised-button cdkFocusInitial mat-dialog-close matTooltip="Ferme la popup. [Raccourci : F]">
         Fermer
     </button>
     <button mat-raised-button (click)="ignoreCity()" matTooltip="Masquer cette commune de la carte. [Raccourci : I]">

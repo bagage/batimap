@@ -4,10 +4,8 @@ import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable } from 'rxjs';
 import { CityDTO } from '../../classes/city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
-import { MapComponent } from '../../pages/map/map.component';
 import { BatimapService, TaskState } from '../../services/batimap.service';
 import { JosmService } from '../../services/josm.service';
-import { LegendService } from '../../services/legend.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
 
@@ -44,7 +42,6 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         public josmService: JosmService,
         public batimapService: BatimapService,
         private readonly dialogRef: MatDialogRef<CityDetailsDialogComponent>,
-        private readonly legendService: LegendService,
         private readonly matDialog: MatDialog
     ) {
         super();
