@@ -100,7 +100,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                     setTimeout(() => {
                         this.matDialog.closeAll();
                         const dialog = this.matDialog.open<CityDetailsDialogComponent>(CityDetailsDialogComponent, {
-                            data: [obsoleteCity.city, this.cadastreLayer]
+                            data: [obsoleteCity.city, obsoleteCity.osmid, this.cadastreLayer]
                         });
                         dialog.afterOpened().subscribe(() => dialog.componentInstance.updateCity());
                     }, 0);
