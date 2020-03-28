@@ -32,7 +32,7 @@
         "@asymmetrik/ngx-leaflet": "6.0.1",
         "@bagage/leaflet.restoreview": "1.0.1",
         "@bagage/leaflet.vectorgrid": "2.0.0",
-        "apexcharts": "3.17.0",
+        "apexcharts": "3.17.1",
         "class-transformer": "0.2.3",
         "core-js": "3.6.4",
     "leaflet": "1.6.0",
