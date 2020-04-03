@@ -208,7 +208,7 @@ def api_departments() -> dict:
 @app.route("/departments/<dept>", methods=["GET"])
 def api_department_details(dept) -> dict:
     stats = dict(db.get_department_import_stats(dept))
-    simplified = [ids for city in db.get_department_simplified_buildings(dept) for ids in city]
+    simplified = sorted([ids for city in db.get_department_simplified_buildings(dept) for ids in city])
     return json.dumps({"simplified": simplified, "dates": stats})
 
 
