@@ -146,17 +146,18 @@ class Db(object):
     def get_department_import_stats(self, insee):
         return (
             self.session.query(City.import_date, func.count("*"))
-                .filter(City.department == str(insee))
-                .group_by(City.import_date)
-                .order_by(City.import_date)
-                .all()
+            .filter(City.department == str(insee))
+            .group_by(City.import_date)
+            .order_by(City.import_date)
+            .all()
         )
+
     def get_department_simplified_buildings(self, insee):
         return self.__flat(
-            self.session.query(City.import_details['simplified'])
-                .filter(City.department == str(insee))
-                .filter(func.json_array_length(City.import_details['simplified']) != 0)
-                .all()
+            self.session.query(City.import_details["simplified"])
+            .filter(City.department == str(insee))
+            .filter(func.json_array_length(City.import_details["simplified"]) != 0)
+            .all()
         )
 
     def get_departments_for_bbox(self, bbox: Bbox):
