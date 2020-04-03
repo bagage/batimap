@@ -26,7 +26,7 @@
         </div>
 
         <div *ngIf="(details?.simplified | count) > 0">
-            <h4>Bâtiments simplifiés</h4>
+            <h4>{{ details.simplified | count }} Bâtiments simplifiés</h4>
             <ul>
                 <li *ngFor="let i of details.simplified">
                     <a href="https://www.openstreetmap.org/node/{{ i }}" target="_blank">{{ i }}</a>
