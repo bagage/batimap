@@ -236,10 +236,10 @@ class Batimap(object):
         Compute the latest import date for given city
         """
         if not city.is_raster:
-            simplified_buildings = []
             try:
-                # iterate on every building
                 buildings = []
+                simplified_buildings = []
+                # iterate on every building
                 for element in self.overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
                     tags = element.get("tags")
                     if element.get("type") == "node":

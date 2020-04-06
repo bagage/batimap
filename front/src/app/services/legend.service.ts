@@ -51,14 +51,7 @@ export class LegendService {
     date2color(yearStr: string): string {
         if (Number.isInteger(+yearStr)) {
             const year = Number.parseInt(yearStr, 10);
-            if (year === this.currentYear) {
-                return 'green';
-            }
             if (year >= this.oldestYear) {
-                // last generated color is black and we do not want to use it
-                // because it already represents raster cities
-                const colorsCount = this.currentYear - this.oldestYear + 1;
-
                 return this.yearColors[this.currentYear - year];
             }
         }
