@@ -27,9 +27,10 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
     level=verbosity[os.environ.get("IMPOSM_VERBOSITY") or config["DEFAULT"]["VERBOSITY"] or "CRITICAL"],
 )
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 BACK_URL = config["DEFAULT"]["BACK_URL"]
-BACK_CITIES_IN_BBOX_URL = BACK_URL + "/cities/in_bbox/{lonNW}/{latNW}/{lonSE}/{latSE}"
+BACK_CITIES_IN_BBOX_URL = BACK_URL + "/bbox/cities"
 BACK_INITDB_URL = BACK_URL + "/initdb"
 BACK_TASKS_URL = BACK_URL + "/tasks/{task_id}"
 
@@ -60,7 +61,7 @@ class Handler(FileSystemEventHandler):
         n = pow(2, z)
         lon = x / n * 360.0 - 180.0
         lat = degrees(atan(sinh(pi * (1 - (2 * y / n)))))
-        return [lon, lat]
+        return [round(lon, 6), round(lat, 6)]
 
     @staticmethod
     def on_any_event(event):
@@ -84,18 +85,22 @@ class Handler(FileSystemEventHandler):
             LOG.warning(f"Could not read entries in {file_path}: {e}")
             return None
         cities = []
+
+        bboxes = []
         for i, line in enumerate(lines):
-            LOG.debug(f"entry {i+1} / {len(lines)}: {line}")
+            LOG.debug(f"entry {i+1} / {len(lines)}: {line.strip()}")
             # line is Z/X/Y format like '11/1058/702'
             z, x, y = map(int, line.split("/"))
             lonNW, latNW = Handler.convert_zxy_to_lonlat(z, x, y)
             lonSE, latSE = Handler.convert_zxy_to_lonlat(z, x + 1, y + 1)
-            args = {"lonNW": lonNW, "latNW": latNW, "lonSE": lonSE, "latSE": latSE}
-            LOG.debug(BACK_CITIES_IN_BBOX_URL.format(**args))
-            r = requests.get(url=BACK_CITIES_IN_BBOX_URL.format(**args))
-            cities += [x["insee"] for x in r.json()]
-            LOG.debug(r.text)
-        cities = sorted(list(set(cities)))
+
+            bboxes.append([lonNW, latNW, lonSE, latSE])
+
+        LOG.debug(f"{BACK_CITIES_IN_BBOX_URL} - {bboxes}")
+        r = requests.post(url=BACK_CITIES_IN_BBOX_URL, json={"bboxes": bboxes})
+        LOG.debug(f"{r.text}")
+
+        cities = sorted([x["insee"] for x in r.json()])
         if len(cities):
             LOG.info(f"Running initdb on {cities}")
             r = requests.post(url=BACK_INITDB_URL, json={"cities": cities})

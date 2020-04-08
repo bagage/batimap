@@ -1,13 +1,13 @@
 FROM debian:sid-slim
 
-RUN apt update && apt install --no-install-recommends -y axel postgresql-client && apt clean
+RUN apt update && apt install --no-install-recommends -y axel wget postgresql-client && apt clean
 
 ARG IMPOSM_VERSION=0.8.0
 ARG IMPOSM_TARFILE="imposm-${IMPOSM_VERSION}-linux-x86-64.tar.gz"
 ARG IMPOSM_BASE_URL="https://github.com/omniscale/imposm3/releases/download/v${IMPOSM_VERSION}/${IMPOSM_TARFILE}"
 
 RUN cd /tmp/ && \
-    axel -k $IMPOSM_BASE_URL && \
+    wget -q --no-check-certificate $IMPOSM_BASE_URL && \
     dir=$(tar --exclude="*/*" -tf $IMPOSM_TARFILE) && \
     tar xzf $IMPOSM_TARFILE && \
     cd $dir && \
