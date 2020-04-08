@@ -69,7 +69,7 @@ celery = make_celery(app)
 
 
 def task_progress(task, current):
-    current = int(current * 100) / 100  # round to 2 digits
+    current = int(min(current, 100) * 100) / 100  # round to 2 digits
     if task.request.id:
         task.update_state(state="PROGRESS", meta=json.dumps({"current": current, "total": 100}))
     else:
@@ -123,7 +123,7 @@ def task_josm_data(self, insee):
     if must_generate_data:
         # first, generate cadastre data for that city
         for d in batimap.fetch_cadastre_data(c):
-            task_progress(self, d / 100 * 80)
+            task_progress(self, 1 + d / 100 * 79)
         task_progress(self, 80)
         next(batimap.fetch_departments_osm_state([c.department]))
     task_progress(self, 90)
