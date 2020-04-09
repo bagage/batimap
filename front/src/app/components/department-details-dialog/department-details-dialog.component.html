@@ -14,16 +14,15 @@
     {{ lastImport }}
 
     <ng-container *ngIf="details$ | async as details">
-        <div *ngIf="(details?.dates | count) > 0">
-            <apx-chart
-                [labels]="details.dates | keyvalue | map: 'key' | legend"
-                [series]="details.dates | keyvalue | map: 'value'"
-                [colors]="details.dates | keyvalue | map: 'key' | legend: 'color'"
-                [chart]="{ type: 'donut', height: 300 }"
-                [legend]="{ position: 'bottom' }"
-                [title]="{ text: 'Nombre de communes par date d\'import', align: 'center' }"
-            ></apx-chart>
-        </div>
+        <apx-chart
+            *ngIf="(details?.dates | count) > 0"
+            [labels]="details.dates | keyvalue | map: 'key' | legend"
+            [series]="details.dates | keyvalue | map: 'value'"
+            [colors]="details.dates | keyvalue | map: 'key' | legend: 'color'"
+            [chart]="{ type: 'donut', height: 300 }"
+            [legend]="{ position: 'bottom' }"
+            [title]="{ text: 'Nombre de communes par date d\'import', align: 'center' }"
+        ></apx-chart>
 
         <div *ngIf="(details?.simplified | count) > 0">
             <h4>{{ details.simplified | count }} Bâtiments simplifiés</h4>

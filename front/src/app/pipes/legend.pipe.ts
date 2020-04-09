@@ -11,7 +11,7 @@ export class LegendPipe implements PipeTransform {
         const legendFunc = v =>
             type === 'color'
                 ? this.legendService.date2color(v)
-                : this.legendService.date2name(v) === 'indéterminé'
+                : this.legendService.date2name(v) === 'indéterminé' && v !== 'unknown'
                 ? v
                 : this.legendService.date2name(v);
 
