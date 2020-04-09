@@ -31,7 +31,7 @@ export interface Task {
 }
 
 export class TaskProgress {
-    constructor(public current: number, public total: number) {}
+    constructor(public current: number, public _total: number) {}
 }
 
 @Injectable({
@@ -46,22 +46,6 @@ export class BatimapService {
 
     cityData(insee: string): Observable<TaskResult<ConflateCityDTO>> {
         return this.longRunningAPI<ConflateCityDTO>(this.URL_CITY_DATA(insee), ConflateCityDTO);
-    }
-
-    citiesInBbox(bbox: LatLngBounds): Observable<CityDTO[]> {
-        return this.http
-            .get<CityDTO[]>(
-                this.URL_CITIES_BBOX(
-                    bbox.getNorthWest().wrap().lng,
-                    bbox.getNorthWest().wrap().lat,
-                    bbox.getSouthEast().wrap().lng,
-                    bbox.getSouthEast().wrap().lat
-                )
-            )
-            .pipe(
-                map(r => plainToClass(CityDTO, r)),
-                debounceTime(3000)
-            );
     }
 
     legendForBbox(bbox: LatLngBounds): Observable<LegendDTO[]> {
@@ -119,10 +103,6 @@ export class BatimapService {
 
     private URL_CITY_UPDATE(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}cities/${insee}/update`;
-    }
-
-    private URL_CITIES_BBOX(lonNW: number, latNW: number, lonSE: number, latSE: number) {
-        return `${this.configService.getConfig().backServerUrl}cities/in_bbox/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
     private URL_LEGEND(lonNW: number, latNW: number, lonSE: number, latSE: number) {
