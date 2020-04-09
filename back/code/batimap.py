@@ -19,6 +19,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Batimap(object):
+    MIN_BUILDINGS_COUNT = 50
     IGNORED_BUILDINGS = ["church"]
     NO_BUILDING_CITIES = ["55139", "55039", "55307", "55050", "55239"]
     cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
@@ -244,8 +245,8 @@ class Batimap(object):
                     tags = element.get("tags")
                     if element.get("type") == "node":
                         # some buildings are mainly nodes, but we don't care much about them
-                        ignored_building_values = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine"]
                         ignored_tags = ["power", "ruins", "historic", "ref:mhs"]
+                        ignored_building_values = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine"]
                         if len([x for x in ignored_tags if tags.get(x)]):
                             continue
                         if tags.get("building") in ignored_building_values:
@@ -282,10 +283,10 @@ class Batimap(object):
         if date != "never" and date != "raster":
             date_match = re.compile(r"^(\d{4})$").match(date)
             date = date_match.groups()[0] if date_match and date_match.groups() else "unknown"
-            # If a city has a few buildings, and **even if a date could be computed**, we assume
+            # If a city has few buildings, and **even if a date could be computed**, we assume
             # it was never imported (sometime only 1 building on the boundary is wrongly computed)
             # Almost all cities have at least church/school/townhall manually mapped
-            if len(dates) < 10 and insee not in self.NO_BUILDING_CITIES:
+            if len(dates) < self.MIN_BUILDINGS_COUNT and insee not in self.NO_BUILDING_CITIES:
                 LOG.info(f"City {insee}: too few buildings found ({len(dates)}), assuming it was never imported!")
                 date = "never"
             elif has_simplified_buildings:
