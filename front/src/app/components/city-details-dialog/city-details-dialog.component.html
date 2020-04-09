@@ -13,16 +13,15 @@
     </h3>
     {{ lastImport }}
 
-    <div *ngIf="(city.details?.dates | count) > 0">
-        <apx-chart
-            [labels]="city.details.dates | keyvalue | map: 'key' | legend"
-            [series]="city.details.dates | keyvalue | map: 'value'"
-            [colors]="city.details.dates | keyvalue | map: 'key' | legend: 'color'"
-            [chart]="{ type: 'donut', height: 300 }"
-            [legend]="{ position: 'bottom' }"
-            [title]="{ text: 'Nombre de bâtiments par date d\'import', align: 'center' }"
-        ></apx-chart>
-    </div>
+    <apx-chart
+        *ngIf="(city.details?.dates | count) > 0"
+        [labels]="city.details.dates | keyvalue | map: 'key' | legend"
+        [series]="city.details.dates | keyvalue | map: 'value'"
+        [colors]="city.details.dates | keyvalue | map: 'key' | legend: 'color'"
+        [chart]="{ type: 'donut', height: 300 }"
+        [legend]="{ position: 'bottom' }"
+        [title]="{ text: 'Nombre de bâtiments par date d\'import', align: 'center' }"
+    ></apx-chart>
 
     <div *ngIf="(city.details?.simplified | count) > 0">
         <h4>{{ city.details?.simplified | count }} Bâtiments simplifiés</h4>
