@@ -69,7 +69,7 @@ celery = make_celery(app)
 
 
 def task_progress(task, current):
-    current = int(current * 100) / 100  # round to 2 digits
+    current = int(min(current, 100) * 100) / 100  # round to 2 digits
     if task.request.id:
         task.update_state(state="PROGRESS", meta=json.dumps({"current": current, "total": 100}))
     else:
@@ -123,7 +123,7 @@ def task_josm_data(self, insee):
     if must_generate_data:
         # first, generate cadastre data for that city
         for d in batimap.fetch_cadastre_data(c):
-            task_progress(self, d / 100 * 80)
+            task_progress(self, 1 + d / 100 * 79)
         task_progress(self, 80)
         next(batimap.fetch_departments_osm_state([c.department]))
     task_progress(self, 90)
@@ -183,11 +183,13 @@ def api_insee(insee) -> dict:
     return f"no city {insee}", 404
 
 
-@app.route("/cities/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
-def api_color(lonNW, latNW, lonSE, latSE) -> dict:
-    result = db.get_cities_for_bbox(Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW)))
-    cities = [CityDTO(x) for x in result]
-    return json.dumps(cities, cls=CityEncoder)
+@app.route("/bbox/cities", methods=["POST"])
+def api_bbox_cities() -> dict:
+    bboxes = (request.get_json() or {}).get("bboxes")
+    cities = set()
+    for bbox in bboxes:
+        cities = cities | set(db.get_cities_for_bbox(Bbox(*bbox)))
+    return json.dumps([CityDTO(x) for x in cities], cls=CityEncoder)
 
 
 @app.route("/legend/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
@@ -210,12 +212,6 @@ def api_department_details(dept) -> dict:
     stats = dict(db.get_department_import_stats(dept))
     simplified = sorted([ids for city in db.get_department_simplified_buildings(dept) for ids in city])
     return json.dumps({"simplified": simplified, "dates": stats})
-
-
-@app.route("/departments/in_bbox/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
-def get_departments_for_bbox(lonNW, latNW, lonSE, latSE) -> dict:
-    departments = db.get_departments_for_bbox(Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW)))
-    return json.dumps(departments)
 
 
 @app.route("/cities/obsolete", methods=["GET"])

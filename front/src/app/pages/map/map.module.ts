@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
-import { CitiesListModule } from '../cities-list/cities-list.module';
 import { MapComponent } from './map.component';
 
 import { CommonModule } from '@angular/common';
@@ -13,7 +12,7 @@ import { SharedComponentsModule } from '../../components/shared-components.modul
 import { MatLibModule } from '../../mat-lib.module';
 
 @NgModule({
-    imports: [CommonModule, LeafletModule, MatLibModule, CitiesListModule, SharedComponentsModule],
+    imports: [CommonModule, LeafletModule, MatLibModule, SharedComponentsModule],
     declarations: [MapComponent]
 })
 export class MapModule {}

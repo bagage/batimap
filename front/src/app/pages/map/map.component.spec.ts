@@ -4,7 +4,6 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { MapDateLegendComponent } from '../../components/map-date-legend/map-date-legend.component';
 import { MatLibModule } from '../../mat-lib.module';
-import { CitiesListModule } from '../cities-list/cities-list.module';
 import { MapComponent } from './map.component';
 
 describe('MapComponent', () => {
@@ -14,7 +13,7 @@ describe('MapComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [MapComponent, MapDateLegendComponent],
-            imports: [LeafletModule, CitiesListModule, MatLibModule, HttpClientTestingModule]
+            imports: [LeafletModule, MatLibModule, HttpClientTestingModule]
         }).compileComponents();
     }));
 
