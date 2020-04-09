@@ -57,7 +57,7 @@
         "@types/node": "13.11.1",
         "angular-tslint-rules": "1.20.4",
         "codelyzer": "5.2.2",
-        "husky": "4.2.4",
+        "husky": "4.2.5",
         "jasmine-core": "3.5.0",
         "jasmine-spec-reporter": "5.0.1",
         "karma": "4.4.1",
