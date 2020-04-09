@@ -5,6 +5,5 @@ __pycache__/
 front/node_modules
 front/package-lock.json
 .env
-
 .idea/*
 !.idea/runConfigurations
