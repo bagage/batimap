@@ -129,7 +129,7 @@ class Batimap(object):
             refresh_tiles = []
 
             cities = self.db.get_cities_for_department(d)
-            no_cadastre_cities = [c for c in cities]
+            no_cadastre_cities = [c for c in cities]  # copy
             cities_name_cadastre = [c.name_cadastre for c in cities]
 
             for e in bs.select("tr"):
@@ -138,10 +138,17 @@ class Batimap(object):
                     osm_data = osm_data[0].text
                     if not osm_data.endswith("simplifie.osm") or "-extrait-" in osm_data:
                         continue
+
                     name_cadastre = "-".join(osm_data.split("-")[:-2])
                     date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
 
-                    c = cities[cities_name_cadastre.index(name_cadastre)]
+                    try:
+                        name_index = cities_name_cadastre.index(name_cadastre)
+                    except ValueError:
+                        LOG.warn(f"City {name_cadastre} could not be found?! Ignoring for now...")
+                        continue
+
+                    c = cities[name_index]
                     no_cadastre_cities.remove(c)
                     if c.date_cadastre != date_cadastre:
                         LOG.info(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date_cadastre}")
