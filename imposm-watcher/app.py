@@ -137,7 +137,7 @@ class Handler(FileSystemEventHandler):
             cities += [c["insee"] for c in r.json()]
             LOG.debug(f"{r.text}")
 
-        cities.sort()
+        cities = sorted(list(set(cities)))
 
         if len(cities):
             LOG.info(f"Running initdb on {cities}")
