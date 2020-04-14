@@ -133,7 +133,7 @@ class Handler(FileSystemEventHandler):
         LOG.debug(f"{BACK_CITIES_IN_BBOX_URL} - {bboxes}")
         # we cannot request too much at once because it timeouts..
         for chunk in Handler.chunks(bboxes, 100):
-            r = requests.post(url=BACK_CITIES_IN_BBOX_URL, json={"bboxes": bboxes})
+            r = requests.post(url=BACK_CITIES_IN_BBOX_URL, json={"bboxes": chunk})
             cities += [c["insee"] for c in r.json()]
             LOG.debug(f"{r.text}")
 
