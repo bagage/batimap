@@ -9,6 +9,7 @@ from math import pi, degrees, atan, sinh
 import time
 import logging
 import os
+import threading
 
 config = configparser.ConfigParser()
 config.read("app.conf")
@@ -75,6 +76,37 @@ class Handler(FileSystemEventHandler):
             Handler.parse_entries(event.dest_path)
 
     @staticmethod
+    def wait_task_completion(r):
+        if r.status_code == 202:
+            task_url = BACK_TASKS_URL.format(**r.json())
+            LOG.info(f"You can follow the progress of initdb on {task_url}")
+            Handler.get_task_status(task_url)
+        else:
+            LOG.warning(f"Error {r.status_code} {r.reason} while invoking initdb: {r.text}")
+
+    @staticmethod
+    def get_task_status(url):
+        r = requests.get(url=url)
+        content = r.json()
+        state = content["state"]
+        result = content["result"]
+
+        if r.status_code != 200 or state in ["FAILURE", "SUCCESS"]:
+            LOG.info(f"initdb terminated {state}: {result if result else '<empty response>'}")
+        else:
+            if state == "PROGRESS":
+                LOG.debug(f"initdb progress: {result['current']}/{result['total']}")
+            timer = threading.Timer(30, Handler.get_task_status, args=(url,))
+            timer.daemon = True
+            timer.start()
+
+    @staticmethod
+    def chunks(array, n):
+        """Yield striped chunks from array of n items."""
+        for i in range(0, len(array), n):
+            yield array[i : i + n]
+
+    @staticmethod
     def parse_entries(file_path):
         LOG.info(f"New entries in {file_path}")
         lines = []
@@ -96,18 +128,20 @@ class Handler(FileSystemEventHandler):
 
             bboxes.append([lonNW, latNW, lonSE, latSE])
 
-        LOG.debug(f"{BACK_CITIES_IN_BBOX_URL} - {bboxes}")
-        r = requests.post(url=BACK_CITIES_IN_BBOX_URL, json={"bboxes": bboxes})
-        LOG.debug(f"{r.text}")
+        cities = []
 
-        cities = sorted([x["insee"] for x in r.json()])
+        LOG.debug(f"{BACK_CITIES_IN_BBOX_URL} - {bboxes}")
+        # we cannot request too much at once because it timeouts..
+        for chunk in Handler.chunks(bboxes, 100):
+            r = requests.post(url=BACK_CITIES_IN_BBOX_URL, json={"bboxes": bboxes})
+            cities += [c["insee"] for c in r.json()]
+            LOG.debug(f"{r.text}")
+
+        cities.sort()
+
         if len(cities):
             LOG.info(f"Running initdb on {cities}")
-            r = requests.post(url=BACK_INITDB_URL, json={"cities": cities})
-            if r.status_code == 202:
-                LOG.info(f"You can follow the progress of initdb on {BACK_TASKS_URL.format(**r.json())}")
-            else:
-                LOG.warning(f"Error {r.status_code} {r.reason} while invoking initdb: {r.text}")
+            Handler.wait_task_completion(requests.post(url=BACK_INITDB_URL, json={"cities": cities}))
         else:
             LOG.warning("No cities found in file!")
 
