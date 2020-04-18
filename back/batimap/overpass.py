@@ -21,6 +21,9 @@ class Overpass(object):
         for uri in self.instances_endpoints:
             self.__apis.append(overpass.API(endpoint=uri, timeout=300))
 
+    def init_app(self, uri):
+        self.__api = overpass.API(endpoint=uri, timeout=300)
+
     def request_with_retries(self, request, output_format="json"):
         apis = len(self.__apis)
         for retry in range(9, 0, -1):

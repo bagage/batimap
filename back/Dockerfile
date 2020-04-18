@@ -1,4 +1,4 @@
-FROM python:3.6-slim as base
+FROM python:3.8-slim as base
 
 FROM base as builder
 
@@ -22,6 +22,3 @@ WORKDIR /code
 
 COPY wait-for-it.sh /
 COPY entrypoint.sh /
-# ENV FLASK_APP=app.py
-# CMD flask run
-
