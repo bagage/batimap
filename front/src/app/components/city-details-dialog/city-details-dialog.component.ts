@@ -85,10 +85,10 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.updateButtonOpts.active = true;
         this.autoUnsubscribe(
             this.batimapService.updateCity(this.city.insee).subscribe(
-                task => {
+                (task) => {
                     this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
                     if (task.state === TaskState.SUCCESS) {
-                        this.cityDateChanged(task.result);
+                        this.cityDateChanged(task.result.date, undefined);
                         this.cadastreLayer.redraw();
                     }
                 },
@@ -116,11 +116,13 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         return 'Le bâti existant ne semble pas provenir du cadastre.';
     }
 
-    cityDateChanged(city: CityDTO) {
-        if (this.city.date !== city.date) {
-            this.moreRecentDate = city.date;
+    cityDateChanged(date: string, city: CityDTO) {
+        if (this.city.date !== date) {
+            this.moreRecentDate = date;
         }
-        this.city = city;
+        if (city) {
+            this.city = city;
+        }
         this.lastImport = this.computeLastImport();
     }
 
