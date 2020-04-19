@@ -338,8 +338,8 @@ class Batimap(object):
                 city = self.db.get_city_for_insee(insee)
                 city.name = insee_name[insee]
                 # do not erase date if what we found here is a bad date (unknown)
-                if city.import_date in City.bad_dates() or import_date not in City.bad_dates():
-                    LOG.info("Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date}")
+                if city.import_date != import_date and (city.import_date in City.bad_dates() or import_date not in City.bad_dates()):
+                    LOG.info(f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date}")
                     city.import_date = import_date
                 city.last_update = datetime.datetime.now()
                 city.import_details = {"dates": counts, "simplified": simplified}
