@@ -100,7 +100,11 @@ def task_initdb(self, items):
         task_progress(self, 1 * p + d / len(departments) * p)
     for d in batimap.import_city_stats_from_osmplanet(items):
         task_progress(self, 2 * p + d / len(items) * p)
-    unknowns = items if items_are_cities else [c.insee for c in db.get_unknown_cities(departments)]
+    unknowns = (
+        [c for c in items if db.get_city_for_insee(c).import_date == "unknown"]
+        if items_are_cities
+        else [c.insee for c in db.get_unknown_cities(departments)]
+    )
     for (d, total) in batimap.compute_date_for_undated_cities(unknowns):
         task_progress(self, 3 * p + d / total * p)
     db.session.commit()
