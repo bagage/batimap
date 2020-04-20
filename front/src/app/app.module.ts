@@ -15,7 +15,7 @@ import { JosmService } from './services/josm.service';
 
 const appInitializerFn = (appConfig: AppConfigService) => () => appConfig.loadAppConfig();
 
-const appRoutes: Routes = [{ path: '', component: MapComponent }];
+const appRoutes: Routes = [{ path: '**', component: MapComponent }];
 
 @NgModule({
     declarations: [AppComponent],

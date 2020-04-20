@@ -9,6 +9,7 @@ import { Observable, of, timer } from 'rxjs';
 import { debounceTime, map, switchMap, takeWhile, tap } from 'rxjs/operators';
 import { CityDTO, StatsDetailsDTO } from '../classes/city.dto';
 import { ConflateCityDTO } from '../classes/conflate-city.dto';
+import { DepartmentDTO } from '../classes/department.dto';
 import { LegendDTO } from '../classes/legend.dto';
 import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
 import { LegendService } from './legend.service';
@@ -93,6 +94,18 @@ export class BatimapService {
         return this.http.get<StatsDetailsDTO>(this.URL_DEPARMENT_DETAILS(insee));
     }
 
+    department(insee: string): Observable<DepartmentDTO> {
+      return this.http.get<DepartmentDTO>(this.URL_DEPARTMENT(insee));
+    }
+
+    city(insee: string): Observable<CityDTO> {
+      return this.http.get<CityDTO>(this.URL_CITY(insee));
+    }
+
+    osmid(insee: string): Observable<number> {
+      return this.http.get<number>(this.URL_OSMID(insee));
+    }
+
     private URL_TASK(task: Task): string {
         return `${this.configService.getConfig().backServerUrl}/tasks/${task.task_id}`;
     }
@@ -113,8 +126,20 @@ export class BatimapService {
         return `${this.configService.getConfig().backServerUrl}cities/obsolete`;
     }
 
+    private URL_DEPARTMENT(insee: string) {
+    return `${this.configService.getConfig().backServerUrl}departments/${insee}`;
+  }
+
     private URL_DEPARMENT_DETAILS(insee: string) {
-        return `${this.configService.getConfig().backServerUrl}departments/${insee}`;
+        return `${this.configService.getConfig().backServerUrl}departments/${insee}/details`;
+    }
+
+    private URL_CITY(insee: string) {
+      return `${this.configService.getConfig().backServerUrl}cities/${insee}`;
+    }
+
+    private URL_OSMID(insee: string) {
+      return `${this.configService.getConfig().backServerUrl}insees/${insee}/osm_id`;
     }
 
     private longRunningAPI<T>(url, cls: ClassType<T>): Observable<TaskResult<T>> {

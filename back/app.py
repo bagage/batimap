@@ -206,28 +206,33 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
     )
 
 
+@app.route("/insees/<insee>/osm_id", methods=["GET"])
+def api_city_osm_id(insee) -> dict:
+    (osm_id,) = db.get_osm_id(insee)
+    return str(osm_id)
+
+
 @app.route("/departments", methods=["GET"])
 def api_departments() -> dict:
     return json.dumps(db.get_departments())
 
-
 @app.route("/departments/<dept>", methods=["GET"])
+def api_department(dept) -> dict:
+    d = db.get_department(dept)
+    s = dict(db.get_department_import_stats(dept))
+    date = max(s, key=s.get)
+    return json.dumps({"name": d.name, "date": date, "insee": dept})
+
+@app.route("/departments/<dept>/details", methods=["GET"])
 def api_department_details(dept) -> dict:
     stats = dict(db.get_department_import_stats(dept))
     simplified = sorted([ids for city in db.get_department_simplified_buildings(dept) for ids in city])
     return json.dumps({"simplified": simplified, "dates": stats})
 
 
-@app.route("/cities/obsolete", methods=["GET"])
-def api_obsolete_city() -> dict:
-    ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
-    result = db.get_obsolete_city(ignored)
-    if result:
-        city = CityDTO(result.City)
-        (osm_id,) = db.get_city_osm_id(city.insee)
-        position = Point.from_pg(result.position)
-        return json.dumps({"position": [position.x, position.y], "city": city, "osmid": osm_id}, cls=CityEncoder)
-
+@app.route("/cities/<insee>", methods=["GET"])
+def api_city(insee) -> dict:
+    return json.dumps(CityDTO(db.get_city_for_insee(insee)), cls=CityEncoder)
 
 @app.route("/cities/<insee>/update", methods=["GET"])
 def api_update_insee_list(insee) -> dict:
@@ -238,13 +243,6 @@ def api_update_insee_list(insee) -> dict:
         response=json.dumps({"task_id": new_task.id}), status=202, headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
     )
 
-
-@app.route("/cities/<insee>/osm_id", methods=["GET"])
-def api_city_osm_id(insee) -> dict:
-    (osm_id,) = db.get_city_osm_id(insee)
-    return str(osm_id)
-
-
 @app.route("/cities/<insee>/josm", methods=["GET"])
 def api_josm_data(insee) -> dict:
     LOG.debug(f"Receive an josm request for {insee}")
@@ -252,6 +250,17 @@ def api_josm_data(insee) -> dict:
     return Response(
         response=json.dumps({"task_id": new_task.id}), status=202, headers={"Location": url_for("api_tasks_status", task_id=new_task.id)},
     )
+
+
+@app.route("/cities/obsolete", methods=["GET"])
+def api_obsolete_city() -> dict:
+    ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
+    result = db.get_obsolete_city(ignored)
+    if result:
+        city = CityDTO(result.City)
+        (osm_id,) = db.get_osm_id(city.insee)
+        position = Point.from_pg(result.position)
+        return json.dumps({"position": [position.x, position.y], "city": city, "osmid": osm_id}, cls=CityEncoder)
 
 
 @app.route("/initdb", methods=["POST"])
