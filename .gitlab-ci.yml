@@ -20,9 +20,13 @@ test:front:
   artifacts:
     reports:
       junit: front/src/junit_karma.xml
-
-  except:
-    - master
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - docker-compose*.yml
+      - .gitlab-ci.yml
+      - front/**/*
 
 .build_docker_image: &build_docker_image
   image: docker:stable
