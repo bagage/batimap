@@ -3,11 +3,5 @@
     "automerge": true,
     "major": {
         "automerge": false
-    },
-    "packageRules": [
-        {
-            "packageNames": ["typescript"],
-            "allowedVersions": "<3.6.0"
-        }
-    ]
+    }
 }

@@ -24,7 +24,7 @@ const appRoutes: Routes = [{ path: '**', component: MapComponent }];
         BrowserModule,
         HttpClientModule,
         PagesModule,
-        LeafletModule.forRoot(),
+        LeafletModule,
         MatProgressButtonsModule.forRoot(),
         RouterModule.forRoot(
             appRoutes
