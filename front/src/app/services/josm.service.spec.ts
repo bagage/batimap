@@ -9,7 +9,7 @@ describe('JosmService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [JosmService, { provide: AppConfigService, useClass: MockAppConfigService }],
-            imports: [HttpClientTestingModule]
+            imports: [HttpClientTestingModule],
         });
     });
 

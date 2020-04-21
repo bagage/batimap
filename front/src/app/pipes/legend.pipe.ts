@@ -3,7 +3,7 @@ import { LegendService } from '../services/legend.service';
 
 @Pipe({
     name: 'legend',
-    pure: true
+    pure: true,
 })
 export class LegendPipe implements PipeTransform {
     constructor(private readonly legendService: LegendService) {}

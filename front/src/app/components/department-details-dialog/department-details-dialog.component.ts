@@ -10,7 +10,7 @@ import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 
 @Component({
     templateUrl: './department-details-dialog.component.html',
-    styleUrls: ['./department-details-dialog.component.css']
+    styleUrls: ['./department-details-dialog.component.css'],
 })
 export class DepartmentDetailsDialogComponent {
     department: DepartmentDTO;

@@ -15,7 +15,7 @@ describe('JosmButtonComponent', () => {
         TestBed.configureTestingModule({
             declarations: [JosmButtonComponent, LoaderComponent],
             imports: [MatLibModule, HttpClientTestingModule],
-            providers: [{ provide: AppConfigService, useClass: MockAppConfigService }]
+            providers: [{ provide: AppConfigService, useClass: MockAppConfigService }],
         }).compileComponents();
     }));
 
@@ -27,7 +27,7 @@ describe('JosmButtonComponent', () => {
             date: '',
             details: undefined,
             insee: '',
-            josm_ready: false
+            josm_ready: false,
         };
         component.city = expectedCity;
         fixture.detectChanges();

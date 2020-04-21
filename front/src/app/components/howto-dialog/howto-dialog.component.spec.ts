@@ -11,7 +11,7 @@ describe('HowtoDialogComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [HowtoDialogComponent],
-            imports: [MatLibModule, NoopAnimationsModule]
+            imports: [MatLibModule, NoopAnimationsModule],
         }).compileComponents();
     }));
 

@@ -18,7 +18,7 @@ export enum TaskState {
     PENDING = 'PENDING',
     PROGRESS = 'PROGRESS',
     FAILURE = 'FAILURE',
-    SUCCESS = 'SUCCESS'
+    SUCCESS = 'SUCCESS',
 }
 
 export interface TaskResult<T> {
@@ -36,7 +36,7 @@ export class TaskProgress {
 }
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class BatimapService {
     constructor(
@@ -85,8 +85,8 @@ export class BatimapService {
     obsoleteCity(ignored: string[]): Observable<ObsoleteCityDTO> {
         return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
             params: {
-                ignored: ignored.join(',')
-            }
+                ignored: ignored.join(','),
+            },
         });
     }
 
@@ -95,15 +95,15 @@ export class BatimapService {
     }
 
     department(insee: string): Observable<DepartmentDTO> {
-      return this.http.get<DepartmentDTO>(this.URL_DEPARTMENT(insee));
+        return this.http.get<DepartmentDTO>(this.URL_DEPARTMENT(insee));
     }
 
     city(insee: string): Observable<CityDTO> {
-      return this.http.get<CityDTO>(this.URL_CITY(insee));
+        return this.http.get<CityDTO>(this.URL_CITY(insee));
     }
 
     osmid(insee: string): Observable<number> {
-      return this.http.get<number>(this.URL_OSMID(insee));
+        return this.http.get<number>(this.URL_OSMID(insee));
     }
 
     private URL_TASK(task: Task): string {
@@ -127,19 +127,19 @@ export class BatimapService {
     }
 
     private URL_DEPARTMENT(insee: string) {
-    return `${this.configService.getConfig().backServerUrl}departments/${insee}`;
-  }
+        return `${this.configService.getConfig().backServerUrl}departments/${insee}`;
+    }
 
     private URL_DEPARMENT_DETAILS(insee: string) {
         return `${this.configService.getConfig().backServerUrl}departments/${insee}/details`;
     }
 
     private URL_CITY(insee: string) {
-      return `${this.configService.getConfig().backServerUrl}cities/${insee}`;
+        return `${this.configService.getConfig().backServerUrl}cities/${insee}`;
     }
 
     private URL_OSMID(insee: string) {
-      return `${this.configService.getConfig().backServerUrl}insees/${insee}/osm_id`;
+        return `${this.configService.getConfig().backServerUrl}insees/${insee}/osm_id`;
     }
 
     private longRunningAPI<T>(url, cls: ClassType<T>): Observable<TaskResult<T>> {

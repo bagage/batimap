@@ -45,7 +45,7 @@ const colorsRdYIGnRed = [
     '#febf6f',
     '#fec373',
     '#fec776',
-    '#ffc978'
+    '#ffc978',
 ];
 
 // we want to keep only 2 greens

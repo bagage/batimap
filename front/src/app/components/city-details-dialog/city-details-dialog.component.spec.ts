@@ -17,7 +17,7 @@ import { CityDetailsDialogComponent } from './city-details-dialog.component';
     imports: [MatLibModule],
     exports: [HowtoDialogComponent],
     declarations: [HowtoDialogComponent],
-    entryComponents: [HowtoDialogComponent]
+    entryComponents: [HowtoDialogComponent],
 })
 class DialogTestModule {}
 
@@ -32,8 +32,8 @@ describe('CityDetailsDialogComponent', () => {
             providers: [
                 { provide: MAT_DIALOG_DATA, useValue: {} },
                 { provide: MatDialogRef, useValue: {} },
-                { provide: AppConfigService, useClass: MockAppConfigService }
-            ]
+                { provide: AppConfigService, useClass: MockAppConfigService },
+            ],
         }).compileComponents();
     }));
 

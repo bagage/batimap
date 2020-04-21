@@ -79,7 +79,7 @@ import { MatProgressButtonsModule } from 'mat-progress-buttons';
         MatToolbarModule,
         MatTooltipModule,
         MatTreeModule,
-        MatProgressButtonsModule
-    ]
+        MatProgressButtonsModule,
+    ],
 })
 export class MatLibModule {}

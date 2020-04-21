@@ -11,7 +11,7 @@ import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
 
 @Component({
     templateUrl: './city-details-dialog.component.html',
-    styleUrls: ['./city-details-dialog.component.css']
+    styleUrls: ['./city-details-dialog.component.css'],
 })
 export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     static storageIgnoredCities = 'deactivated-cities';
@@ -32,7 +32,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         stroked: false,
         mode: 'indeterminate',
         value: 0,
-        disabled: false
+        disabled: false,
     };
     moreRecentDate: string;
     lastImport: string;
@@ -85,7 +85,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.updateButtonOpts.active = true;
         this.autoUnsubscribe(
             this.batimapService.updateCity(this.city.insee).subscribe(
-                (task) => {
+                task => {
                     this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
                     if (task.state === TaskState.SUCCESS) {
                         this.cityDateChanged(task.result.date, undefined);

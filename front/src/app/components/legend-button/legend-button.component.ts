@@ -3,7 +3,7 @@ import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/
 @Component({
     selector: 'app-legend-button',
     templateUrl: './legend-button.component.html',
-    styleUrls: ['./legend-button.component.css']
+    styleUrls: ['./legend-button.component.css'],
 })
 export class LegendButtonComponent {
     @Output() readonly showLegend = new EventEmitter();

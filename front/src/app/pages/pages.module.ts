@@ -4,6 +4,6 @@ import { MatLibModule } from '../mat-lib.module';
 import { MapModule } from './map/map.module';
 
 @NgModule({
-    imports: [CommonModule, MapModule, MatLibModule]
+    imports: [CommonModule, MapModule, MatLibModule],
 })
 export class PagesModule {}

@@ -17,7 +17,7 @@ describe('MapDateLegendComponent', () => {
         TestBed.configureTestingModule({
             declarations: [MapDateLegendComponent, LoaderComponent],
             imports: [MatLibModule, HttpClientTestingModule, LeafletModule],
-            providers: [MapDateLegendComponent, { provide: AppConfigService, useClass: MockAppConfigService }]
+            providers: [MapDateLegendComponent, { provide: AppConfigService, useClass: MockAppConfigService }],
         }).compileComponents();
     }));
 

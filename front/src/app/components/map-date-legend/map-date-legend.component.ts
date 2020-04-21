@@ -15,7 +15,7 @@ import { MapDateLegendModel } from './map-date-legend.model';
 @Component({
     selector: 'app-map-date-legend',
     templateUrl: './map-date-legend.component.html',
-    styleUrls: ['./map-date-legend.component.css']
+    styleUrls: ['./map-date-legend.component.css'],
 })
 export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     @Input() map: L.Map;
@@ -95,12 +95,12 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                 )
                 .subscribe((obsoleteCity: ObsoleteCityDTO) => {
                     this.map.setView(obsoleteCity.position, 10, {
-                        animate: false
+                        animate: false,
                     });
                     setTimeout(() => {
                         this.matDialog.closeAll();
                         const dialog = this.matDialog.open<CityDetailsDialogComponent>(CityDetailsDialogComponent, {
-                            data: [obsoleteCity.city, obsoleteCity.osmid, this.cadastreLayer]
+                            data: [obsoleteCity.city, obsoleteCity.osmid, this.cadastreLayer],
                         });
                         dialog.afterOpened().subscribe(() => dialog.componentInstance.updateCity());
                     }, 0);

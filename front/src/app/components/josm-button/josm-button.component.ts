@@ -5,7 +5,7 @@ import {
     EventEmitter,
     HostListener,
     Input,
-    Output
+    Output,
 } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
@@ -19,7 +19,7 @@ import { JosmService } from '../../services/josm.service';
     selector: 'app-josm-button',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './josm-button.component.html',
-    styleUrls: ['./josm-button.component.css']
+    styleUrls: ['./josm-button.component.css'],
 })
 export class JosmButtonComponent extends Unsubscriber {
     @Output() readonly newestDate = new EventEmitter<CityDTO>();
@@ -34,7 +34,7 @@ export class JosmButtonComponent extends Unsubscriber {
         mode: 'indeterminate',
         value: 0,
         disabled: false,
-        tooltip: ''
+        tooltip: '',
     };
     private _city: CityDTO;
     @Input()

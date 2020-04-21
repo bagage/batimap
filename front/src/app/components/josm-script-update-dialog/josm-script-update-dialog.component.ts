@@ -4,7 +4,7 @@ import { environment } from '../../../environments/environment';
 @Component({
     selector: 'app-josm-script-update-dialog',
     templateUrl: './josm-script-update-dialog.component.html',
-    styleUrls: ['./josm-script-update-dialog.component.css']
+    styleUrls: ['./josm-script-update-dialog.component.css'],
 })
 export class JosmScriptUpdateDialogComponent implements OnDestroy {
     static storageKey = 'josm-scripts-version';
