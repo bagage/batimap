@@ -7,7 +7,7 @@ export class StatsDetailsDTO {
 
 export class CityDTO {
     name: string;
-    @Type(() => StatsDetailsDTO) details: StatsDetailsDTO; // number of buildings imported per year date
+    @Type(() => StatsDetailsDTO) details: StatsDetailsDTO; // number of buildings imported per year
     date: string; // date of latest cadastral import, or unknown, or never
     insee: string;
     // tslint:disable-next-line:variable-name

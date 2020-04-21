@@ -11,7 +11,7 @@ describe('JosmScriptUpdateDialogComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [JosmScriptUpdateDialogComponent],
-            imports: [MatLibModule, NoopAnimationsModule]
+            imports: [MatLibModule, NoopAnimationsModule],
         }).compileComponents();
     }));
 

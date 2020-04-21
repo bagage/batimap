@@ -7,7 +7,7 @@ import { JosmScriptUpdateDialogComponent } from '../josm-script-update-dialog/jo
 @Component({
     selector: 'app-about-dialog',
     templateUrl: './about-dialog.component.html',
-    styleUrls: ['./about-dialog.component.css']
+    styleUrls: ['./about-dialog.component.css'],
 })
 export class AboutDialogComponent implements OnDestroy {
     version = environment.version;

@@ -3,7 +3,7 @@ import { palette } from '../classes/colors';
 import { LegendDTO } from '../classes/legend.dto';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class LegendService {
     city2date: Map<string, string> = new Map<string, string>();

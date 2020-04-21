@@ -10,7 +10,7 @@ describe('LoaderComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [LoaderComponent],
-            imports: [MatLibModule]
+            imports: [MatLibModule],
         }).compileComponents();
     }));
 

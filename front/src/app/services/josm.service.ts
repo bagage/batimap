@@ -6,7 +6,7 @@ import { CityDTO } from '../classes/city.dto';
 import { ConflateCityDTO } from '../classes/conflate-city.dto';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class JosmService {
     private readonly JOSM_URL_BASE = 'http://127.0.0.1:8111/';
@@ -61,8 +61,8 @@ export class JosmService {
             params: {
                 title,
                 type: 'tms',
-                url
-            }
+                url,
+            },
         });
     }
 
@@ -82,8 +82,8 @@ export class JosmService {
                             new_layer: 'true',
                             upload_policy: locked ? 'never' : 'true',
                             layer_locked: `${locked}`,
-                            url
-                        }
+                            url,
+                        },
                     });
                 }
 
@@ -107,8 +107,8 @@ export class JosmService {
                 left,
                 right,
                 bottom,
-                top
-            }
+                top,
+            },
         });
     }
 
@@ -118,8 +118,8 @@ export class JosmService {
             params: {
                 new_layer: 'true',
                 objects,
-                layer_name: layerName
-            }
+                layer_name: layerName,
+            },
         });
     }
 }

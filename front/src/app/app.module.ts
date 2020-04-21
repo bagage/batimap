@@ -15,7 +15,7 @@ import { JosmService } from './services/josm.service';
 
 const appInitializerFn = (appConfig: AppConfigService) => () => appConfig.loadAppConfig();
 
-const appRoutes: Routes = [{ path: '', component: MapComponent }];
+const appRoutes: Routes = [{ path: '**', component: MapComponent }];
 
 @NgModule({
     declarations: [AppComponent],
@@ -29,7 +29,7 @@ const appRoutes: Routes = [{ path: '', component: MapComponent }];
         RouterModule.forRoot(
             appRoutes
             // ,{enableTracing: true}
-        )
+        ),
     ],
     providers: [
         AppConfigService,
@@ -37,16 +37,16 @@ const appRoutes: Routes = [{ path: '', component: MapComponent }];
             provide: APP_INITIALIZER,
             useFactory: appInitializerFn,
             multi: true,
-            deps: [AppConfigService]
+            deps: [AppConfigService],
         },
         // allow custom icons in howto stepper
         {
             provide: MAT_STEPPER_GLOBAL_OPTIONS,
-            useValue: { displayDefaultIndicatorType: false }
+            useValue: { displayDefaultIndicatorType: false },
         },
         // {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {maxWidth: '700px'}},
-        JosmService
+        JosmService,
     ],
-    bootstrap: [AppComponent]
+    bootstrap: [AppComponent],
 })
 export class AppModule {}

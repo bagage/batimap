@@ -12,7 +12,7 @@ describe('AboutDialogComponent', () => {
         TestBed.configureTestingModule({
             declarations: [AboutDialogComponent],
             imports: [MatLibModule],
-            providers: [{ provide: MatDialogRef, useValue: {} }]
+            providers: [{ provide: MatDialogRef, useValue: {} }],
         }).compileComponents();
     }));
 

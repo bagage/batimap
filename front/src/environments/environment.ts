@@ -4,7 +4,7 @@
 
 export const environment = {
     production: false,
-    version: `dev-${require('../../package.json').version}`
+    version: `dev-${require('../../package.json').version}`,
 };
 
 // In development mode, to ignore zone related error stack frames such as

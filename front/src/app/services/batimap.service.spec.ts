@@ -9,7 +9,7 @@ describe('BatimapService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [BatimapService, { provide: AppConfigService, useClass: MockAppConfigService }],
-            imports: [HttpClientTestingModule]
+            imports: [HttpClientTestingModule],
         });
     });
 

@@ -7,6 +7,6 @@ import { MapPipe } from './map.pipe';
 @NgModule({
     declarations: [CountPipe, LegendPipe, MapPipe],
     exports: [CountPipe, LegendPipe, MapPipe],
-    imports: [CommonModule]
+    imports: [CommonModule],
 })
 export class PipesModule {}

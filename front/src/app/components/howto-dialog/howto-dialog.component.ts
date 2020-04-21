@@ -5,7 +5,7 @@ import { JosmScriptUpdateDialogComponent } from '../josm-script-update-dialog/jo
 @Component({
     selector: 'app-howto-dialog',
     templateUrl: './howto-dialog.component.html',
-    styleUrls: ['./howto-dialog.component.css']
+    styleUrls: ['./howto-dialog.component.css'],
 })
 export class HowtoDialogComponent implements OnDestroy {
     ngOnDestroy() {

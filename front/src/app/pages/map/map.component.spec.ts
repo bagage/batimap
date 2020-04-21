@@ -13,7 +13,7 @@ describe('MapComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [MapComponent, MapDateLegendComponent],
-            imports: [LeafletModule, MatLibModule, HttpClientTestingModule]
+            imports: [LeafletModule, MatLibModule, HttpClientTestingModule],
         }).compileComponents();
     }));
 

@@ -24,7 +24,7 @@ import { MapDateLegendComponent } from './map-date-legend/map-date-legend.compon
         MapDateLegendComponent,
         JosmScriptUpdateDialogComponent,
         LegendButtonComponent,
-        DepartmentDetailsDialogComponent
+        DepartmentDetailsDialogComponent,
     ],
     exports: [
         CityDetailsDialogComponent,
@@ -35,14 +35,14 @@ import { MapDateLegendComponent } from './map-date-legend/map-date-legend.compon
         LoaderComponent,
         MapDateLegendComponent,
         JosmScriptUpdateDialogComponent,
-        LegendButtonComponent
+        LegendButtonComponent,
     ],
     entryComponents: [
         AboutDialogComponent,
         CityDetailsDialogComponent,
         DepartmentDetailsDialogComponent,
         HowtoDialogComponent,
-        JosmScriptUpdateDialogComponent
-    ]
+        JosmScriptUpdateDialogComponent,
+    ],
 })
 export class SharedComponentsModule {}

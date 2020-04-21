@@ -13,6 +13,6 @@ import { MatLibModule } from '../../mat-lib.module';
 
 @NgModule({
     imports: [CommonModule, LeafletModule, MatLibModule, SharedComponentsModule],
-    declarations: [MapComponent]
+    declarations: [MapComponent],
 })
 export class MapModule {}

@@ -5,7 +5,7 @@ import { LegendService } from './legend.service';
 describe('LegendService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [LegendService]
+            providers: [LegendService],
         });
     });
 

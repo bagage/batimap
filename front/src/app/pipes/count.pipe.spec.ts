@@ -26,7 +26,7 @@ describe('CountPipe', () => {
             pipe.transform({
                 first: 1,
                 second: 'anotherString',
-                property: 'prop'
+                property: 'prop',
             })
         ).toEqual(3);
     });
