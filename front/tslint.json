@@ -8,6 +8,7 @@
         "newline-per-chained-call": false, // prettier's responsibility
         "angular-whitespace": [false], // prettier's responsibility
         "prefer-inline-decorator": false, // prettier's responsibility
+        "trailing-comma": false, // prettier's responsability
 
         "no-floating-promises": false,
         "typedef": false,
