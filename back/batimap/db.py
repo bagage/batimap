@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 
+from flask import current_app, g
+from flask_sqlalchemy import SQLAlchemy
+
 from dateutil import parser
 from geoalchemy2 import Geometry
 from sqlalchemy import Column, Boolean, TIMESTAMP, String, JSON, Integer, BigInteger
@@ -7,6 +10,21 @@ from sqlalchemy import func
 from sqlalchemy.ext.declarative import declarative_base
 
 from .bbox import Bbox
+
+
+def get_db():
+    if 'db' not in g:
+        g.sqlalchemy = SQLAlchemy(current_app)
+        g.db = Db(g.sqlalchemy)
+
+    return g.db
+
+def init_app(app):
+    app.teardown_appcontext(close_db)
+
+def close_db(e=None):
+    sqlalchemy = g.pop('sqlalchemy', None)
+    db = g.pop('db', None)
 
 Base = declarative_base()
 

@@ -22,4 +22,4 @@ GUNICORN_TIMEOUT_VALUE=${GUNICORN_TIMEOUT_VALUE:=60}
 GUNICORN_WORKERS=${GUNICORN_WORKERS:=4}
 
 # start the back
-gunicorn --bind ':5000' --timeout $GUNICORN_TIMEOUT_VALUE --workers $GUNICORN_WORKERS app:app
+gunicorn --bind ':5000' --timeout $GUNICORN_TIMEOUT_VALUE --workers $GUNICORN_WORKERS batimap.wsgi:app

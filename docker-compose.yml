@@ -42,15 +42,22 @@ services:
     volumes:
     - ./data/tiles:/data
 
+  redis:
+    image: redis:5-alpine
+    command: redis-server
+    volumes:
+      - ./data/redis:/var/lib/redis/data
+
   celery:
     image: registry.gitlab.com/bagage/batimap/back
     env_file:
     - ./.env
-    command: bash /wait-for-it.sh -- celery -A app.celery worker --loglevel=info
+    command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info
     volumes:
-    - ./back/app-docker.conf/:/code/app.conf:ro
+    - ./back/app-docker.conf/:/code/batimap/app.conf:ro
     - ./data/tiles:/code/tiles
     depends_on:
+    - redis
     - postgis
 
   back:
@@ -59,7 +66,7 @@ services:
     - ./.env
     command: bash /wait-for-it.sh -- sh /entrypoint.sh
     volumes:
-    - ./back/app-docker.conf/:/code/app.conf:ro
+    - ./back/app-docker.conf/:/code/batimap/app.conf:ro
     - ./data/tiles:/code/tiles
     depends_on:
     - postgis
@@ -69,9 +76,3 @@ services:
     depends_on:
     - tiles
     - back
-
-  redis:
-    image: redis:4-alpine
-    command: redis-server
-    volumes:
-      - ./data/redis:/var/lib/redis/data
