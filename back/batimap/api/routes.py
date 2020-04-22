@@ -121,7 +121,7 @@ def api_josm_data(insee) -> dict:
     )
 
 
-@app.route("/cities/obsolete", methods=["GET"])
+@bp.route("/cities/obsolete", methods=["GET"])
 def api_obsolete_city() -> dict:
     ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
     result = get_db().get_obsolete_city(ignored)

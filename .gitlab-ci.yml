@@ -24,7 +24,6 @@ test:front:
     refs:
       - merge_requests
     changes:
-      - docker-compose*.yml
       - .gitlab-ci.yml
       - front/**/*
 
