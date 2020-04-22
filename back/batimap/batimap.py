@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 class Batimap(object):
     MIN_BUILDINGS_COUNT = 50
     IGNORED_BUILDINGS = ["church"]
-    NO_BUILDING_CITIES = ["55139", "55039", "55307", "55050", "55239", "26030", "2B221", "11082", "65180"]
+    NO_BUILDING_CITIES = ["55139", "55039", "55307", "55050", "55239", "26030", "2B221", "11082", "65180", "31129", "31127", "65140", "65118", "65368", "65068", "65134"]
     cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
 
     def init_app(self, db, overpass):
