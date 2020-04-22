@@ -1,13 +1,15 @@
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 import os
 import logging
 
-from flask import Flask, g
+from flask import Flask
 from flask_cors import CORS
 
 from batimap.extensions import celery, batimap, overpass
+
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
@@ -26,17 +28,20 @@ def create_app():
     logging.basicConfig(
         format="%(asctime)s %(message)s",
         datefmt="%H:%M:%S",
-        level=verbosity[os.environ.get("BATIMAP_VERBOSITY") or app.config["VERBOSITY"] or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")],
+        level=verbosity[
+            os.environ.get("BATIMAP_VERBOSITY") or app.config["VERBOSITY"] or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")
+        ],
     )
 
     from . import db
+
     db.init_app(app)
-    overpass.init_app(app.config["OVERPASS_URI"])
     with app.app_context():
         batimap.init_app(db.get_db(), overpass)
 
     from . import cli
     from . import api
+
     app.register_blueprint(cli.app.bp)
     app.register_blueprint(api.routes.bp)
 
