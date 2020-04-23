@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { EMPTY, forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, share, switchMap } from 'rxjs/operators';
@@ -15,11 +15,13 @@ export class JosmService {
     constructor(private readonly http: HttpClient) {}
 
     isStarted(): Observable<boolean> {
-        return this.http.get(this.JOSM_URL_VERSION).pipe(
-            map(() => true),
-            catchError(() => of(false)),
-            share()
-        );
+        return this.http
+            .get(this.JOSM_URL_VERSION, { headers: new HttpHeaders().set('X-No-Http-Error-Interceptor', 'true') })
+            .pipe(
+                map(() => true),
+                catchError(() => of(false)),
+                share()
+            );
     }
 
     openCityInJosm(city: CityDTO, dto: ConflateCityDTO): Observable<any> {
@@ -68,7 +70,7 @@ export class JosmService {
 
     private JOSM_URL_OPEN_FILE(url: string, locked: boolean): Observable<string> {
         // first ensure that the file exists, then load it into JOSM
-        return this.http.head(url).pipe(
+        return this.http.head(url, { headers: new HttpHeaders().set('X-No-Http-Error-Interceptor', 'true') }).pipe(
             catchError(e => {
                 console.warn('OSM data at url', url, 'could not be found, not opening it in JOSM', e);
 

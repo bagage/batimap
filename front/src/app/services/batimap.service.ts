@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AppConfigService } from './app-config.service';
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { plainToClass } from 'class-transformer';
 import { ClassType } from 'class-transformer/ClassTransformer';
 import { LatLngBounds } from 'leaflet';
-import { Observable, of, timer } from 'rxjs';
+import { Observable, of, pipe, timer } from 'rxjs';
 import { debounceTime, map, switchMap, takeWhile, tap } from 'rxjs/operators';
 import { CityDTO, StatsDetailsDTO } from '../classes/city.dto';
 import { ConflateCityDTO } from '../classes/conflate-city.dto';
@@ -57,7 +57,8 @@ export class BatimapService {
                     bbox.getNorthWest().wrap().lat,
                     bbox.getSouthEast().wrap().lng,
                     bbox.getSouthEast().wrap().lat
-                )
+                ),
+                { headers: new HttpHeaders().set('X-No-Http-Error-Interceptor', 'true') }
             )
             .pipe(
                 map(r => plainToClass(LegendDTO, r)),
