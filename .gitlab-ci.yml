@@ -35,7 +35,11 @@ test:front:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
   only:
-    - master
+    refs:
+      - master
+    changes:
+      - .gitlab-ci.yml
+      - ${BASE_DIR:-$CONTAINER}/**/*
   script:
     - docker build -t registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG -f ${BASE_DIR:-$CONTAINER}/$DOCKERFILE ${BASE_DIR:-$CONTAINER}
     - docker tag registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/batimap/$CONTAINER:latest
