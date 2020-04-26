@@ -34,9 +34,6 @@ test:front:
   stage: build
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-  only:
-    refs:
-      - master
   script:
     - docker build -t registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG -f ${BASE_DIR:-$CONTAINER}/$DOCKERFILE ${BASE_DIR:-$CONTAINER}
     - docker tag registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/batimap/$CONTAINER:latest
@@ -46,6 +43,8 @@ test:front:
 build:ci_test:
   <<: *build_docker_image
   only:
+    refs:
+      - master
     changes:
       - .gitlab-ci.yml
       - front/**/*
@@ -57,6 +56,8 @@ build:ci_test:
 build:tiles-cleaner:
   <<: *build_docker_image
   only:
+    refs:
+      - master
     changes:
       - .gitlab-ci.yml
       - tiles-cleaner/**/*
@@ -67,6 +68,8 @@ build:tiles-cleaner:
 build:postgis:
   <<: *build_docker_image
   only:
+    refs:
+      - master
     changes:
       - .gitlab-ci.yml
       - postgis/**/*
@@ -77,6 +80,8 @@ build:postgis:
 build:imposm:
   <<: *build_docker_image
   only:
+    refs:
+      - master
     changes:
       - .gitlab-ci.yml
       - imposm/**/*
@@ -87,6 +92,8 @@ build:imposm:
 build:imposm-watcher:
   <<: *build_docker_image
   only:
+    refs:
+      - master
     changes:
       - .gitlab-ci.yml
       - imposm-watcher/**/*
@@ -97,6 +104,8 @@ build:imposm-watcher:
 build:back:
   <<: *build_docker_image
   only:
+    refs:
+      - master
     changes:
       - .gitlab-ci.yml
       - back/**/*
@@ -107,6 +116,8 @@ build:back:
 build:tiles:
   <<: *build_docker_image
   only:
+    refs:
+      - master
     changes:
       - .gitlab-ci.yml
       - tiles/**/*
@@ -117,6 +128,8 @@ build:tiles:
 build:front:
   <<: *build_docker_image
   only:
+    refs:
+      - master
     changes:
       - .gitlab-ci.yml
       - front/**/*
