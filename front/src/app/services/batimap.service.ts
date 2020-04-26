@@ -12,6 +12,7 @@ import { ConflateCityDTO } from '../classes/conflate-city.dto';
 import { DepartmentDTO } from '../classes/department.dto';
 import { LegendDTO } from '../classes/legend.dto';
 import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
+import { HttpErrorInterceptor } from './http-error.interceptor';
 import { LegendService } from './legend.service';
 
 export enum TaskState {
@@ -58,7 +59,7 @@ export class BatimapService {
                     bbox.getSouthEast().wrap().lng,
                     bbox.getSouthEast().wrap().lat
                 ),
-                { headers: new HttpHeaders().set('X-No-Http-Error-Interceptor', 'true') }
+                HttpErrorInterceptor.ByPassInterceptor()
             )
             .pipe(
                 map(r => plainToClass(LegendDTO, r)),

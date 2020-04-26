@@ -1,4 +1,11 @@
-import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import {
+    HttpErrorResponse,
+    HttpEvent,
+    HttpHandler,
+    HttpHeaders,
+    HttpInterceptor,
+    HttpRequest,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { Observable, throwError } from 'rxjs';
@@ -6,16 +13,24 @@ import { catchError } from 'rxjs/operators';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
-    static BYPASS_HEADER = 'X-No-Http-Error-Interceptor';
+    static BYPASS_HEADER = 'No-Http-Error-Interceptor';
     ref: MatSnackBarRef<SimpleSnackBar>;
 
-    constructor(private readonly snackbar: MatSnackBar) {}
+    static ByPassInterceptor(): { headers: HttpHeaders } {
+        let headers = new HttpHeaders();
+        headers = headers.set(HttpErrorInterceptor.BYPASS_HEADER, 'bypass1');
 
+        return { headers };
+    }
+
+    constructor(private readonly snackbar: MatSnackBar) {}
     // tslint:disable
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        return next.handle(request).pipe(
+        const shouldBypass = request.headers.has(HttpErrorInterceptor.BYPASS_HEADER);
+        let forwardedRequest = request.clone({ headers: request.headers.delete(HttpErrorInterceptor.BYPASS_HEADER) });
+
+        return next.handle(forwardedRequest).pipe(
             catchError((error: HttpErrorResponse) => {
-                const shouldBypass = request.headers.get(HttpErrorInterceptor.BYPASS_HEADER) === 'true';
                 if (shouldBypass) {
                     return throwError(error);
                 }
