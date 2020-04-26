@@ -43,7 +43,7 @@ export class JosmService {
             dto.bbox[3].toString()
         );
 
-        return forkJoin(imagery, buildings, segmented, osm);
+        return forkJoin(imagery, segmented, buildings, osm);
     }
 
     openNode(node: number, insee: string, name: string): Observable<any> {
