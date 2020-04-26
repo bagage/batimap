@@ -13,7 +13,7 @@ from contextlib import closing
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 
-from batimap.db import City, Db
+from batimap.db import City
 
 LOG = logging.getLogger(__name__)
 
@@ -21,7 +21,32 @@ LOG = logging.getLogger(__name__)
 class Batimap(object):
     MIN_BUILDINGS_COUNT = 50
     IGNORED_BUILDINGS = ["church"]
-    NO_BUILDING_CITIES = ["55139", "55039", "55307", "55050", "55239", "26030", "2B221", "11082", "65180", "31129", "31127", "65140", "65118", "65368", "65068", "65134"]
+    NO_BUILDING_CITIES = [
+        "11082",
+        "26030",
+        "2B221",
+        "31127",
+        "31129",
+        "55039",
+        "55050",
+        "55103",
+        "55139",
+        "55157",
+        "55189",
+        "55394",
+        "55325",
+        "55103",
+        "55168",
+        "55239",
+        "55270",
+        "55307",
+        "65068",
+        "65118",
+        "65134",
+        "65140",
+        "65180",
+        "65368",
+    ]
     cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
 
     def init_app(self, db, overpass):
