@@ -37,9 +37,6 @@ test:front:
   only:
     refs:
       - master
-    changes:
-      - .gitlab-ci.yml
-      - ${BASE_DIR:-$CONTAINER}/**/*
   script:
     - docker build -t registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG -f ${BASE_DIR:-$CONTAINER}/$DOCKERFILE ${BASE_DIR:-$CONTAINER}
     - docker tag registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/batimap/$CONTAINER:latest
@@ -48,6 +45,10 @@ test:front:
 
 build:ci_test:
   <<: *build_docker_image
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - front/**/*
   variables:
     CONTAINER: ci-test
     DOCKERFILE: Dockerfile.ci
@@ -55,42 +56,70 @@ build:ci_test:
 
 build:tiles-cleaner:
   <<: *build_docker_image
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - tiles-cleaner/**/*
   variables:
     CONTAINER: tiles-cleaner
     DOCKERFILE: Dockerfile
 
 build:postgis:
   <<: *build_docker_image
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - postgis/**/*
   variables:
     CONTAINER: postgis
     DOCKERFILE: Dockerfile
 
 build:imposm:
   <<: *build_docker_image
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - imposm/**/*
   variables:
     CONTAINER: imposm
     DOCKERFILE: Dockerfile
 
 build:imposm-watcher:
   <<: *build_docker_image
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - imposm-watcher/**/*
   variables:
     CONTAINER: imposm-watcher
     DOCKERFILE: Dockerfile
 
 build:back:
   <<: *build_docker_image
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - back/**/*
   variables:
     CONTAINER: back
     DOCKERFILE: Dockerfile
 
 build:tiles:
   <<: *build_docker_image
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - tiles/**/*
   variables:
     CONTAINER: tiles
     DOCKERFILE: Dockerfile
 
 build:front:
   <<: *build_docker_image
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - front/**/*
   variables:
     CONTAINER: front
     DOCKERFILE: Dockerfile.prod
