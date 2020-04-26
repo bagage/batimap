@@ -113,10 +113,12 @@ export class JosmButtonComponent extends Unsubscriber {
                     }
 
                     if (this._city.date !== progressConflateDTO.date) {
+                        this._city.date = progressConflateDTO.date;
                         this.newestDate.emit(this.city);
 
                         return undefined;
                     }
+
                     if (progressConflateDTO.buildingsUrl) {
                         return progressConflateDTO;
                     }
