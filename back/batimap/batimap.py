@@ -45,7 +45,10 @@ class Batimap(object):
         "65134",
         "65140",
         "65180",
+        "52004",
+        "52157",
         "65368",
+        "80270",
     ]
     cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
 
