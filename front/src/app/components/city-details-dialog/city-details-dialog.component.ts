@@ -34,7 +34,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         value: 0,
         disabled: false,
     };
-    moreRecentDate: string;
+    moreRecentDate: boolean;
     lastImport: string;
 
     constructor(
@@ -48,7 +48,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.city = data[0];
         this.osmID = data[1];
         this.cadastreLayer = data[2];
-        this.lastImport = this.computeLastImport();
+        this.computeLastImport();
     }
 
     ngOnInit(): void {
@@ -98,32 +98,32 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         );
     }
 
-    computeLastImport(): string {
+    computeLastImport() {
         const d = this.city ? this.city.date : undefined;
+        let val: string;
         if (!d || d === 'never') {
-            return 'Le bâti n\'a jamais été importé.';
+            val = "Le bâti n'a jamais été importé.";
+        } else if (d === 'raster') {
+            val = "Ville raster, pas d'import possible.";
+        } else if (d === 'unfinished') {
+            val = 'Des bâtiments sont de géométrie simple, à vérifier.';
+        } else if (Number.isInteger(+d)) {
+            val = `Dernier import en ${d}.`;
+        } else {
+            val = 'Le bâti existant ne semble pas provenir du cadastre.';
         }
-        if (d === 'raster') {
-            return 'Ville raster, pas d\'import possible.';
-        }
-        if (d === 'unfinished') {
-            return 'Des bâtiments sont de géométrie simple, à vérifier.';
-        }
-        if (Number.isInteger(+d)) {
-            return `Dernier import en ${d}.`;
-        }
-
-        return 'Le bâti existant ne semble pas provenir du cadastre.';
+        this.lastImport = val;
     }
 
     cityDateChanged(date: string, city: CityDTO) {
-        if (this.city.date !== date) {
-            this.moreRecentDate = date;
-        }
         if (city) {
             this.city = city;
         }
-        this.lastImport = this.computeLastImport();
+        if (this.city.date !== date) {
+            this.moreRecentDate = true;
+            this.city.date = date;
+        }
+        this.computeLastImport();
     }
 
     editNode(node: number) {
