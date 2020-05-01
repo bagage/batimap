@@ -22,7 +22,7 @@ import { JosmService } from '../../services/josm.service';
     styleUrls: ['./josm-button.component.css'],
 })
 export class JosmButtonComponent extends Unsubscriber {
-    @Output() readonly newestDate = new EventEmitter<CityDTO>();
+    @Output() readonly newerDate = new EventEmitter<CityDTO>();
 
     options = {
         active: false,
@@ -114,7 +114,7 @@ export class JosmButtonComponent extends Unsubscriber {
 
                     if (this._city.date !== progressConflateDTO.date) {
                         this._city.date = progressConflateDTO.date;
-                        this.newestDate.emit(this.city);
+                        this.newerDate.emit(this._city);
 
                         return undefined;
                     }
