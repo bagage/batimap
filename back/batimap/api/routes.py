@@ -1,5 +1,6 @@
-from flask import Blueprint, request, Response, url_for
+from flask import request, Response, url_for
 from flask_restful import inputs
+from flask_smorest import abort, Blueprint
 from geojson import Feature, FeatureCollection
 
 from batimap.bbox import Bbox
@@ -10,6 +11,7 @@ from batimap.point import Point
 from batimap.tasks.common import task_initdb, task_josm_data, task_update_insee
 
 from celery.result import AsyncResult
+from sqlalchemy.exc import IntegrityError
 
 import click
 import json
@@ -27,7 +29,10 @@ def api_status() -> dict:
 
 @bp.route("/status/<department>", methods=["GET"])
 def api_department_status(department) -> str:
-    return json.dumps([{x.insee: x.import_date} for x in batimap.stats(department=department, force=request.args.get("force", False))])
+    try:
+        return json.dumps([{x.insee: x.import_date} for x in batimap.stats(department=department, force=request.args.get("force", False))])
+    except IntegrityError:
+        abort(400, message='Department could not be found.')
 
 
 @bp.route("/status/<department>/<city>", methods=["GET"])
