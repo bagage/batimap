@@ -52,6 +52,6 @@
     <app-josm-button
         [city]="city"
         [josmReady]="josmIsStarted | async"
-        (newerDate)="cityDateChanged($event.date, $event)"
+        (newerDate)="cityDateChanged($event)"
     ></app-josm-button>
 </mat-dialog-actions>
