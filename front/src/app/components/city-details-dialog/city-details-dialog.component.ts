@@ -88,7 +88,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
                 task => {
                     this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
                     if (task.state === TaskState.SUCCESS) {
-                        this.cityDateChanged(task.result.date, undefined);
+                        this.cityDateChanged(task.result);
                         this.cadastreLayer.redraw();
                     }
                 },
@@ -115,14 +115,9 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.lastImport = val;
     }
 
-    cityDateChanged(date: string, city: CityDTO) {
-        if (city) {
-            this.city = city;
-        }
-        if (this.city.date !== date) {
-            this.moreRecentDate = true;
-            this.city.date = date;
-        }
+    cityDateChanged(city: CityDTO) {
+        this.moreRecentDate = this.city.date !== city.date;
+        this.city = city;
         this.computeLastImport();
     }
 

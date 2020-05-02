@@ -296,7 +296,6 @@ class Batimap(object):
                     buildings.append(element.get("timestamp")[:4])
                 has_simplified = len(simplified_buildings) > 0
                 (import_date, sources_date) = self.__date_for_buildings(city.insee, buildings, has_simplified)
-                # only update date if we did not use cache files for buildings
                 city.import_date = import_date
                 city.import_details = {"simplified": simplified_buildings, "dates": sources_date}
                 self.db.session.commit()
