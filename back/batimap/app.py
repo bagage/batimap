@@ -8,7 +8,7 @@ import logging
 from flask import Flask
 from flask_cors import CORS
 
-from batimap.extensions import celery, batimap, overpass
+from batimap.extensions import api_smorest, celery, batimap, overpass
 
 
 def create_app():
@@ -16,6 +16,8 @@ def create_app():
     CORS(app)
 
     app.config.from_pyfile(app.root_path + "/app.conf")
+    app.config['OPENAPI_VERSION'] = '3.0.2'
+    app.config['OPENAPI_URL_PREFIX'] = '/api'
 
     verbosity = {
         "DEBUG": logging.DEBUG,
@@ -39,11 +41,14 @@ def create_app():
     with app.app_context():
         batimap.init_app(db.get_db(), overpass)
 
+    api_smorest.init_app(app)
+
     from . import cli
     from . import api
 
     app.register_blueprint(cli.app.bp)
-    app.register_blueprint(api.routes.bp)
+
+    api_smorest.register_blueprint(api.routes.bp)
 
     init_celery(app)
 

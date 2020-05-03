@@ -1,5 +1,6 @@
-from flask import Blueprint, request, Response, url_for
+from flask import request, Response, url_for
 from flask_restful import inputs
+from flask_smorest import abort, Blueprint
 from geojson import Feature, FeatureCollection
 
 from batimap.bbox import Bbox
@@ -10,6 +11,7 @@ from batimap.point import Point
 from batimap.tasks.common import task_initdb, task_josm_data, task_update_insee
 
 from celery.result import AsyncResult
+from sqlalchemy.exc import IntegrityError
 
 import click
 import json
@@ -49,10 +51,11 @@ def api_insee(insee) -> dict:
         geo = get_db().get_city_geometry(insee)[0]
         feature = Feature(properties={"name": f"{city.name} - {city.insee}", "date": city.import_date}, geometry=json.loads(geo))
         return json.dumps(FeatureCollection(feature))  # fixme: no need for FeatureCollection here
-    return f"no city {insee}", 404
+    abort(404, message=f"no city {insee}")
 
 
 @bp.route("/bbox/cities", methods=["POST"])
+# @bp.arguments(BBoxSchema, location='json')
 def api_bbox_cities() -> dict:
     bboxes = (request.get_json() or {}).get("bboxes")
     cities = set()
@@ -122,6 +125,7 @@ def api_josm_data(insee) -> dict:
 
 
 @bp.route("/cities/obsolete", methods=["GET"])
+# @bp.arguments(BBoxSchema, location='json')
 def api_obsolete_city() -> dict:
     ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
     result = get_db().get_obsolete_city(ignored)
@@ -133,6 +137,7 @@ def api_obsolete_city() -> dict:
 
 
 @bp.route("/initdb", methods=["POST"])
+# @bp.arguments(BBoxSchema, location='json')
 def api_initdb():
     items = (request.get_json() or {}).get("cities")
     LOG.debug("Receive an initdb request for " + str(items))
