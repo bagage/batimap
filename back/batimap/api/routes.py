@@ -29,10 +29,7 @@ def api_status() -> dict:
 
 @bp.route("/status/<department>", methods=["GET"])
 def api_department_status(department) -> str:
-    try:
-        return json.dumps([{x.insee: x.import_date} for x in batimap.stats(department=department, force=request.args.get("force", False))])
-    except IntegrityError:
-        abort(400, message='Department could not be found.')
+    return json.dumps([{x.insee: x.import_date} for x in batimap.stats(department=department, force=request.args.get("force", False))])
 
 
 @bp.route("/status/<department>/<city>", methods=["GET"])
@@ -54,10 +51,11 @@ def api_insee(insee) -> dict:
         geo = get_db().get_city_geometry(insee)[0]
         feature = Feature(properties={"name": f"{city.name} - {city.insee}", "date": city.import_date}, geometry=json.loads(geo))
         return json.dumps(FeatureCollection(feature))  # fixme: no need for FeatureCollection here
-    return f"no city {insee}", 404
+    abort(404, message=f"no city {insee}")
 
 
 @bp.route("/bbox/cities", methods=["POST"])
+# @bp.arguments(BBoxSchema, location='json')
 def api_bbox_cities() -> dict:
     bboxes = (request.get_json() or {}).get("bboxes")
     cities = set()
@@ -127,6 +125,7 @@ def api_josm_data(insee) -> dict:
 
 
 @bp.route("/cities/obsolete", methods=["GET"])
+# @bp.arguments(BBoxSchema, location='json')
 def api_obsolete_city() -> dict:
     ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
     result = get_db().get_obsolete_city(ignored)
@@ -138,6 +137,7 @@ def api_obsolete_city() -> dict:
 
 
 @bp.route("/initdb", methods=["POST"])
+# @bp.arguments(BBoxSchema, location='json')
 def api_initdb():
     items = (request.get_json() or {}).get("cities")
     LOG.debug("Receive an initdb request for " + str(items))
