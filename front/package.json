@@ -7,6 +7,7 @@
         "build": "yarn outdated & ng build",
         "test": "ng test",
         "lint": "ng lint --fix",
+        "lintquick": "bash ./quick-lint.sh",
         "e2e": "ng e2e",
         "prettier": "prettier --write '**/*'",
         "postinstall": "ngcc --properties es2015 browser module main --first-only --create-ivy-entry-points"
@@ -14,7 +15,7 @@
     "husky": {
         "hooks": {
             "pre-commit": "pretty-quick --bail --staged",
-            "pre-push": "yarn lint"
+            "pre-push": "yarn lintquick"
         }
     },
     "private": true,
