@@ -72,6 +72,6 @@
         "pretty-quick": "2.0.1",
         "ts-node": "8.10.1",
         "tslint": "6.1.2",
-        "typescript": "3.8.3"
+        "typescript": "3.9.2"
     }
 }
