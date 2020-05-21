@@ -59,7 +59,7 @@ export class DepartmentDetailsDialogComponent {
         return 'Le bâti existant ne semble globalement pas provenir du cadastre.';
     }
 
-    editNode(node: number) {
-        this.josmService.openNode(node, this.department.insee, this.department.name).subscribe();
+    editNodes(nodes: [number]) {
+        this.josmService.openNodes(nodes, this.department.insee, this.department.name).subscribe();
     }
 }

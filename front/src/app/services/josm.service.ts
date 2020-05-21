@@ -46,10 +46,16 @@ export class JosmService {
         return forkJoin(imagery, segmented, buildings, osm);
     }
 
-    openNode(node: number, insee: string, name: string): Observable<any> {
+    openNodes(nodes: [number], insee: string, name: string): Observable<any> {
+        const n = `n${nodes.join(',n')}`;
+        const plural = nodes.length > 1 ? 's' : '';
+
         return forkJoin(
             this.JOSM_URL_BDORTHO_IMAGERY(),
-            this.JOSM_URL_LOAD_OBJECTS(`n${node}`, `Bâtiment simplifié ${node} dans ${insee} - ${name}`)
+            this.JOSM_URL_LOAD_OBJECTS(
+                n,
+                `Bâtiment${plural} simplifié${plural} dans ${insee} - ${name} (${nodes.join(', ')})`
+            )
         );
     }
 
