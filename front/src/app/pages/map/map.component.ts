@@ -104,6 +104,7 @@ export class MapComponent implements AfterViewInit {
                 'cities-point': (properties, zoom) => this.stylingFunction(properties, zoom, 'point'),
                 departments: (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),
             },
+            getFeatureId: feat => feat.properties.insee,
             interactive: true, // Make sure that this VectorGrid fires mouse/pointer events
         };
 
