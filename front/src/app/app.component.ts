@@ -27,7 +27,9 @@ export class AppComponent {
             this.openDialog(JosmScriptUpdateDialogComponent);
         }
 
-        matIconRegistry.addSvgIcon('josm', domSanitizer.bypassSecurityTrustResourceUrl('../assets/josm.svg'));
+        ['josm', 'osm'].forEach(icon => {
+            matIconRegistry.addSvgIcon(icon, domSanitizer.bypassSecurityTrustResourceUrl(`../assets/${icon}.svg`));
+        });
     }
 
     private openDialog(dialog) {

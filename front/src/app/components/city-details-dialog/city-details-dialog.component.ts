@@ -121,7 +121,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.computeLastImport();
     }
 
-    editNode(node: number) {
-        this.josmService.openNode(node, this.city.insee, this.city.name).subscribe();
+    editNode(nodes: [number]) {
+        this.josmService.openNodes(nodes, this.city.insee, this.city.name).subscribe();
     }
 }
