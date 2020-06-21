@@ -40,7 +40,6 @@ class City(Base):
     import_date = Column(String, name="date")
     date_cadastre = Column(TIMESTAMP)
     import_details = Column(JSON, name="details")
-    last_update = Column(TIMESTAMP)
 
     def __repr__(self):
         return f"{self.name}({self.insee})"

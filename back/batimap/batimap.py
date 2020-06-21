@@ -374,7 +374,6 @@ class Batimap(object):
                 if city.import_date != import_date and (city.import_date in City.bad_dates() or import_date not in City.bad_dates()):
                     LOG.info(f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date}")
                     city.import_date = import_date
-                city.last_update = datetime.datetime.now()
                 city.import_details = {"dates": counts, "simplified": simplified}
 
             self.db.session.commit()
