@@ -20,17 +20,18 @@ while true; do
             echo "Regenerating France only tiles up to level $INITIAL_MAX_ZOOM!"
             # bboxes from https://boundingbox.klokantech.com/
             france_bboxes=(
-                "-5.45,41.26,9.87,51.27" # france metropolitan
-                "-63.06639,17.670931,-62.584402,18.137557" # 970 st barthélémy
-                "-61.809764,15.832008,-61.000366,16.514466" # 971 guadeloupe
-                "-61.229082,14.388703,-60.809583,14.878703" # 972 Martinique
-                "-54.6028,2.1122,-51.5694,5.978" # 973 Guyane
-                "55.216427,-21.389731,55.836692,-20.871714" # 974 Réunion
-                "-56.6973,46.5507,-55.9033,47.365" # 975 St Pierre et Miquelon
-                "44.7437,-13.2733,45.507,-12.379" # 976 Mayotte
+                ["France metropolitan"]="-5.45,41.26,9.87,51.27"
+                ["970 St Barthélémy"]="-63.06639,17.670931,-62.584402,18.137557"
+                ["971 Guadeloupe"]="-61.809764,15.832008,-61.000366,16.514466"
+                ["972 Martinique"]="-61.229082,14.388703,-60.809583,14.878703"
+                ["973 Guyane"]="-54.6028,2.1122,-51.5694,5.978"
+                ["974 Réunion"]="55.216427,-21.389731,55.836692,-20.871714"
+                ["975 St Pierre et Miquelon"]="-56.6973,46.5507,-55.9033,47.365"
+                ["976 Mayotte"]="44.7437,-13.2733,45.507,-12.379"
             )
-            for bbox in "${france_bboxes[@]}"; do
-                echo "Regenerating tiles in bbox $bbox"
+            for zone in "${!france_bboxes[@]}"; do
+                bbox="${france_bboxes[$zone]}"
+                echo "Regenerating tiles for $zone in bbox $bbox"
                 tegola --config /app/config.toml cache purge --bounds "$bbox" --max-zoom 11 1>/dev/null
                 tegola --config /app/config.toml cache seed --bounds "$bbox" --max-zoom $INITIAL_MAX_ZOOM
             done
@@ -50,7 +51,7 @@ while true; do
         while read bbox; do
             # if bbox not empty
             if [ ! -z $bbox ]; then
-                echo "Regenrating tiles in bbox $bbox"
+                echo "Regenerating tiles in bbox $bbox"
                 tegola --config /app/config.toml cache purge --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom 11
                 tegola --config /app/config.toml cache seed --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom $INITIAL_MAX_ZOOM
             fi
