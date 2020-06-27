@@ -19,7 +19,7 @@ while true; do
         if [ -d $CACHE_DIR/batimap/$INITIAL_MAX_ZOOM ]; then
             echo "Regenerating France only tiles up to level $INITIAL_MAX_ZOOM!"
             # bboxes from https://boundingbox.klokantech.com/
-            france_bboxes=(
+            declare -A france_bboxes=(
                 ["France metropolitan"]="-5.45,41.26,9.87,51.27"
                 ["970 St Barthélémy"]="-63.06639,17.670931,-62.584402,18.137557"
                 ["971 Guadeloupe"]="-61.809764,15.832008,-61.000366,16.514466"

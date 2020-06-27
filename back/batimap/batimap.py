@@ -174,7 +174,10 @@ class Batimap(object):
                         continue
 
                     name_cadastre = "-".join(osm_data.split("-")[:-2])
-                    date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
+                    try:
+                        date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%Y-%m-%d %H:%M")
+                    except Exception:
+                        date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
 
                     try:
                         name_index = cities_name_cadastre.index(name_cadastre)
