@@ -6,6 +6,10 @@
     },
     "packageRules": [
         {
+            "groupName": "angular",
+            "packagePatterns": ["angular"]
+        },
+        {
             "packageNames": ["typescript"],
             "allowedVersions": "<3.9.0"
         }
