@@ -174,7 +174,10 @@ class Batimap(object):
                         continue
 
                     name_cadastre = "-".join(osm_data.split("-")[:-2])
-                    date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
+                    try:
+                        date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%Y-%m-%d %H:%M")
+                    except Exception:
+                        date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
 
                     try:
                         name_index = cities_name_cadastre.index(name_cadastre)
@@ -374,7 +377,6 @@ class Batimap(object):
                 if city.import_date != import_date and (city.import_date in City.bad_dates() or import_date not in City.bad_dates()):
                     LOG.info(f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date}")
                     city.import_date = import_date
-                city.last_update = datetime.datetime.now()
                 city.import_details = {"dates": counts, "simplified": simplified}
 
             self.db.session.commit()
