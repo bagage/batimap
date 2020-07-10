@@ -1133,10 +1133,10 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.5.tgz#dcce4430e64b443ba8945f0290fb564ad5bac6dd"
   integrity sha512-7+2BITlgjgDhH0vvwZU/HZJVyk+2XUlvxXe8dFMedNX/aMkaOq++rMAFXc0tM7ij15QaWlbdQASBR9dihi+bDQ==
 
-"@types/leaflet@1.5.15":
-  version "1.5.15"
-  resolved "https://registry.yarnpkg.com/@types/leaflet/-/leaflet-1.5.15.tgz#f6cb7cb49da5bff2bab7377af7a2ae0d15f3cace"
-  integrity sha512-p9dXHpVG08z4NJXRsywLiQ9b41t51cTZd93UizBpuZDEzTYojlDPPfs1nBpppCCZZI5AOQSQUKq4413Fokw/0A==
+"@types/leaflet@1.5.16":
+  version "1.5.16"
+  resolved "https://registry.yarnpkg.com/@types/leaflet/-/leaflet-1.5.16.tgz#4fbbe7f55b1ea47b0a09f53d86bd6a4ce9c8240e"
+  integrity sha512-nWWixXp721LfqraX+jxf75NUVQLv/ppBmOUw2tEyblE0J77WYA0WROLdRtYKMLX1RQ5dKzbiFIs5H2GRYrk0JQ==
   dependencies:
     "@types/geojson" "*"
 
