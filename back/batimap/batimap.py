@@ -20,7 +20,8 @@ LOG = logging.getLogger(__name__)
 
 class Batimap(object):
     MIN_BUILDINGS_COUNT = 50
-    IGNORED_BUILDINGS = ["church"]
+    IGNORED_SIMPLIFIED_TAGS = ["power", "ruins", "historic", "ref:mhs"]
+    IGNORED_SIMPLIFIED_BUILDING_VALUES = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine"]
     NO_BUILDING_CITIES = [
         "11082",
         "25573",
@@ -285,19 +286,17 @@ class Batimap(object):
                 buildings = []
                 simplified_buildings = []
                 # iterate on every building
-                for element in self.overpass.get_city_buildings(city, self.IGNORED_BUILDINGS):
+                for element in self.overpass.get_city_buildings(city):
                     tags = element.get("tags")
                     if element.get("type") == "node":
                         # some buildings are mainly nodes, but we don't care much about them
-                        ignored_tags = ["power", "ruins", "historic", "ref:mhs"]
-                        ignored_building_values = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine"]
-                        if len([x for x in ignored_tags if tags.get(x)]):
+                        if len([x for x in self.IGNORED_SIMPLIFIED_TAGS if tags.get(x)]):
                             continue
-                        if tags.get("building") in ignored_building_values:
+                        if tags.get("building") in self.IGNORED_SIMPLIFIED_BUILDING_VALUES:
                             continue
 
                         LOG.info(
-                            f"{city} contient des bâtiments " f"avec une géométrie simplifée {element}, import probablement jamais réalisé"
+                            f"{city} contient des bâtiments avec une géométrie simplifée {element}, import probablement jamais réalisé"
                         )
                         simplified_buildings.append(element.get("id"))
 
@@ -342,7 +341,7 @@ class Batimap(object):
         for idx, insee_in in enumerate(insees):
             # 1. fetch global stats for current department of all buildings
             LOG.debug(f"Calcul des statistiques du bâti pour l'INSEE {insee_in}…")
-            result = self.db.get_building_dates_per_city_for_insee(insee_in, self.IGNORED_BUILDINGS)
+            result = self.db.get_building_dates_per_city_for_insee(insee_in)
 
             buildings = {}
             insee_name = {}

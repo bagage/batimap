@@ -233,7 +233,7 @@ class Db(object):
     def get_raster_cities_count(self, department):
         return self.session.query(func.count("*")).filter(City.department == department.zfill(2)).filter(City.is_raster).scalar()
 
-    def get_building_dates_per_city_for_insee(self, insee, ignored_buildings):
+    def get_building_dates_per_city_for_insee(self, insee):
         return (
             self.__filter_city(
                 self.session.query(
@@ -247,7 +247,6 @@ class Db(object):
             .filter(City.insee.startswith(insee.zfill(2)))
             .filter(City.insee == Boundary.insee)
             .filter(Building.building != None)
-            .filter(Building.building.notin_(ignored_buildings))
             .filter(Building.geometry.ST_GeometryType() != "ST_Point")
             .filter(Boundary.geometry.ST_Contains(Building.geometry))
             .group_by(City.insee, City.name, "dated_source", City.is_raster)
