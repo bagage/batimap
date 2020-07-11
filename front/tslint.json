@@ -3,6 +3,9 @@
     "extends": ["angular-tslint-rules"],
     "rules": {
         "array-type": [true, "array-simple"],
+        "deprecation": {
+            "severity": "warning"
+        },
         "template-i18n": [false], // there is no i18n here
 
         "newline-per-chained-call": false, // prettier's responsibility
