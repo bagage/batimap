@@ -17,8 +17,8 @@ RUN apt update && apt install -yy --no-install-recommends postgresql-client libx
 
 COPY --from=builder /usr/local /usr/local
 
-COPY . /code
-WORKDIR /code
-
 COPY wait-for-it.sh /
 COPY entrypoint.sh /
+
+COPY . /code
+WORKDIR /code

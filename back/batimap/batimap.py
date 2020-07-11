@@ -279,7 +279,7 @@ class Batimap(object):
 
     def __compute_city_date(self, city):
         """
-        Compute the latest import date for given city
+        Compute the latest import date for given city via an overpass query
         """
         if not city.is_raster:
             try:
@@ -357,11 +357,11 @@ class Batimap(object):
 
             # 2. fetch all simplified buildings in current department
             LOG.debug(f"Récupération du bâti simplifié pour l'INSEE {insee_in}…")
-            city_with_simplified_building = self.db.get_point_buildings_per_city_for_insee(insee_in)
+            city_with_simplified_building = self.db.get_point_buildings_per_city_for_insee(insee_in, self.IGNORED_SIMPLIFIED_BUILDING_VALUES, self.IGNORED_SIMPLIFIED_TAGS)
 
             simplified_cities = list(set([x[0] for x in city_with_simplified_building]))
             if len(simplified_cities) > 0:
-                LOG.info(f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifée, import à vérifier")
+                LOG.info(f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifiée, import à vérifier")
 
             # 3. finally compute city import date and update database
             LOG.debug(f"Mise à jour des statistiques pour l'INSEE {insee_in}…")
@@ -374,7 +374,8 @@ class Batimap(object):
                 city.name = insee_name[insee]
                 # do not erase date if what we found here is a bad date (unknown)
                 if city.import_date != import_date and (city.import_date in City.bad_dates() or import_date not in City.bad_dates()):
-                    LOG.info(f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date}")
+                    simplified_msg = "" if len(simplified) == 0 else f"(simplifiée: {simplified})"
+                    LOG.info(f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date} {simplified_msg}")
                     city.import_date = import_date
                 city.import_details = {"dates": counts, "simplified": simplified}
 

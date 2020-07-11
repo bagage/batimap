@@ -5,9 +5,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 from dateutil import parser
 from geoalchemy2 import Geometry
-from sqlalchemy import Column, Boolean, TIMESTAMP, String, JSON, Integer, BigInteger
-from sqlalchemy import func
+from sqlalchemy import Column, Boolean, TIMESTAMP, String, JSON, Integer, BigInteger, func, not_
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects.postgresql import HSTORE
 
 from .bbox import Bbox
 
@@ -61,6 +61,7 @@ class Building(Base):
     source = Column(String)
     source_date = Column(String)
     building = Column(String)
+    tags = Column(HSTORE)
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
@@ -253,7 +254,7 @@ class Db(object):
             .all()
         )
 
-    def get_point_buildings_per_city_for_insee(self, insee):
+    def get_point_buildings_per_city_for_insee(self, insee, ignored_buildings, ignored_tags):
         GeoCities = (
             self.__filter_city(self.session.query(Boundary.insee, Boundary.name, City.is_raster, Boundary.geometry))
             .filter(Boundary.admin_level >= 8)
@@ -266,6 +267,8 @@ class Db(object):
         return (
             self.session.query(GeoCities.c.insee, Building.osm_id)
             .filter(Building.building != None)
+            .filter(Building.building.notin_(ignored_buildings))
+            .filter(not_(Building.tags.has_any(ignored_tags)))
             .filter(Building.geometry.ST_GeometryType() == "ST_Point")
             .filter(GeoCities.c.geometry.ST_Contains(Building.geometry))
             .order_by(GeoCities.c.insee)
