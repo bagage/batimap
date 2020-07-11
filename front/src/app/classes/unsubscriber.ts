@@ -1,7 +1,11 @@
-import { OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-// TODO: Add Angular decorator.
+@Component({
+    selector: 'app-unsubscriber',
+    template: '',
+})
+//tslint:disable
 export class Unsubscriber implements OnDestroy {
     private readonly subscriptions: Subscription[] = [];
 
