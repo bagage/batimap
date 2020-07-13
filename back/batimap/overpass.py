@@ -26,7 +26,7 @@ class Overpass(object):
         for retry in range(9, 0, -1):
             try:
                 self.__request += 1
-                api = self.__apis[(self.__request + retry) % apis]
+                api = self.__apis[self.__request % apis]
                 LOG.warning(f"Executing Overpass on server {api.endpoint} with request:\n{request}")
                 return api.Get(request, responseformat=output_format, build=False)
             except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
@@ -37,17 +37,16 @@ class Overpass(object):
                 time.sleep(5 * round((10 - retry) / 3))
         return None
 
-    def get_city_buildings(self, city, ignored_buildings):
+    def get_city_buildings(self, city):
         """
         Compute the latest import date for given city
         """
-        ignored_buildings = "".join(['[building!="' + x + '"]' for x in ignored_buildings])
         request = f"""[out:json];
             area[boundary='administrative'][admin_level~'8|9']['ref:INSEE'='{city.insee}']->.a;
             (
               node['building'](area.a);
-              way['building']{ignored_buildings}(area.a);
-              relation['building']{ignored_buildings}(area.a);
+              way['building'](area.a);
+              relation['building'](area.a);
             );
             out tags qt meta;"""
         return self.request_with_retries(request).get("elements")

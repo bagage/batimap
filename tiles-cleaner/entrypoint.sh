@@ -42,7 +42,7 @@ while true; do
             tegola --config /app/config.toml cache seed --max-zoom $INITIAL_MAX_ZOOM
         fi
         echo -n > $UPDATE_FILE
-        rm $INIT_FILE
+        rm -f -- $INIT_FILE
         echo "Initialization terminated"
     elif [ -s $UPDATE_FILE ]; then
         echo "There is $(wc -l $UPDATE_FILE) outdated tiles to treat..."
@@ -56,7 +56,7 @@ while true; do
                 tegola --config /app/config.toml cache seed --bounds "$bbox" --min-zoom $MIN_ZOOM --max-zoom $INITIAL_MAX_ZOOM
             fi
         done < $WORK_FILE
-        rm $WORK_FILE
+        rm -f -- $WORK_FILE
         echo "All tiles treated!"
     fi
     sleep 30

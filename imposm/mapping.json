@@ -3,6 +3,9 @@
         "area_tags": ["buildings", "landuse", "leisure", "natural", "aeroway"],
         "linear_tags": ["highway", "barrier"]
     },
+    "tags": {
+        "include": ["power", "ruins", "historic", "ref:mhs"]
+    },
     "tables": {
         "buildings": {
             "columns": [
@@ -27,14 +30,17 @@
                     "key": "source"
                 },
                 {
+                    "type": "hstore_tags",
+                    "name": "tags"
+                },
+                {
                     "type": "string",
                     "name": "source_date",
                     "key": "source:date"
                 },
                 {
                     "type": "mapping_value",
-                    "name": "building",
-                    "key": null
+                    "name": "building"
                 }
             ],
             "type": "geometry",
