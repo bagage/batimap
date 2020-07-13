@@ -26,7 +26,7 @@ class Overpass(object):
         for retry in range(9, 0, -1):
             try:
                 self.__request += 1
-                api = self.__apis[(self.__request + retry) % apis]
+                api = self.__apis[self.__request % apis]
                 LOG.warning(f"Executing Overpass on server {api.endpoint} with request:\n{request}")
                 return api.Get(request, responseformat=output_format, build=False)
             except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
