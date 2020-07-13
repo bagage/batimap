@@ -2,6 +2,7 @@ from batimap.extensions import celery, batimap
 from batimap.db import get_db
 from batimap.citydto import CityDTO, CityEncoder
 from pathlib import Path
+from shutil import copyfile
 
 import json
 import logging
@@ -19,6 +20,13 @@ def task_progress(task, current):
 
 @celery.task(bind=True)
 def task_initdb(self, items):
+    migration_base = Path("html/.maintenance.html")
+    migration_file = Path("html/maintenance.html")
+    initdb_is_done_file = Path("tiles/initdb_is_done")
+
+    if migration_base.exists() and not migration_file.exists():
+        copyfile(migration_base, migration_file)
+
     db = get_db()
     items_are_cities = len([1 for x in items if len(x) > 3]) > 0
     if items_are_cities:
@@ -29,8 +37,6 @@ def task_initdb(self, items):
         departments = items
         LOG.debug(f"Will run initdb on departments {departments}")
 
-    initdb_is_done_file = Path("tiles/initdb_is_done")
-    migration_file = Path("html/maintenance.html")
     if initdb_is_done_file.exists():
         initdb_is_done_file.unlink()
 
