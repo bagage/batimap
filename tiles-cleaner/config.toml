@@ -106,12 +106,12 @@ sql = """
 name = "batimap"
   [[maps.layers]]
   provider_layer = "cadastre.cities"
-  min_zoom = 9
+  min_zoom = 8
   max_zoom = 11
 
   [[maps.layers]]
   provider_layer = "cadastre.cities-point"
-  min_zoom = 7
+  min_zoom = 6
   max_zoom = 8
 
   [[maps.layers]]
