@@ -59,7 +59,7 @@
         "angular-tslint-rules": "1.20.4",
         "codelyzer": "6.0.0",
         "husky": "4.2.5",
-        "jasmine-core": "3.5.0",
+        "jasmine-core": "3.6.0",
         "jasmine-spec-reporter": "5.0.2",
         "karma": "5.0.9",
         "karma-chrome-launcher": "3.1.0",
