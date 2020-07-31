@@ -6190,10 +6190,10 @@ next-tick@~1.0.0:
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
   integrity sha1-yobR/ogoFpsBICCOPchCS524NCw=
 
-ng-apexcharts@1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/ng-apexcharts/-/ng-apexcharts-1.5.0.tgz#9b94db77fa9e91a33f527423b25e52d06d993905"
-  integrity sha512-R/DbZzCiVbMg0761pWlvQN147GOPGEdCn+1xN4FjE5GEH0oYibtcKvpXsj8b7OP79S1bhHgmECNE64Rr4inYjQ==
+ng-apexcharts@1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/ng-apexcharts/-/ng-apexcharts-1.5.1.tgz#ee0ee58dea0399ac2410305939ff15981f65d854"
+  integrity sha512-Vhl7Qtc05fKN7iCxyKUwx7p8FbM1cyRnY1pYjGsiy4z3Wf9UoXuyprx3WMcMcHX5AIi53vR7XHekOwlGo4Z/cg==
   dependencies:
     tslib "^1.10.0"
 
