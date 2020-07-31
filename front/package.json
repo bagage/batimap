@@ -52,7 +52,7 @@
         "@angular/cli": "10.0.4",
         "@angular/compiler-cli": "10.0.7",
         "@angular/language-service": "10.0.7",
-        "@types/jasmine": "3.5.11",
+        "@types/jasmine": "3.5.12",
         "@types/jasminewd2": "2.0.8",
         "@types/leaflet": "1.5.17",
         "@types/node": "13.13.15",
