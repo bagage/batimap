@@ -1,5 +1,5 @@
 beautifulsoup4==4.9.1
-celery[redis]==4.4.6
+celery[redis]==4.4.7
 Click==7.1.2
 Flask==1.1.2
 Flask_Cors==3.0.8
