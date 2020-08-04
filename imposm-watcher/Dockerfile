@@ -9,7 +9,7 @@ RUN apk --update add build-base
 
 COPY requirements.txt /src/requirements.txt
 
-RUN pip install --install-option="--prefix=/install" -r requirements.txt
+RUN pip install --prefix="/install" -r requirements.txt
 
 FROM base
 
