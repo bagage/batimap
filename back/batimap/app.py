@@ -8,7 +8,7 @@ import logging
 from flask import Flask
 from flask_cors import CORS
 
-from batimap.extensions import api_smorest, celery, batimap, overpass
+from batimap.extensions import api_smorest, celery, batimap, overpass, db, sqlalchemy
 
 
 def create_app():
@@ -35,12 +35,9 @@ def create_app():
         ],
     )
 
-    from . import db
-
-    db.init_app(app)
-    with app.app_context():
-        batimap.init_app(db.get_db(), overpass)
-
+    sqlalchemy.init_app(app)
+    db.init_app(app, sqlalchemy)
+    batimap.init_app(db, overpass)
     api_smorest.init_app(app)
 
     from . import cli

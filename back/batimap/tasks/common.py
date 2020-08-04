@@ -1,5 +1,4 @@
-from batimap.extensions import celery, batimap
-from batimap.db import get_db
+from batimap.extensions import celery, batimap, db
 from batimap.citydto import CityDTO, CityEncoder
 from pathlib import Path
 from shutil import copyfile
@@ -27,7 +26,6 @@ def task_initdb(self, items):
     if migration_base.exists() and not migration_file.exists():
         copyfile(migration_base, migration_file)
 
-    db = get_db()
     items_are_cities = len([1 for x in items if len(x) > 3]) > 0
     if items_are_cities:
         departments = list(set([db.get_city_for_insee(insee).department for insee in items]))
@@ -66,7 +64,6 @@ def task_initdb(self, items):
 
 @celery.task(bind=True)
 def task_josm_data(self, insee):
-    db = get_db()
     task_progress(self, 1)
     c = db.get_city_for_insee(insee)
     # force refreshing cadastre date
@@ -91,7 +88,6 @@ def task_josm_data(self, insee):
 
 @celery.task(bind=True)
 def task_update_insee(self, insee):
-    db = get_db()
     before = db.get_city_for_insee(insee)
     task_progress(self, 50)
     city = next(batimap.stats(names_or_insees=[insee], force=True))

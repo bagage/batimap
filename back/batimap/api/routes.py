@@ -5,8 +5,7 @@ from geojson import Feature, FeatureCollection
 
 from batimap.bbox import Bbox
 from batimap.citydto import CityEncoder, CityDTO
-from batimap.db import get_db
-from batimap.extensions import batimap
+from batimap.extensions import batimap, db
 from batimap.point import Point
 from batimap.tasks.common import task_initdb, task_josm_data, task_update_insee
 
@@ -24,7 +23,7 @@ bp = Blueprint('app_routes', __name__)
 
 @bp.route("/status", methods=["GET"])
 def api_status() -> dict:
-    return json.dumps(get_db().get_imports_count_per_year())
+    return json.dumps(db.get_imports_count_per_year())
 
 
 @bp.route("/status/<department>", methods=["GET"])
@@ -41,14 +40,14 @@ def api_city_status(department, city) -> str:
 
 @bp.route("/status/by_date/<date>")
 def api_cities_for_date(date) -> str:
-    return json.dumps(get_db().get_cities_for_year(date))
+    return json.dumps(db.get_cities_for_year(date))
 
 
 @bp.route("/insee/<insee>", methods=["GET"])
 def api_insee(insee) -> dict:
-    city = get_db().get_city_for_insee(insee)
+    city = db.get_city_for_insee(insee)
     if city:
-        geo = get_db().get_city_geometry(insee)[0]
+        geo = db.get_city_geometry(insee)[0]
         feature = Feature(properties={"name": f"{city.name} - {city.insee}", "date": city.import_date}, geometry=json.loads(geo))
         return json.dumps(FeatureCollection(feature))  # fixme: no need for FeatureCollection here
     abort(404, message=f"no city {insee}")
@@ -60,13 +59,13 @@ def api_bbox_cities() -> dict:
     bboxes = (request.get_json() or {}).get("bboxes")
     cities = set()
     for bbox in bboxes:
-        cities = cities | set(get_db().get_cities_for_bbox(Bbox(*bbox)))
+        cities = cities | set(db.get_cities_for_bbox(Bbox(*bbox)))
     return json.dumps([CityDTO(x) for x in cities], cls=CityEncoder)
 
 
 @bp.route("/legend/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
-    result = get_db().get_imports_count_for_bbox(Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW)))
+    result = db.get_imports_count_for_bbox(Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW)))
     total = sum([x[1] for x in result])
 
     return json.dumps(
@@ -76,33 +75,33 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
 
 @bp.route("/insees/<insee>/osm_id", methods=["GET"])
 def api_city_osm_id(insee) -> dict:
-    (osm_id,) = get_db().get_osm_id(insee)
+    (osm_id,) = db.get_osm_id(insee)
     return str(osm_id)
 
 
 @bp.route("/departments", methods=["GET"])
 def api_departments() -> dict:
-    return json.dumps(get_db().get_departments())
+    return json.dumps(db.get_departments())
 
 
 @bp.route("/departments/<dept>", methods=["GET"])
 def api_department(dept) -> dict:
-    d = get_db().get_department(dept)
-    s = dict(get_db().get_department_import_stats(dept))
+    d = db.get_department(dept)
+    s = dict(db.get_department_import_stats(dept))
     date = max(s, key=s.get)
     return json.dumps({"name": d.name, "date": date, "insee": dept})
 
 
 @bp.route("/departments/<dept>/details", methods=["GET"])
 def api_department_details(dept) -> dict:
-    stats = dict(get_db().get_department_import_stats(dept))
-    simplified = sorted([ids for city in get_db().get_department_simplified_buildings(dept) for ids in city])
+    stats = dict(db.get_department_import_stats(dept))
+    simplified = sorted([ids for city in db.get_department_simplified_buildings(dept) for ids in city])
     return json.dumps({"simplified": simplified, "dates": stats})
 
 
 @bp.route("/cities/<insee>", methods=["GET"])
 def api_city(insee) -> dict:
-    return json.dumps(CityDTO(get_db().get_city_for_insee(insee)), cls=CityEncoder)
+    return json.dumps(CityDTO(db.get_city_for_insee(insee)), cls=CityEncoder)
 
 
 @bp.route("/cities/<insee>/update", methods=["GET"])
@@ -128,10 +127,10 @@ def api_josm_data(insee) -> dict:
 # @bp.arguments(BBoxSchema, location='json')
 def api_obsolete_city() -> dict:
     ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
-    result = get_db().get_obsolete_city(ignored)
+    result = db.get_obsolete_city(ignored)
     if result:
         city = CityDTO(result.City)
-        (osm_id,) = get_db().get_osm_id(city.insee)
+        (osm_id,) = db.get_osm_id(city.insee)
         position = Point.from_pg(result.position)
         return json.dumps({"position": [position.x, position.y], "city": city, "osmid": osm_id}, cls=CityEncoder)
 
