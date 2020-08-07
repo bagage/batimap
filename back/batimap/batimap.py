@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 class Batimap(object):
     MIN_BUILDINGS_COUNT = 50
     IGNORED_SIMPLIFIED_TAGS = ["power", "public_transport", "ruins", "telecom", "historic", "ref:mhs", "tower:type"]
-    IGNORED_SIMPLIFIED_BUILDING_VALUES = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine", "hunting_stand", "transformation_tower"]
+    IGNORED_SIMPLIFIED_BUILDING_VALUES = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine", "hunting_stand", "transformer_tower", "tent"]
     NO_BUILDING_CITIES = [
         "09260",
         "11082",
