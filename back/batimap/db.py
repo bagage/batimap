@@ -11,20 +11,9 @@ from sqlalchemy.dialects.postgresql import HSTORE
 
 from .bbox import Bbox
 
+import logging
 
-def get_db():
-    if 'db' not in g:
-        g.sqlalchemy = SQLAlchemy(current_app)
-        g.db = Db(g.sqlalchemy)
-
-    return g.db
-
-def init_app(app):
-    app.teardown_appcontext(close_db)
-
-def close_db(e=None):
-    sqlalchemy = g.pop('sqlalchemy', None)
-    db = g.pop('db', None)
+LOG = logging.getLogger(__name__)
 
 Base = declarative_base()
 
@@ -78,9 +67,23 @@ class Boundary(Base):
 
 
 class Db(object):
-    def __init__(self, db):
-        City.metadata.create_all(db.engine)
+    def __init__(self):
+        self.isInitialized = False
+
+    def init_app(self, app, db):
+        with app.app_context():
+            City.metadata.create_all(db.engine)
         self.session = db.session
+        self.isInitialized = True
+
+    def __isInitialized(func):
+        def inner(self, *args, **kwargs):
+            if not self.isInitialized:
+                LOG.warning("Db is not initialized yet!")
+                return
+            return func(self, *args, **kwargs)
+
+        return inner
 
     @staticmethod
     def __filter_city(query, insee=None):
@@ -97,36 +100,45 @@ class Db(object):
     def __flat(req):
         return [x[0] for x in req]
 
+    @__isInitialized
     def get_osm_city_name_for_insee(self, insee) -> str:
         # there might be no result for this query, but this is OK
         return self.__filter_city(self.session.query(Boundary.name), insee).first()
 
+    @__isInitialized
     def get_cities_for_department(self, department) -> [City]:
         return self.session.query(City).filter(City.department == department.zfill(2)).order_by(City.insee).all()
 
+    @__isInitialized
     def get_city_for_insee(self, insee) -> City:
         return self.session.query(City).filter(City.insee == insee).first()
 
+    @__isInitialized
     def get_city_for_name(self, name) -> City:
         return self.session.query(City).filter(City.name == name).first()
 
+    @__isInitialized
     def get_city_for_cadastre_name(self, name_cadastre):
         return self.session.query(City).filter(City.name_cadastre == name_cadastre).first()
 
+    @__isInitialized
     def get_osm_id(self, insee) -> int:
         return self.session.query(-1 * Boundary.osm_id).filter(Boundary.insee == insee).first()
 
+    @__isInitialized
     def get_city_bbox(self, insee):
         # first() is required because of multipolygons cities (76218 - Doudeauville for instance)
         return Bbox.from_pg(
             self.__filter_city(self.session.query(func.Box2D(Boundary.geometry)), insee).order_by(Boundary.admin_level).first()[0]
         )
 
+    @__isInitialized
     def get_imports_count_per_year(self):
         return (
             self.session.query(City.import_date, func.count(City.import_date)).group_by(City.import_date).order_by(City.import_date).all()
         )
 
+    @__isInitialized
     def get_imports_count_for_bbox(self, bbox: Bbox):
         return (
             self.__filter_city(self.session.query(City.import_date, func.count(".*").label("count")))
@@ -136,9 +148,11 @@ class Db(object):
             .all()
         )
 
+    @__isInitialized
     def get_cities_for_year(self, date):
         return self.session.query(City.name, City.insee).filter(City.import_date == date).order_by(City.name).all()
 
+    @__isInitialized
     def get_cities_for_bbox(self, bbox: Bbox):
         # we should fetch all cities within the view but at least 110km radius around
         distance = min(bbox.max_distance(), 1.0)
@@ -150,6 +164,7 @@ class Db(object):
             .all()
         )
 
+    @__isInitialized
     def get_departments(self):
         # admin_level 6 are departments, however some are handled differently by OSM and cadastre.
         # for instance, 69 (Rhône) exists as 69D and 60M in OSM at level 6, so we also take level 5
@@ -161,6 +176,7 @@ class Db(object):
             .all()
         )
 
+    @__isInitialized
     def get_department(self, insee):
         return (
             self.session.query(Boundary)
@@ -169,6 +185,7 @@ class Db(object):
             .first()
         )
 
+    @__isInitialized
     def get_department_import_stats(self, insee):
         return (
             self.session.query(City.import_date, func.count("*"))
@@ -178,6 +195,7 @@ class Db(object):
             .all()
         )
 
+    @__isInitialized
     def get_department_simplified_buildings(self, insee):
         return self.__flat(
             self.session.query(City.import_details["simplified"])
@@ -186,6 +204,7 @@ class Db(object):
             .all()
         )
 
+    @__isInitialized
     def get_departments_for_bbox(self, bbox: Bbox):
         return self.__flat(
             self.session.query(Boundary.insee.distinct())
@@ -196,9 +215,11 @@ class Db(object):
             .all()
         )
 
+    @__isInitialized
     def get_city_geometry(self, insee):
         return self.__filter_city(self.session.query(Boundary.geometry.ST_AsGeoJSON()), insee).filter(Boundary.insee == City.insee).first()
 
+    @__isInitialized
     def get_unknown_cities(self, departments) -> [City]:
         return (
             self.session.query(City)
@@ -208,6 +229,7 @@ class Db(object):
             .all()
         )
 
+    @__isInitialized
     def get_obsolete_city(self, ignored):
         """
             Find the city that has the most urging need of import (never > unknown > old import > raster).
@@ -231,9 +253,11 @@ class Db(object):
             .first()
         )
 
+    @__isInitialized
     def get_raster_cities_count(self, department):
         return self.session.query(func.count("*")).filter(City.department == department.zfill(2)).filter(City.is_raster).scalar()
 
+    @__isInitialized
     def get_building_dates_per_city_for_insee(self, insee):
         return (
             self.__filter_city(
@@ -254,6 +278,7 @@ class Db(object):
             .all()
         )
 
+    @__isInitialized
     def get_point_buildings_per_city_for_insee(self, insee, ignored_buildings, ignored_tags):
         GeoCities = (
             self.__filter_city(self.session.query(Boundary.insee, Boundary.name, City.is_raster, Boundary.geometry))

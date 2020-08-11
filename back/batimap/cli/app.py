@@ -1,5 +1,4 @@
-from batimap.db import get_db
-from batimap.extensions import batimap
+from batimap.extensions import batimap, db
 from batimap.tasks.common import task_initdb
 from flask import Blueprint, g
 
@@ -13,7 +12,7 @@ def initdb_command(departments):
     """
     Creates required tables in PostgreSQL server.
     """
-    task_initdb(departments or get_db().get_departments())
+    task_initdb(departments or db.get_departments())
 
 
 @bp.cli.command("stats")
@@ -33,7 +32,7 @@ def get_city_stats(items, fast, all):
     else:
         if all:
             click.echo("Will stats ALL available cities")
-            d = get_db().get_departments()
+            d = db.get_departments()
         else:
             click.echo(f"Will stats given departments {items}")
             d = items
