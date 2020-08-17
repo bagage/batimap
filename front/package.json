@@ -30,7 +30,7 @@
         "@angular/platform-browser": "10.0.10",
         "@angular/platform-browser-dynamic": "10.0.10",
         "@angular/router": "10.0.10",
-        "@asymmetrik/ngx-leaflet": "8.0.0",
+        "@asymmetrik/ngx-leaflet": "8.1.0",
         "@bagage/leaflet.restoreview": "1.0.1",
         "@bagage/leaflet.vectorgrid": "2.0.0",
         "apexcharts": "3.20.0",
