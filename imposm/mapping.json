@@ -4,7 +4,7 @@
         "linear_tags": ["highway", "barrier"]
     },
     "tags": {
-        "include": ["power", "ruins", "historic", "ref:mhs"]
+        "load_all": true
     },
     "tables": {
         "buildings": {
