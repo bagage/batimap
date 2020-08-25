@@ -5,7 +5,6 @@ import { StatsDetailsDTO } from '../../classes/city.dto';
 import { DepartmentDTO } from '../../classes/department.dto';
 import { BatimapService } from '../../services/batimap.service';
 import { JosmService } from '../../services/josm.service';
-import { LegendService } from '../../services/legend.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 
 @Component({
@@ -19,10 +18,9 @@ export class DepartmentDetailsDialogComponent {
     lastImport: string;
 
     constructor(
-        @Inject(MAT_DIALOG_DATA) private readonly data: [DepartmentDTO, number],
+        @Inject(MAT_DIALOG_DATA) data: [DepartmentDTO, number],
         public josmService: JosmService,
         private readonly dialogRef: MatDialogRef<DepartmentDetailsDialogComponent>,
-        private readonly legendService: LegendService,
         private readonly matDialog: MatDialog,
         batimapService: BatimapService
     ) {
@@ -44,7 +42,7 @@ export class DepartmentDetailsDialogComponent {
     computeLastImport(): string {
         const d = this.department ? this.department.date : undefined;
         if (!d || d === 'never') {
-            return 'Le bâti n\'a en majorité jamais été importé.';
+            return "Le bâti n'a en majorité jamais été importé.";
         }
         if (d === 'raster') {
             return 'Département principalement raster.';
