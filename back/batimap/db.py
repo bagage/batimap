@@ -201,6 +201,7 @@ class Db(object):
             self.session.query(City.import_details["simplified"])
             .filter(City.department == str(insee))
             .filter(func.json_array_length(City.import_details["simplified"]) != 0)
+            .order_by(City.insee)
             .all()
         )
 

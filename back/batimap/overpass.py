@@ -33,8 +33,14 @@ class Overpass(object):
                 LOG.warning("{} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry))
                 if retry == 0:
                     raise e
-                # Sleep for n * 5 seconds before a new attempt
-                time.sleep(5 * round((10 - retry) / 3))
+                else:
+                    # Sleep for n * 5 seconds before a new attempt
+                    time.sleep(5 * round((10 - retry) / 3))
+            except Exception as e:
+                if retry == 0:
+                    raise e
+                else:
+                    LOG.warning(f"Unhandled exception occured: {e}, trying next endpoint")
         return None
 
     def get_city_buildings(self, city):
