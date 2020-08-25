@@ -68,7 +68,7 @@ if [ "$DO_IMPORT" = "true" ]; then
     echo "Waiting for postgis to be available..."
     while :
     do
-        pg_isready -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB
+        pg_isready -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB 1>/dev/null
         result=$?
         if [[ $result -eq 0 ]]; then
             break

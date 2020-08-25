@@ -68,17 +68,17 @@ class Boundary(Base):
 
 class Db(object):
     def __init__(self):
-        self.isInitialized = False
+        self.is_initialized = False
 
     def init_app(self, app, db):
         with app.app_context():
             City.metadata.create_all(db.engine)
         self.session = db.session
-        self.isInitialized = True
+        self.is_initialized = True
 
     def __isInitialized(func):
         def inner(self, *args, **kwargs):
-            if not self.isInitialized:
+            if not self.is_initialized:
                 LOG.warning("Db is not initialized yet!")
                 return
             return func(self, *args, **kwargs)
@@ -201,6 +201,7 @@ class Db(object):
             self.session.query(City.import_details["simplified"])
             .filter(City.department == str(insee))
             .filter(func.json_array_length(City.import_details["simplified"]) != 0)
+            .order_by(City.insee)
             .all()
         )
 

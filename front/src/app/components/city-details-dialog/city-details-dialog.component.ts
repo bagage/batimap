@@ -38,7 +38,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     lastImport: string;
 
     constructor(
-        @Inject(MAT_DIALOG_DATA) private readonly data: [CityDTO, number, any],
+        @Inject(MAT_DIALOG_DATA) data: [CityDTO, number, any],
         public josmService: JosmService,
         public batimapService: BatimapService,
         private readonly dialogRef: MatDialogRef<CityDetailsDialogComponent>,
