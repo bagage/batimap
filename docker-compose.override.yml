@@ -1,7 +1,9 @@
-version: '3'
+version: "3"
 services:
   postgis:
     build: postgis
+  ports:
+    - "5432:5432"
 
   imposm:
     build: imposm
@@ -9,41 +11,41 @@ services:
   imposm-watcher:
     build: imposm-watcher
     volumes:
-    - ./imposm-watcher/:/code
+      - ./imposm-watcher/:/code
 
   tiles:
     build: tiles
     ports:
-    - "9999:9999"
+      - "9999:9999"
     volumes:
-    - ./tiles/:/app
+      - ./tiles/:/app
 
   tiles-cleaner:
     build: tiles-cleaner
     volumes:
-    - ./tiles/:/app
+      - ./tiles/:/app
 
   celery:
     build: back
     volumes:
-    - ./back/:/code
+      - ./back/:/code
 
   back:
     build: back
     ports:
-    - "5000:5000"
+      - "5000:5000"
     volumes:
-    - ./back/:/code
-    - ./back/app-docker.conf/:/code/app.conf:ro
+      - ./back/:/code
+      - ./back/app-docker.conf/:/code/app.conf:ro
 
   front:
     build: front
     ports:
-    - "4200:4200"
+      - "4200:4200"
     volumes:
-    - ./front/:/usr/src/app
-    - ./data/front/node_modules/:/usr/src/app/node_modules
+      - ./front/:/usr/src/app
+      - ./data/front/node_modules/:/usr/src/app/node_modules
 
   redis:
     ports:
-      - '6379:6379'
+      - "6379:6379"
