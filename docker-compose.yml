@@ -1,46 +1,44 @@
-version: '3'
+version: "3"
 services:
   postgis:
     image: registry.gitlab.com/bagage/batimap/postgis
     env_file:
-    - ./.env
-    ports:
-    - "5432:5432"
+      - ./.env
     volumes:
-    - ./data/postgis:/var/lib/postgresql/data
+      - ./data/postgis:/var/lib/postgresql/data
 
   imposm:
     image: registry.gitlab.com/bagage/batimap/imposm
     env_file:
-    - ./.env
+      - ./.env
     entrypoint: bash /wait-for-it.sh -- /entrypoint.sh $$REGIONS
     depends_on:
-    - postgis
+      - postgis
     volumes:
-    - ./data/imposm:/data
+      - ./data/imposm:/data
 
   imposm-watcher:
     image: registry.gitlab.com/bagage/batimap/imposm-watcher
     volumes:
-    - ./data/imposm/updated-tiles:/data
+      - ./data/imposm/updated-tiles:/data
 
   tiles:
     image: registry.gitlab.com/bagage/batimap/tiles
     env_file:
-    - ./.env
+      - ./.env
     command: bash /wait-for-it.sh -- tegola --config $$CONFIG serve
     volumes:
-    - ./data/tiles/cache:/data/cache
+      - ./data/tiles/cache:/data/cache
     depends_on:
-    - postgis
+      - postgis
 
   tiles-cleaner:
     image: registry.gitlab.com/bagage/batimap/tiles-cleaner
     env_file:
-    - ./.env
+      - ./.env
     command: bash /entrypoint.sh
     volumes:
-    - ./data/tiles:/data
+      - ./data/tiles:/data
 
   redis:
     image: redis:5-alpine
@@ -51,28 +49,28 @@ services:
   celery:
     image: registry.gitlab.com/bagage/batimap/back
     env_file:
-    - ./.env
+      - ./.env
     command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info
     volumes:
-    - ./back/app-docker.conf/:/code/batimap/app.conf:ro
-    - ./data/tiles:/code/tiles
+      - ./back/app-docker.conf/:/code/batimap/app.conf:ro
+      - ./data/tiles:/code/tiles
     depends_on:
-    - redis
-    - postgis
+      - redis
+      - postgis
 
   back:
     image: registry.gitlab.com/bagage/batimap/back
     env_file:
-    - ./.env
+      - ./.env
     command: bash /wait-for-it.sh -- sh /entrypoint.sh
     volumes:
-    - ./back/app-docker.conf/:/code/batimap/app.conf:ro
-    - ./data/tiles:/code/tiles
+      - ./back/app-docker.conf/:/code/batimap/app.conf:ro
+      - ./data/tiles:/code/tiles
     depends_on:
-    - postgis
+      - postgis
 
   front:
     image: registry.gitlab.com/bagage/batimap/front
     depends_on:
-    - tiles
-    - back
+      - tiles
+      - back
