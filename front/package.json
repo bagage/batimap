@@ -54,7 +54,7 @@
         "@angular/language-service": "10.1.5",
         "@types/jasmine": "3.5.14",
         "@types/jasminewd2": "2.0.8",
-        "@types/leaflet": "1.5.18",
+        "@types/leaflet": "1.5.19",
         "@types/node": "13.13.25",
         "angular-tslint-rules": "1.20.4",
         "codelyzer": "6.0.1",
