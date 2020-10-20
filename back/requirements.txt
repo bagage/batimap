@@ -1,4 +1,4 @@
-beautifulsoup4==4.9.1
+beautifulsoup4==4.9.3
 celery[redis]==4.4.7
 Click==7.1.2
 Flask==1.1.2
