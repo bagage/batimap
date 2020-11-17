@@ -2,8 +2,8 @@ version: "3"
 services:
   postgis:
     build: postgis
-  ports:
-    - "5432:5432"
+    ports:
+      - "5432:5432"
 
   imposm:
     build: imposm
