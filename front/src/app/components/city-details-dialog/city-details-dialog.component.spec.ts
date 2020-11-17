@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgModule } from '@angular/core';
@@ -25,17 +25,19 @@ describe('CityDetailsDialogComponent', () => {
     let component: CityDetailsDialogComponent;
     let fixture: ComponentFixture<CityDetailsDialogComponent>;
 
-    beforeEach(async(() => {
-        TestBed.configureTestingModule({
-            declarations: [CityDetailsDialogComponent, JosmButtonComponent],
-            imports: [MatLibModule, HttpClientTestingModule, DialogTestModule, NoopAnimationsModule, PipesModule],
-            providers: [
-                { provide: MAT_DIALOG_DATA, useValue: {} },
-                { provide: MatDialogRef, useValue: {} },
-                { provide: AppConfigService, useClass: MockAppConfigService },
-            ],
-        }).compileComponents();
-    }));
+    beforeEach(
+        waitForAsync(() => {
+            TestBed.configureTestingModule({
+                declarations: [CityDetailsDialogComponent, JosmButtonComponent],
+                imports: [MatLibModule, HttpClientTestingModule, DialogTestModule, NoopAnimationsModule, PipesModule],
+                providers: [
+                    { provide: MAT_DIALOG_DATA, useValue: {} },
+                    { provide: MatDialogRef, useValue: {} },
+                    { provide: AppConfigService, useClass: MockAppConfigService },
+                ],
+            }).compileComponents();
+        })
+    );
 
     beforeEach(() => {
         fixture = TestBed.createComponent(CityDetailsDialogComponent);

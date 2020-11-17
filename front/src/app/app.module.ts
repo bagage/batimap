@@ -28,8 +28,9 @@ const appRoutes: Routes = [{ path: '**', component: MapComponent }];
         LeafletModule,
         MatProgressButtonsModule.forRoot(),
         RouterModule.forRoot(
-            appRoutes
+            appRoutes,
             // ,{enableTracing: true}
+            { relativeLinkResolution: 'legacy' }
         ),
     ],
     providers: [
