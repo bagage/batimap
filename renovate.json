@@ -11,7 +11,7 @@
         },
         {
             "packageNames": ["typescript"],
-            "allowedVersions": "<3.9.0"
+            "allowedVersions": "<4.1.0"
         }
     ]
 }

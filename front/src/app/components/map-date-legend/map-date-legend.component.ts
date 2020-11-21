@@ -1,6 +1,5 @@
 import { Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import * as L from 'leaflet';
 import { Observable } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { LegendDTO } from '../../classes/legend.dto';
@@ -11,6 +10,8 @@ import { LegendService } from '../../services/legend.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { CityDetailsDialogComponent } from '../city-details-dialog/city-details-dialog.component';
 import { MapDateLegendModel } from './map-date-legend.model';
+
+import * as L from 'leaflet';
 
 @Component({
     selector: 'app-map-date-legend',

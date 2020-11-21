@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatLibModule } from '../../mat-lib.module';
@@ -8,12 +8,14 @@ describe('HowtoDialogComponent', () => {
     let component: HowtoDialogComponent;
     let fixture: ComponentFixture<HowtoDialogComponent>;
 
-    beforeEach(async(() => {
-        TestBed.configureTestingModule({
-            declarations: [HowtoDialogComponent],
-            imports: [MatLibModule, NoopAnimationsModule],
-        }).compileComponents();
-    }));
+    beforeEach(
+        waitForAsync(() => {
+            TestBed.configureTestingModule({
+                declarations: [HowtoDialogComponent],
+                imports: [MatLibModule, NoopAnimationsModule],
+            }).compileComponents();
+        })
+    );
 
     beforeEach(() => {
         fixture = TestBed.createComponent(HowtoDialogComponent);

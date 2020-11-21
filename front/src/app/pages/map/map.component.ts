@@ -1,19 +1,19 @@
+import { ComponentType } from '@angular/cdk/overlay';
 import { AfterViewInit, Component, HostListener, NgZone, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute, Router } from '@angular/router';
 import { deserialize, plainToClass } from 'class-transformer';
+import { forkJoin, Observable, of } from 'rxjs';
 import { CityDTO, StatsDetailsDTO } from '../../classes/city.dto';
+import { DepartmentDTO } from '../../classes/department.dto';
 import { CityDetailsDialogComponent } from '../../components/city-details-dialog/city-details-dialog.component';
+import { DepartmentDetailsDialogComponent } from '../../components/department-details-dialog/department-details-dialog.component';
 import { MapDateLegendComponent } from '../../components/map-date-legend/map-date-legend.component';
 import { AppConfigService } from '../../services/app-config.service';
+import { BatimapService } from '../../services/batimap.service';
 import { LegendService } from '../../services/legend.service';
 
-import { ComponentType } from '@angular/cdk/overlay';
-import { ActivatedRoute, Router } from '@angular/router';
 import * as L from 'leaflet';
-import { forkJoin, Observable, of } from 'rxjs';
-import { DepartmentDTO } from '../../classes/department.dto';
-import { DepartmentDetailsDialogComponent } from '../../components/department-details-dialog/department-details-dialog.component';
-import { BatimapService } from '../../services/batimap.service';
 
 @Component({
     selector: 'app-map',

@@ -1,25 +1,28 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
-import * as L from 'leaflet';
 import { MatLibModule } from '../../mat-lib.module';
 import { AppConfigService } from '../../services/app-config.service';
 import { MockAppConfigService } from '../../services/app-config.service.mock';
 import { LoaderComponent } from '../loader/loader.component';
 import { MapDateLegendComponent } from './map-date-legend.component';
 
+import * as L from 'leaflet';
+
 describe('MapDateLegendComponent', () => {
     let component: MapDateLegendComponent;
     let fixture: ComponentFixture<MapDateLegendComponent>;
 
-    beforeEach(async(() => {
-        TestBed.configureTestingModule({
-            declarations: [MapDateLegendComponent, LoaderComponent],
-            imports: [MatLibModule, HttpClientTestingModule, LeafletModule],
-            providers: [MapDateLegendComponent, { provide: AppConfigService, useClass: MockAppConfigService }],
-        }).compileComponents();
-    }));
+    beforeEach(
+        waitForAsync(() => {
+            TestBed.configureTestingModule({
+                declarations: [MapDateLegendComponent, LoaderComponent],
+                imports: [MatLibModule, HttpClientTestingModule, LeafletModule],
+                providers: [MapDateLegendComponent, { provide: AppConfigService, useClass: MockAppConfigService }],
+            }).compileComponents();
+        })
+    );
 
     beforeEach(() => {
         fixture = TestBed.createComponent(MapDateLegendComponent);
