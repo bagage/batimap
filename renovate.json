@@ -1,9 +1,19 @@
 {
     "extends": ["config:base"],
+    "hostRules": [
+        {
+            "domainName": "github.com",
+            "encrypted": {
+                "token": "Kt9wYUILiWbXLTbEDILCcUo11gnUEqhUkKadDz84w6Tp9doXDd1PJnI0eJXkBdFarcZ8MDcr+vBLtMB8JnuC2vn5MmNTsNV0Z/j8GejuNWfnS0C6OFLaQ03T5vm7Un/fbdjK0P53iZ0mKWh7ygXNtByrCvng4MEOmSwtYWfjWDOeOdSyTMXXNZjDDw8lRtskDGdI2EoSv6bA5DInpJxqvdVNod7zQ+IqPIcPh8dD2ZnPNaQhziYu1KJeEQO0lrmAI7Nk0nN6/bfLTEDFUG5UV6uMP0wtjoyPzf93yQdC8YUPxcRcr4dRGykuefynzFIjW7XQ+gVOuvzb3pqa7AWoeQ=="
+            }
+        }
+    ],
+
     "automerge": true,
     "major": {
         "automerge": false
     },
+
     "packageRules": [
         {
             "groupName": "angular",
