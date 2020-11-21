@@ -13,7 +13,7 @@ RUN pip install -r requirements.txt
 
 FROM base
 
-RUN apt update && apt install -yy --no-install-recommends postgresql-client libxml2 libxslt1.1 redis && apt clean
+RUN apt update && apt install -yy --no-install-recommends postgresql-client libxml2 libxslt1.1 redis libgeos-c1v5 && apt clean
 
 COPY --from=builder /usr/local /usr/local
 
