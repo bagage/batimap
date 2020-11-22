@@ -59,6 +59,7 @@
     ></mat-bar-button>
     <app-josm-button
         [city]="city"
+        [osmID]="osmID"
         [josmReady]="josmIsStarted | async"
         (newerDate)="cityDateChanged($event)"
     ></app-josm-button>
