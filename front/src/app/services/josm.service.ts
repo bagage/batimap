@@ -23,43 +23,52 @@ export class JosmService {
         );
     }
 
-    openCityInJosm(city: CityDTO, dto: ConflateCityDTO): Observable<any> {
+    openCityInJosm(city: CityDTO, osmID: number, dto: ConflateCityDTO): Observable<any> {
         if (!dto) {
             console.log(`Asked to open ${city.name} in JOSM, but no data. Ignoring`);
 
             return EMPTY;
         }
-        const imagery = this.JOSM_URL_BDORTHO_IMAGERY();
-        const buildings = this.JOSM_URL_OPEN_FILE(dto.buildingsUrl, false);
-        const segmented = this.JOSM_URL_OPEN_FILE(
+        const imagery$ = this.josmUrlImageryBdortho$();
+        const buildings$ = this.josmUrlImport$(dto.buildingsUrl, false);
+        const segmented$ = this.josmUrlImport$(
             dto.segmententationPredictionssUrl,
             false // cannot be locked otherwise todo plugin wont work
         );
-        const osm = this.JOSM_URL_OSM_DATA_FOR_BBOX(
-            `Données OSM pour ${city.insee} - ${city.name}`,
-            dto.bbox[0].toString(),
-            dto.bbox[1].toString(),
-            dto.bbox[2].toString(),
-            dto.bbox[3].toString()
+
+        // for OSM data first we create the layer, then we try to load data
+        // cf https://gitlab.com/bagage/batimap/-/issues/70
+        const osmLayer = `Données OSM pour ${city.insee} - ${city.name}`;
+        const osm$ = this.josmUrlLoadObject$(`r${osmID}`, osmLayer).pipe(
+            switchMap(() =>
+                this.josmUrlLoadAndZoom$(
+                    false,
+                    osmLayer,
+                    dto.bbox[0].toString(),
+                    dto.bbox[1].toString(),
+                    dto.bbox[2].toString(),
+                    dto.bbox[3].toString()
+                )
+            )
         );
 
-        return forkJoin(imagery, segmented, buildings, osm);
+        return forkJoin([imagery$, segmented$, buildings$, osm$]);
     }
 
     openNodes(nodes: [number], insee: string, name: string): Observable<any> {
         const n = `n${nodes.join(',n')}`;
         const plural = nodes.length > 1 ? 's' : '';
 
-        return forkJoin(
-            this.JOSM_URL_BDORTHO_IMAGERY(),
-            this.JOSM_URL_LOAD_OBJECTS(
+        return forkJoin([
+            this.josmUrlImageryBdortho$(),
+            this.josmUrlLoadObject$(
                 n,
                 `Bâtiment${plural} simplifié${plural} dans ${insee} - ${name} (${nodes.join(', ')})`
-            )
-        );
+            ),
+        ]);
     }
 
-    private JOSM_URL_BDORTHO_IMAGERY(): Observable<string> {
+    private josmUrlImageryBdortho$(): Observable<string> {
         const title = 'BDOrtho IGN';
         const url = 'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg';
 
@@ -73,7 +82,7 @@ export class JosmService {
         });
     }
 
-    private JOSM_URL_OPEN_FILE(url: string, locked: boolean): Observable<string> {
+    private josmUrlImport$(url: string, locked: boolean): Observable<string> {
         // first ensure that the file exists, then load it into JOSM
         return this.http.head(url, HttpErrorInterceptor.ByPassInterceptor()).pipe(
             catchError(e => {
@@ -99,7 +108,8 @@ export class JosmService {
         );
     }
 
-    private JOSM_URL_OSM_DATA_FOR_BBOX(
+    private josmUrlLoadAndZoom$(
+        newLayer: boolean,
         layerName: string,
         left: string,
         right: string,
@@ -109,7 +119,7 @@ export class JosmService {
         return this.http.get(`${this.JOSM_URL_BASE}load_and_zoom`, {
             responseType: 'text',
             params: {
-                new_layer: 'true',
+                new_layer: newLayer ? 'true' : 'false',
                 layer_name: layerName,
                 left,
                 right,
@@ -119,7 +129,7 @@ export class JosmService {
         });
     }
 
-    private JOSM_URL_LOAD_OBJECTS(objects: string, layerName: string): Observable<any> {
+    private josmUrlLoadObject$(objects: string, layerName: string): Observable<any> {
         return this.http.get(`${this.JOSM_URL_BASE}load_object`, {
             responseType: 'text',
             params: {

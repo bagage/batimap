@@ -58,6 +58,8 @@ export class JosmButtonComponent extends Unsubscriber {
         this.options.disabled = this._city.josm_ready && !value;
     }
 
+    @Input() osmID: number;
+
     constructor(
         private readonly josmService: JosmService,
         private readonly batimapService: BatimapService,
@@ -96,7 +98,9 @@ export class JosmButtonComponent extends Unsubscriber {
 
     private conflateCity(): Observable<any> {
         return this.prepareCity().pipe(
-            switchMap(dto => (dto instanceof TaskProgress ? of(dto) : this.josmService.openCityInJosm(this._city, dto)))
+            switchMap(dto =>
+                dto instanceof TaskProgress ? of(dto) : this.josmService.openCityInJosm(this._city, this.osmID, dto)
+            )
         );
     }
 
