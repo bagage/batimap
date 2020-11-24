@@ -128,7 +128,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
 
     generateOverpassQuery() {
         this.overpassQuery = `[out:xml][timeout:600];
-{{geocodeArea:"${this.city.insee}, France"}}->.searchArea;
+{{geocodeArea:"${this.city.name}, France"}}->.searchArea;
 (
 nwr(area.searchArea);
 );
