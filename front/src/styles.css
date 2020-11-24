@@ -31,3 +31,8 @@
     -moz-font-feature-settings: 'liga';
     -moz-osx-font-smoothing: grayscale;
 }
+
+pre {
+    background: hsl(30, 80%, 90%);
+    padding: 10px;
+}

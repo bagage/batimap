@@ -23,6 +23,10 @@ export class JosmService {
         );
     }
 
+    getOsmLayer(city: CityDTO): string {
+        return `Données OSM pour ${city.insee} - ${city.name}`;
+    }
+
     openCityInJosm(city: CityDTO, osmID: number, dto: ConflateCityDTO): Observable<any> {
         if (!dto) {
             console.log(`Asked to open ${city.name} in JOSM, but no data. Ignoring`);
@@ -38,12 +42,11 @@ export class JosmService {
 
         // for OSM data first we create the layer, then we try to load data
         // cf https://gitlab.com/bagage/batimap/-/issues/70
-        const osmLayer = `Données OSM pour ${city.insee} - ${city.name}`;
-        const osm$ = this.josmUrlLoadObject$(`r${osmID}`, osmLayer).pipe(
+        const osm$ = this.josmUrlLoadObject$(`r${osmID}`, this.getOsmLayer(city)).pipe(
             switchMap(() =>
                 this.josmUrlLoadAndZoom$(
                     false,
-                    osmLayer,
+                    this.getOsmLayer(city),
                     dto.bbox[0].toString(),
                     dto.bbox[1].toString(),
                     dto.bbox[2].toString(),
@@ -117,6 +120,7 @@ export class JosmService {
         top: string
     ): Observable<string> {
         return this.http.get(`${this.JOSM_URL_BASE}load_and_zoom`, {
+            headers: HttpErrorInterceptor.ByPassInterceptor().headers,
             responseType: 'text',
             params: {
                 new_layer: newLayer ? 'true' : 'false',
