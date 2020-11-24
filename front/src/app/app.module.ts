@@ -1,7 +1,7 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
@@ -48,7 +48,7 @@ const appRoutes: Routes = [{ path: '**', component: MapComponent }];
         },
         // allow custom icons in howto stepper
         {
-            provide: MAT_STEPPER_GLOBAL_OPTIONS,
+            provide: STEPPER_GLOBAL_OPTIONS,
             useValue: { displayDefaultIndicatorType: false },
         },
         // {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {maxWidth: '700px'}},

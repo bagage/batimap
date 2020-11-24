@@ -23,6 +23,7 @@ import { JosmService } from '../../services/josm.service';
 })
 export class JosmButtonComponent extends Unsubscriber {
     @Output() readonly newerDate = new EventEmitter<CityDTO>();
+    @Output() readonly downloadFailedTooBig = new EventEmitter<void>();
 
     options = {
         active: false,
@@ -36,6 +37,8 @@ export class JosmButtonComponent extends Unsubscriber {
         disabled: false,
         tooltip: '',
     };
+
+    @Input() osmID: number;
     private _city: CityDTO;
     @Input()
     set city(value: CityDTO) {
@@ -57,8 +60,6 @@ export class JosmButtonComponent extends Unsubscriber {
     set josmReady(value: boolean) {
         this.options.disabled = this._city.josm_ready && !value;
     }
-
-    @Input() osmID: number;
 
     constructor(
         private readonly josmService: JosmService,
@@ -90,7 +91,14 @@ export class JosmButtonComponent extends Unsubscriber {
                         this.changeDetector.detectChanges();
                     }
                 },
-                onEnd,
+                error => {
+                    onEnd();
+                    if (error.status === 502) {
+                        this.downloadFailedTooBig.emit();
+                    } else {
+                        throw error;
+                    }
+                },
                 onEnd
             )
         );

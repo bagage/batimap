@@ -17,6 +17,7 @@
         "typedef": false,
         "no-void-expression": false,
         "no-import-side-effect": false,
+        "template-no-call-expression": false, // fixme
         "template-cyclomatic-complexity": false, //fixme
         "no-require-imports": false, // fixme?
         "template-use-track-by-function": false, // fixme

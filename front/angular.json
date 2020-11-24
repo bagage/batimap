@@ -30,6 +30,7 @@
                         ],
                         "styles": [
                             "src/styles.css",
+                            "src/alerts.css",
                             "node_modules/leaflet/dist/leaflet.css",
                             "node_modules/leaflet-geocoder-ban/dist/leaflet-geocoder-ban.min.css"
                         ],
