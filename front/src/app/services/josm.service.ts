@@ -46,7 +46,7 @@ export class JosmService {
             switchMap(() =>
                 this.josmUrlLoadAndZoom$(
                     false,
-                    this.getOsmLayer(city),
+                    undefined,
                     dto.bbox[0].toString(),
                     dto.bbox[1].toString(),
                     dto.bbox[2].toString(),
@@ -55,7 +55,7 @@ export class JosmService {
             )
         );
 
-        return forkJoin([imagery$, segmented$, buildings$, osm$]);
+        return forkJoin([imagery$, segmented$, buildings$]).pipe(switchMap(() => osm$));
     }
 
     openNodes(nodes: [number], insee: string, name: string): Observable<any> {
@@ -124,7 +124,7 @@ export class JosmService {
             responseType: 'text',
             params: {
                 new_layer: newLayer ? 'true' : 'false',
-                layer_name: layerName,
+                layer_name: newLayer ? layerName : undefined, // unsupported
                 left,
                 right,
                 bottom,
