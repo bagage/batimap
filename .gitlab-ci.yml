@@ -67,7 +67,12 @@ build:tiles-cleaner:
 
 build:postgis:
   <<: *build_docker_image
-  when: manual
+  only:
+    refs:
+      - master
+    changes:
+      - .gitlab-ci.yml
+      - postgis/**/*
   variables:
     CONTAINER: postgis
     DOCKERFILE: Dockerfile
