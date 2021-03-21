@@ -10,9 +10,9 @@ class Overpass(object):
     # from https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
     instances_endpoints = [
         "https://overpass-api.de/api/interpreter",
-        "http://overpass.openstreetmap.fr/api/interpreter",
         "https://overpass.nchc.org.tw/api/interpreter",
         "https://overpass.kumi.systems/api/interpreter",
+        "http://overpass.openstreetmap.fr/api/interpreter",
     ]
 
     def __init__(self):
@@ -25,9 +25,9 @@ class Overpass(object):
         apis = len(self.__apis)
         for retry in range(9, 0, -1):
             try:
-                self.__request += 1
                 api = self.__apis[self.__request % apis]
                 LOG.warning(f"Executing Overpass on server {api.endpoint} with request:\n{request}")
+                self.__request += 1
                 return api.Get(request, responseformat=output_format, build=False)
             except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
                 LOG.warning("{} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry))
