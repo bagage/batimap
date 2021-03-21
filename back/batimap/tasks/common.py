@@ -88,12 +88,13 @@ def task_josm_data(self, insee):
 
 @celery.task(bind=True)
 def task_update_insee(self, insee):
-    before = db.get_city_for_insee(insee)
+    task_progress(self, 1)
+    before = db.get_city_for_insee(insee).import_date
     task_progress(self, 50)
     city = next(batimap.stats(names_or_insees=[insee], force=True))
     task_progress(self, 99)
 
-    if city.import_date != before.import_date:
+    if city.import_date != before:
         batimap.clear_tiles(insee)
     task_progress(self, 100)
 
