@@ -58,7 +58,7 @@ export class JosmService {
         return forkJoin([imagery$, segmented$, buildings$]).pipe(switchMap(() => osm$));
     }
 
-    openNodes(nodes: [number], insee: string, name: string): Observable<any> {
+    openNodes(nodes: number[], insee: string, name: string): Observable<any> {
         const n = `n${nodes.join(',n')}`;
         const plural = nodes.length > 1 ? 's' : '';
 
