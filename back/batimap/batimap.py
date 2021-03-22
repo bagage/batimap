@@ -25,6 +25,7 @@ class Batimap(object):
     NO_BUILDING_CITIES = [
         "09260",
         "11082",
+        "25501",
         "25573",
         "26030",
         "2B221",
