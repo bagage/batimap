@@ -122,7 +122,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.computeLastImport();
     }
 
-    editNode(nodes: [number]) {
+    editNodes(nodes: number[]) {
         this.josmService.openNodes(nodes, this.city.insee, this.city.name).subscribe();
     }
 

@@ -15,9 +15,9 @@
 
     <apx-chart
         *ngIf="(city.details?.dates | count) > 0"
-        [labels]="city.details.dates | keyvalue | map: 'key' | legend"
-        [series]="city.details.dates | keyvalue | map: 'value'"
-        [colors]="city.details.dates | keyvalue | map: 'key' | legend: 'color'"
+        [labels]="city.details.dates | keyvalue | map: 'key' | legend | any"
+        [series]="city.details.dates | keyvalue | map: 'value' | any"
+        [colors]="city.details.dates | keyvalue | map: 'key' | legend: 'color' | any"
         [chart]="{ type: 'donut', height: 300 }"
         [legend]="{ position: 'bottom' }"
         [title]="{ text: 'Nombre de bâtiments par date d\'import', align: 'center' }"

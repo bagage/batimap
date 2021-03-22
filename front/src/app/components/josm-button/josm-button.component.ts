@@ -7,6 +7,7 @@ import {
     Input,
     Output,
 } from '@angular/core';
+import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable, of } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
 import { CityDTO } from '../../classes/city.dto';
@@ -25,7 +26,7 @@ export class JosmButtonComponent extends Unsubscriber {
     @Output() readonly newerDate = new EventEmitter<CityDTO>();
     @Output() readonly downloadFailedTooBig = new EventEmitter<void>();
 
-    options = {
+    options: MatProgressButtonOptions = {
         active: false,
         text: '',
         buttonColor: 'primary',
@@ -35,8 +36,8 @@ export class JosmButtonComponent extends Unsubscriber {
         mode: 'indeterminate',
         value: 0,
         disabled: false,
-        tooltip: '',
     };
+    tooltip = '';
 
     @Input() osmID: number;
     private _city: CityDTO;
@@ -44,13 +45,13 @@ export class JosmButtonComponent extends Unsubscriber {
     set city(value: CityDTO) {
         this._city = value;
         if (value.josm_ready) {
-            this.options.tooltip =
+            this.tooltip =
                 'Ouvre JOSM avec les calques préconfigurés pour la commune sélectionnée. ' +
                 "Si le bouton n'est pas actif, JOSM n'est probablement pas démarré. [Raccourci : J]";
             this.options.text = 'JOSM';
             this.options.barColor = this.options.buttonColor = 'primary';
         } else {
-            this.options.tooltip = 'Prépare les données pour pouvoir être ensuite éditer avec JOSM. [Raccourci : P]';
+            this.tooltip = 'Prépare les données pour pouvoir être ensuite éditer avec JOSM. [Raccourci : P]';
             this.options.text = 'Préparer';
             this.options.barColor = this.options.buttonColor = 'accent';
         }

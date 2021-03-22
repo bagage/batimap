@@ -16,9 +16,9 @@
     <ng-container *ngIf="details$ | async as details">
         <apx-chart
             *ngIf="(details?.dates | count) > 0"
-            [labels]="details.dates | keyvalue | map: 'key' | legend"
-            [series]="details.dates | keyvalue | map: 'value'"
-            [colors]="details.dates | keyvalue | map: 'key' | legend: 'color'"
+            [labels]="details.dates | keyvalue | map: 'key' | legend | any"
+            [series]="details.dates | keyvalue | map: 'value' | any"
+            [colors]="details.dates | keyvalue | map: 'key' | legend: 'color' | any"
             [chart]="{ type: 'donut', height: 300 }"
             [legend]="{ position: 'bottom' }"
             [title]="{ text: 'Nombre de communes par date d\'import', align: 'center' }"
