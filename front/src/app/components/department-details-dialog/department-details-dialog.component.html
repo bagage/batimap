@@ -27,7 +27,7 @@
         <div *ngIf="(details?.simplified | count) > 0">
             <h4>
                 {{ details.simplified | count }} Bâtiments simplifiés
-                <a (click)="editNodes(details.simplified)">
+                <a href="" (click)="editNodes(details.simplified)">
                     <mat-icon svgIcon="josm"></mat-icon>
                 </a>
             </h4>
@@ -37,7 +37,7 @@
                     <a href="https://www.openstreetmap.org/node/{{ i }}" target="_blank">
                         <mat-icon svgIcon="osm"></mat-icon>
                     </a>
-                    <a (click)="editNodes([i])">
+                    <a href="" (click)="editNodes([i])">
                         <mat-icon svgIcon="josm"></mat-icon>
                     </a>
                 </li>
