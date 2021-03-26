@@ -44,19 +44,6 @@
     </div>
 
     <div *ngIf="moreRecentDate">La date d'import du bâti a été mise à jour !<br /></div>
-
-    <div *ngIf="overpassQuery" class="alert alert-warning">
-        <h4>Téléchargement via Overpass</h4>
-
-        <p>
-            Le téléchargement direct des données via JOSM a échoué.<br />
-            Sélectionnez la couche <i>{{ josmService.getOsmLayer(city) }}</i
-            ><br />
-            puis utilisez la requête Overpass suivante à la place :<br />
-        </p>
-
-        <pre>{{ overpassQuery }}</pre>
-    </div>
 </mat-dialog-content>
 <mat-dialog-actions class="row-wrapper">
     <button mat-raised-button cdkFocusInitial mat-dialog-close matTooltip="Ferme la popup. [Raccourci : F]">
@@ -75,6 +62,5 @@
         [osmID]="osmID"
         [josmReady]="josmIsStarted | async"
         (newerDate)="cityDateChanged($event)"
-        (downloadFailedTooBig)="generateOverpassQuery()"
     ></app-josm-button>
 </mat-dialog-actions>

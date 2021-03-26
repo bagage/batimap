@@ -20,9 +20,7 @@
                 >.
             </p>
             <div>
-                <button mat-button color="primary" matStepperNext>
-                    J'ai compris
-                </button>
+                <button mat-button color="primary" matStepperNext>J'ai compris</button>
             </div>
         </mat-step>
         <mat-step>
@@ -38,9 +36,7 @@
                 dans le passé.
             </p>
             <div>
-                <button mat-button color="primary" matStepperNext>
-                    Continuer
-                </button>
+                <button mat-button color="primary" matStepperNext>Continuer</button>
             </div>
         </mat-step>
         <mat-step>
@@ -82,9 +78,7 @@
                 dans le passé.
             </p>
             <div>
-                <button mat-button color="primary" matStepperNext>
-                    Continuer
-                </button>
+                <button mat-button color="primary" matStepperNext>Continuer</button>
             </div>
         </mat-step>
         <mat-step>
@@ -95,24 +89,15 @@
                 cadastrales en cliquant sur le bouton «Préparer». Lorsque la commune est prête (quelques minutes), un
                 bouton «JOSM» s'affiche à la place.
             </p>
-            <p>
-                Cliquer sur le bouton «JOSM» lorsqu'il est disponible. Cela va ouvrir 4 calques dans JOSM :
-            </p>
+            <p>Cliquer sur le bouton «JOSM» lorsqu'il est disponible. Cela va ouvrir 4 calques dans JOSM :</p>
             <ol>
                 <li>le fond de carte BDOrtho IGN,</li>
                 <li>le fichier du bâti simplifié,</li>
                 <li>le fichier du bâti segmenté, s'il existe,</li>
-                <li>
-                    les données OSM de la commune.<br />
-                    Si la requête échoue (commune trop grosse), il est possible de la récupérer via
-                    <a target="_blank" href="http://overpass-turbo.eu/s/GRD">la requête Overpass suivante</a>,
-                    <b>dans un calque nommé «Données OSM pour NOM COMMUNE»</b>.
-                </li>
+                <li>les données OSM de la commune.</li>
             </ol>
             <div>
-                <button mat-button color="primary" matStepperNext>
-                    Continuer
-                </button>
+                <button mat-button color="primary" matStepperNext>Continuer</button>
             </div>
         </mat-step>
         <mat-step>
@@ -124,21 +109,15 @@
                     Ouvrir la fenêtre Todo via le menu
                     <code>Fenêtres/Liste des tâches</code>,
                 </li>
-                <li>
-                    Enfin, vérifier les signalements et fusionner les bâtiments qui le nécessitent.
-                </li>
+                <li>Enfin, vérifier les signalements et fusionner les bâtiments qui le nécessitent.</li>
             </ol>
             <div>
-                <button mat-button color="primary" matStepperNext>
-                    Continuer
-                </button>
+                <button mat-button color="primary" matStepperNext>Continuer</button>
             </div>
         </mat-step>
         <mat-step>
             <ng-template matStepLabel>Mise à jour du bâti</ng-template>
-            <p>
-                Il reste à mettre à jour le bâti dans OpenstreetMap. Pour cela :
-            </p>
+            <p>Il reste à mettre à jour le bâti dans OpenstreetMap. Pour cela :</p>
             <ol>
                 <li>
                     Lancer le script <code>B-conflation.js</code>, via le menu <code>Scripting/Run…</code> qui configure
@@ -154,30 +133,22 @@
                 </li>
             </ol>
             <div>
-                <button mat-button color="primary" matStepperNext>
-                    Continuer
-                </button>
+                <button mat-button color="primary" matStepperNext>Continuer</button>
             </div>
         </mat-step>
         <mat-step>
             <ng-template matStepLabel>Validation</ng-template>
-            <p>
-                Il ne reste plus qu'à vérifier qu'il n'y a pas d'erreurs dans les données. Pour cela :
-            </p>
+            <p>Il ne reste plus qu'à vérifier qu'il n'y a pas d'erreurs dans les données. Pour cela :</p>
             <ol>
                 <li>
                     Ouvrir la fenêtre Validation via le menu
                     <code>Fenêtres/Résultat de validation</code>,
                 </li>
                 <li>Cliquer sur «Valider»,</li>
-                <li>
-                    Corriger les erreurs éventuelles (chevauchement de bâtiments et routes, etc.).
-                </li>
+                <li>Corriger les erreurs éventuelles (chevauchement de bâtiments et routes, etc.).</li>
             </ol>
             <div>
-                <button mat-button color="primary" matStepperNext>
-                    Continuer
-                </button>
+                <button mat-button color="primary" matStepperNext>Continuer</button>
             </div>
         </mat-step>
         <mat-step>
@@ -187,9 +158,7 @@
                 bouton «Rafraîchir» du site afin que la carte se mette à jour. Félicitations !
             </p>
             <div>
-                <button mat-raised-button color="primary" [mat-dialog-close]="true">
-                    Terminer
-                </button>
+                <button mat-raised-button color="primary" [mat-dialog-close]="true">Terminer</button>
             </div>
         </mat-step>
     </mat-vertical-stepper>
