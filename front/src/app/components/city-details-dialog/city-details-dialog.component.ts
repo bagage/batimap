@@ -36,7 +36,6 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     };
     moreRecentDate: boolean;
     lastImport: string;
-    overpassQuery: string;
 
     constructor(
         @Inject(MAT_DIALOG_DATA) data: [CityDTO, number, any],
@@ -124,14 +123,5 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
 
     editNodes(nodes: number[]) {
         this.josmService.openNodes(nodes, this.city.insee, this.city.name).subscribe();
-    }
-
-    generateOverpassQuery() {
-        this.overpassQuery = `[out:xml][timeout:600];
-{{geocodeArea:"${this.city.name}, France"}}->.searchArea;
-(
-nwr(area.searchArea);
-);
-out meta; >; out meta qt;`;
     }
 }

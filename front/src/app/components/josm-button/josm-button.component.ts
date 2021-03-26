@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable, of } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { CityDTO } from '../../classes/city.dto';
 import { ConflateCityDTO } from '../../classes/conflate-city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
@@ -24,7 +24,6 @@ import { JosmService } from '../../services/josm.service';
 })
 export class JosmButtonComponent extends Unsubscriber {
     @Output() readonly newerDate = new EventEmitter<CityDTO>();
-    @Output() readonly downloadFailedTooBig = new EventEmitter<void>();
 
     options: MatProgressButtonOptions = {
         active: false,
@@ -38,6 +37,7 @@ export class JosmButtonComponent extends Unsubscriber {
         disabled: false,
     };
     tooltip = '';
+    overpassAPI = 'https://overpass-api.de/api/interpreter?data=';
 
     @Input() osmID: number;
     private _city: CityDTO;
@@ -70,17 +70,44 @@ export class JosmButtonComponent extends Unsubscriber {
         super();
     }
 
+    generateOverpassQuery(name: string) {
+        return `[out:xml][timeout:600];
+    {{geocodeArea:"${name}, France"}}->.searchArea;
+    (
+    nwr(area.searchArea);
+    );
+    out meta; >; out meta qt;`;
+    }
+
     @HostListener('document:keydown.j') onClick() {
         this.options.active = true;
-        const obs = this._city.josm_ready ? this.conflateCity() : this.prepareCity();
         const onEnd = () => {
             this.options.active = false;
             this.options.text = this.options.text.replace(/ \(.*\)/, '');
             this.changeDetector.detectChanges();
         };
 
+        const obs$ = (this._city.josm_ready ? this.conflateCity() : this.prepareCity()).pipe(
+            catchError(error => {
+                // use overpass query to download when city is too big for JOSM
+                if (error && error.status === 502) {
+                    const encodedUrl =
+                        this.overpassAPI + encodeURIComponent(this.generateOverpassQuery(this._city.name));
+
+                    return this.josmService.josmUrlImport$(
+                        encodedUrl,
+                        false,
+                        false,
+                        this.josmService.getOsmLayer(this._city)
+                    );
+                }
+
+                throw error;
+            })
+        );
+
         this.autoUnsubscribe(
-            obs.subscribe(
+            obs$.subscribe(
                 progress => {
                     if (progress && progress.current !== undefined) {
                         const prog = ` (${progress.current}%)`;
@@ -92,14 +119,7 @@ export class JosmButtonComponent extends Unsubscriber {
                         this.changeDetector.detectChanges();
                     }
                 },
-                error => {
-                    onEnd();
-                    if (error.status === 502) {
-                        this.downloadFailedTooBig.emit();
-                    } else {
-                        throw error;
-                    }
-                },
+                onEnd,
                 onEnd
             )
         );

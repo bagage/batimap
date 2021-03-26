@@ -34,9 +34,10 @@ export class JosmService {
             return EMPTY;
         }
         const imagery$ = this.josmUrlImageryBdortho$();
-        const buildings$ = this.josmUrlImport$(dto.buildingsUrl, false);
+        const buildings$ = this.josmUrlImport$(dto.buildingsUrl, true, false);
         const segmented$ = this.josmUrlImport$(
             dto.segmententationPredictionssUrl,
+            true,
             false // cannot be locked otherwise todo plugin wont work
         );
 
@@ -71,6 +72,37 @@ export class JosmService {
         ]);
     }
 
+    josmUrlImport$(url: string, checkExists: boolean, locked: boolean, layerName?: string): Observable<string> {
+        // first ensure that the file exists, then load it into JOSM
+        return (checkExists ? this.http.head(url, HttpErrorInterceptor.ByPassInterceptor()) : of(true)).pipe(
+            catchError(e => {
+                console.warn('OSM data at url', url, 'could not be found, not opening it in JOSM', e);
+
+                return of('no segmentation');
+            }),
+            switchMap(a => {
+                if (a === 'no segmentation') {
+                    return of('no segmentation');
+                }
+
+                const params: any = {
+                    new_layer: layerName === undefined ? 'true' : 'false',
+                    upload_policy: locked ? 'never' : 'true',
+                    layer_locked: `${locked}`,
+                };
+                if (layerName) {
+                    params.layer_name = layerName;
+                }
+                params.url = url;
+
+                return this.http.get(`${this.JOSM_URL_BASE}import`, {
+                    responseType: 'text',
+                    params,
+                });
+            })
+        );
+    }
+
     private josmUrlImageryBdortho$(): Observable<string> {
         const title = 'BDOrtho IGN';
         const url = 'http://proxy-ign.openstreetmap.fr/bdortho/{z}/{x}/{y}.jpg';
@@ -83,32 +115,6 @@ export class JosmService {
                 url,
             },
         });
-    }
-
-    private josmUrlImport$(url: string, locked: boolean): Observable<string> {
-        // first ensure that the file exists, then load it into JOSM
-        return this.http.head(url, HttpErrorInterceptor.ByPassInterceptor()).pipe(
-            catchError(e => {
-                console.warn('OSM data at url', url, 'could not be found, not opening it in JOSM', e);
-
-                return of('no segmentation');
-            }),
-            switchMap(a => {
-                if (a !== 'no segmentation') {
-                    return this.http.get(`${this.JOSM_URL_BASE}import`, {
-                        responseType: 'text',
-                        params: {
-                            new_layer: 'true',
-                            upload_policy: locked ? 'never' : 'true',
-                            layer_locked: `${locked}`,
-                            url,
-                        },
-                    });
-                }
-
-                return of('no segmentation');
-            })
-        );
     }
 
     private josmUrlLoadAndZoom$(
