@@ -91,6 +91,7 @@ export class MapComponent implements AfterViewInit {
             color,
             opacity: visible ? 1 : 0.08,
             fill: true,
+            interactive: visible,
             radius: type === 'point' ? (zoom === 8 ? 4 : 2) : 1,
             fillOpacity: visible ? (properties.josm_ready ? 0.8 : 0.4) : 0.08,
         };
