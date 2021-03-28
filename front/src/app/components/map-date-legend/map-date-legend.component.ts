@@ -1,7 +1,7 @@
 import { Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { combineLatest, concat, Observable, of, zip } from 'rxjs';
+import { catchError, map, switchMap, tap, toArray } from 'rxjs/operators';
 import { LegendDTO } from '../../classes/legend.dto';
 import { ObsoleteCityDTO } from '../../classes/obsolete-city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
@@ -49,28 +49,45 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
 
     refreshLegend() {
         const bounds = this.map.getBounds();
-        if (!this.bounds || this.bounds.toBBoxString() !== bounds.toBBoxString()) {
-            this.bounds = bounds;
-            this.error = false;
-            this.legendItems$ = this.batimapService.legendForBbox(this.bounds).pipe(
-                catchError(err => {
-                    this.error = true;
-                    throw err;
-                }),
-                map(items =>
-                    items.map(
-                        it =>
-                            new MapDateLegendModel(
-                                it.name,
-                                it.checked,
-                                it.count,
-                                it.percent,
-                                this.legendService.date2name(it.name),
-                                this.legendService.date2color(it.name)
-                            )
-                    )
+        if (this.bounds && this.bounds.toBBoxString() === bounds.toBBoxString()) {
+            return;
+        }
+
+        this.bounds = bounds;
+        this.error = false;
+        this.legendItems$ = this.batimapService.legendForBbox(this.bounds).pipe(
+            catchError(err => {
+                this.error = true;
+                throw err;
+            }),
+            map(items =>
+                items.map(
+                    it =>
+                        new MapDateLegendModel(
+                            it.name,
+                            it.checked,
+                            it.count,
+                            it.percent,
+                            this.legendService.date2name(it.name),
+                            this.legendService.date2color(it.name)
+                        )
                 )
-            );
+            )
+        );
+        if (this.batimapService.ignoredInsees().length > 0) {
+            this.legendItems$ = zip(
+                of([
+                    new MapDateLegendModel(
+                        'ignored',
+                        this.legendService.isActive('ignored'),
+                        this.batimapService.ignoredInsees().length,
+                        undefined,
+                        this.legendService.date2name('ignored'),
+                        this.legendService.date2color('ignored')
+                    ),
+                ]),
+                this.legendItems$
+            ).pipe(map(result => result[0].concat(result[1])));
         }
     }
 

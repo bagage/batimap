@@ -87,8 +87,10 @@ class Db(object):
 
     @staticmethod
     def __filter_city(query, insee=None):
-        filt = query.filter(Boundary.admin_level >= 8)
-        return filt.filter(Boundary.insee == insee) if insee else filt
+        filtered = query.filter(Boundary.admin_level >= 8)
+        if insee:
+            filtered = filtered.filter(Boundary.insee == insee).order_by(Boundary.admin_level)
+        return filtered
 
     @staticmethod
     def __build_srid(bbox: Bbox):
@@ -129,7 +131,7 @@ class Db(object):
     def get_city_bbox(self, insee):
         # first() is required because of multipolygons cities (76218 - Doudeauville for instance)
         return Bbox.from_pg(
-            self.__filter_city(self.session.query(func.Box2D(Boundary.geometry)), insee).order_by(Boundary.admin_level).first()[0]
+            self.__filter_city(self.session.query(func.Box2D(Boundary.geometry)), insee).first()[0]
         )
 
     @__isInitialized
@@ -283,7 +285,6 @@ class Db(object):
     def get_point_buildings_per_city_for_insee(self, insee, ignored_buildings, ignored_tags):
         GeoCities = (
             self.__filter_city(self.session.query(Boundary.insee, Boundary.name, City.is_raster, Boundary.geometry))
-            .filter(Boundary.admin_level >= 8)
             .filter(City.insee == Boundary.insee)
             .filter(City.insee.startswith(insee.zfill(2)))
             .filter(City.is_raster == False)

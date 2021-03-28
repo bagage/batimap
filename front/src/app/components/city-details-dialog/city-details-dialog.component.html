@@ -49,9 +49,23 @@
     <button mat-raised-button cdkFocusInitial mat-dialog-close matTooltip="Ferme la popup. [Raccourci : F]">
         Fermer
     </button>
-    <button mat-raised-button (click)="ignoreCity()" matTooltip="Masquer cette commune de la carte. [Raccourci : I]">
-        Ignorer
+    <button
+        *ngIf="isCityIgnored(); else ignoreButton"
+        mat-raised-button
+        (click)="toggleIgnoreCity()"
+        matTooltip="Réafficher cette commune de la carte. [Raccourci : I]"
+    >
+        Réafficher
     </button>
+    <ng-template #ignoreButton>
+        <button
+            mat-raised-button
+            (click)="toggleIgnoreCity()"
+            matTooltip="Masquer cette commune de la carte. [Raccourci : I]"
+        >
+            Ignorer
+        </button>
+    </ng-template>
     <mat-bar-button
         [options]="updateButtonOpts"
         (click)="updateCity()"

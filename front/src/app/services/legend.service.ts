@@ -64,12 +64,18 @@ export class LegendService {
         if (yearStr === 'unfinished') {
             return '#03A9F4';
         }
+        if (yearStr === 'ignored') {
+            return '#666';
+        }
 
         // unknown
         return '#6200EE';
     }
 
     date2name(yearStr: string) {
+        if (yearStr === 'ignored') {
+            return 'ignoré';
+        }
         if (!yearStr || yearStr === 'never') {
             return 'jamais import';
         }
