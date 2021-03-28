@@ -78,14 +78,14 @@ export class MapComponent implements AfterViewInit {
     }
 
     stylingFunction(properties, zoom, type): any {
-        const date = this.legendService.city2date.get(properties.insee) || properties.date;
+        const isIgnored = this.batimapService.ignoredInsees().indexOf(properties.insee) !== -1;
+        const date = isIgnored ? 'ignored' : this.legendService.city2date.get(properties.insee) || properties.date;
         const color = this.legendService.date2color(date);
         // tslint:disable
-        const ignoredCities = localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || '';
-        const visible =
-            properties.insee.length <= 3 ||
-            (this.legendService.isActive(date) && ignoredCities.indexOf(properties.insee) === -1);
-
+        const visible = properties.insee.length <= 3 || this.legendService.isActive(date);
+        if (isIgnored) {
+            console.log(properties.insee, date, color, visible);
+        }
         return {
             weight: 2,
             color,

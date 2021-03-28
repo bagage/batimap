@@ -14,8 +14,6 @@ import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
     styleUrls: ['./city-details-dialog.component.css'],
 })
 export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
-    static storageIgnoredCities = 'deactivated-cities';
-
     city: CityDTO;
 
     josmIsStarted: Observable<boolean>;
@@ -69,24 +67,19 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     isCityIgnored() {
-        var ignoredCities: string[] = (
-            localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || ''
-        ).split(',');
-        return ignoredCities.indexOf(this.city.insee) !== -1;
+        return this.batimapService.ignoredInsees().indexOf(this.city.insee) !== -1;
     }
 
     @HostListener('document:keydown.i') toggleIgnoreCity() {
         // tslint:disable
-        var ignoredCities: string[] = (
-            localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || ''
-        ).split(',');
+        var ignoredCities = this.batimapService.ignoredInsees();
         const cityIndex = ignoredCities.indexOf(this.city.insee);
         if (cityIndex !== -1) {
             ignoredCities.splice(cityIndex);
         } else {
             ignoredCities.push(this.city.insee);
         }
-        localStorage.setItem(CityDetailsDialogComponent.storageIgnoredCities, ignoredCities.join(','));
+        this.batimapService.updateIgnoredInsees(ignoredCities);
         this.dialogRef.close(0);
         this.cadastreLayer.redraw();
     }

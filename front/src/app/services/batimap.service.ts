@@ -40,11 +40,22 @@ export class TaskProgress {
     providedIn: 'root',
 })
 export class BatimapService {
+    static storageIgnoredCities = 'deactivated-cities';
+
     constructor(
         private readonly http: HttpClient,
         private readonly legendService: LegendService,
         private readonly configService: AppConfigService
     ) {}
+
+    ignoredInsees() {
+        const ignoredStr = localStorage.getItem(BatimapService.storageIgnoredCities);
+
+        return ignoredStr && ignoredStr.length > 0 ? ignoredStr.split(',') : [];
+    }
+    updateIgnoredInsees(ignored: string[]) {
+        return localStorage.setItem(BatimapService.storageIgnoredCities, ignored.join(','));
+    }
 
     cityData(insee: string): Observable<TaskResult<ConflateCityDTO>> {
         return this.longRunningAPI<ConflateCityDTO>(this.URL_CITY_DATA(insee), ConflateCityDTO);

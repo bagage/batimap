@@ -1,7 +1,7 @@
 <mat-card>
     <mat-card-title id="title">Date de dernier import </mat-card-title>
     <mat-card-content>
-        <div style="margin-bottom: 10px;">
+        <div style="margin-bottom: 10px">
             <button
                 mat-mini-fab
                 color="accent"
@@ -12,7 +12,7 @@
             </button>
             <button
                 mat-mini-fab
-                style="margin-left: 10px;"
+                style="margin-left: 10px"
                 color="primary"
                 (click)="openHelp()"
                 matTooltip="Afficher l'aide. [Raccourci : shift+a]"
@@ -21,7 +21,7 @@
             </button>
             <button
                 mat-mini-fab
-                style="margin-left: 10px;"
+                style="margin-left: 10px"
                 color="primary"
                 (click)="emitHideLegend()"
                 matTooltip="Masquer la légende. [Raccourci : shift+h]"
@@ -33,36 +33,33 @@
         <ng-container *ngIf="legendItems$ | async as legendItems; else dataHandler">
             <ng-container *ngIf="legendItems?.length > 0; else noCities">
                 <ng-container *ngIf="!hideCheckboxes; else labels">
-                    <div>
+                    <div *ngFor="let item of legendItems">
                         <mat-checkbox
-                            *ngFor="let item of legendItems"
                             [id]="'legend' + item.name"
                             [(ngModel)]="item.checked"
                             (change)="legendChanges(item)"
                             [ngStyle]="{ color: item.color }"
                         >
-                            {{ item.displayName }} ({{ item.percent }}%)
+                            <span>{{ item.displayName }}</span
+                            ><ng-container *ngIf="item.percent != undefined"> ({{ item.percent }}%)</ng-container>
                         </mat-checkbox>
                     </div>
                 </ng-container>
                 <ng-template #labels>
                     <ul>
                         <li *ngFor="let item of legendItems" [ngStyle]="{ color: item.color }">
-                            {{ item.displayName }} ({{ item.percent }}%)
+                            <span>{{ item.displayName }}</span
+                            ><ng-container *ngIf="item.percent != undefined"> ({{ item.percent }}%)</ng-container>
                         </li>
                     </ul>
                 </ng-template>
             </ng-container>
         </ng-container>
         <ng-template #noCities>
-            <p>
-                Il semblerait qu'il n'y ait aucune commune disponible dans cette zone.
-            </p>
+            <p>Il semblerait qu'il n'y ait aucune commune disponible dans cette zone.</p>
         </ng-template>
         <ng-template #dataHandler>
-            <div *ngIf="error; else loading" class="mat-error">
-                Le serveur est actuellement hors-ligne.
-            </div>
+            <div *ngIf="error; else loading" class="mat-error">Le serveur est actuellement hors-ligne.</div>
         </ng-template>
         <ng-template #loading>
             <app-loader></app-loader>
