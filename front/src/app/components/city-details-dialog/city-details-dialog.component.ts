@@ -68,10 +68,25 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.dialogRef.close(0);
     }
 
-    @HostListener('document:keydown.i') ignoreCity() {
+    isCityIgnored() {
+        var ignoredCities: string[] = (
+            localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || ''
+        ).split(',');
+        return ignoredCities.indexOf(this.city.insee) !== -1;
+    }
+
+    @HostListener('document:keydown.i') toggleIgnoreCity() {
         // tslint:disable
-        const ignoredCities = localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || '';
-        localStorage.setItem(CityDetailsDialogComponent.storageIgnoredCities, `${this.city.insee},${ignoredCities}`);
+        var ignoredCities: string[] = (
+            localStorage.getItem(CityDetailsDialogComponent.storageIgnoredCities) || ''
+        ).split(',');
+        const cityIndex = ignoredCities.indexOf(this.city.insee);
+        if (cityIndex !== -1) {
+            ignoredCities.splice(cityIndex);
+        } else {
+            ignoredCities.push(this.city.insee);
+        }
+        localStorage.setItem(CityDetailsDialogComponent.storageIgnoredCities, ignoredCities.join(','));
         this.dialogRef.close(0);
         this.cadastreLayer.redraw();
     }
