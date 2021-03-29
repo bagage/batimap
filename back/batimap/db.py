@@ -39,6 +39,7 @@ class City(Base):
     import_date = Column(String, name="date")
     date_cadastre = Column(TIMESTAMP)
     import_details = Column(JSON, name="details")
+    buildings = Column(Integer)
 
     def __repr__(self):
         return f"{self.name}({self.insee})"
@@ -79,6 +80,25 @@ class Boundary(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
+class Cadastre(Base):
+    __tablename__ = "cadastre_stats"
+
+    def __init__(self, insee, buildings):
+        super().__init__()
+        self.insee = insee
+        self.department = insee[:-3]
+        self.buildings = buildings
+        self.last_fetch = datetime.now()
+
+    insee = Column(String, primary_key=True)
+    department = Column(String)
+    buildings = Column(Integer)
+    last_fetch = Column(TIMESTAMP)
+
+    def __repr__(self):
+        return f"{self.insee}({self.buildings} buildings)"
+
+
 class Db(object):
     def __init__(self):
         self.is_initialized = False
@@ -86,6 +106,7 @@ class Db(object):
     def init_app(self, app, db):
         with app.app_context():
             City.metadata.create_all(db.engine)
+            Cadastre.metadata.create_all(db.engine)
         self.session = db.session
         self.is_initialized = True
 
@@ -121,6 +142,10 @@ class Db(object):
     def get_osm_city_name_for_insee(self, insee) -> str:
         # there might be no result for this query, but this is OK
         return self.__filter_city(self.session.query(Boundary.name), insee).first()
+
+    @__isInitialized
+    def get_cities(self) -> [City]:
+        return self.session.query(City).order_by(City.insee).all()
 
     @__isInitialized
     def get_cities_for_department(self, department) -> [City]:

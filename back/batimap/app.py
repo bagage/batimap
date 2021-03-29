@@ -1,14 +1,18 @@
-import gevent.monkey
-
-gevent.monkey.patch_all()
-
 import os
 import logging
 
 from flask import Flask
 from flask_cors import CORS
 
-from batimap.extensions import api_smorest, celery, batimap, overpass, db, sqlalchemy
+from batimap.extensions import (
+    api_smorest,
+    celery,
+    batimap,
+    overpass,
+    db,
+    sqlalchemy,
+    odcadastre,
+)
 
 
 def create_app():
@@ -40,6 +44,7 @@ def create_app():
     sqlalchemy.init_app(app)
     db.init_app(app, sqlalchemy)
     batimap.init_app(db, overpass)
+    odcadastre.init_app(db)
     api_smorest.init_app(app)
 
     from . import cli

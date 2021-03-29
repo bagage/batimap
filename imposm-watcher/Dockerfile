@@ -7,13 +7,13 @@ WORKDIR /src
 
 RUN apk --update add build-base
 
-COPY requirements.txt /src/requirements.txt
+COPY Pipfile* /src/
 
-RUN pip install --prefix="/install" -r requirements.txt
+RUN pip install pipenv && pipenv lock -r > requirements.txt && pip install -r requirements.txt
 
 FROM base
 
-COPY --from=builder /install /usr/local
+COPY --from=builder /usr/local /usr/local
 
 COPY . /code
 WORKDIR /code

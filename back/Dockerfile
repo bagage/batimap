@@ -7,9 +7,9 @@ WORKDIR /src
 
 RUN apt update && apt install -yy --no-install-recommends gcc postgresql-client libpq-dev libxml2 libxml2-dev libxslt-dev libgeos-dev && apt clean
 
-COPY requirements.txt /src/requirements.txt
+COPY Pipfile* /src/
 
-RUN pip install -r requirements.txt
+RUN pip install pipenv && pipenv lock -r > requirements.txt && pip install -r requirements.txt
 
 FROM base
 
