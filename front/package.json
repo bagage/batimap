@@ -14,7 +14,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "pretty-quick --bail --staged",
+            "pre-commit": "pretty-quick --bail --staged && black ..",
             "pre-push": "yarn lintquick"
         }
     },

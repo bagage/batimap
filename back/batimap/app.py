@@ -16,8 +16,8 @@ def create_app():
     CORS(app)
 
     app.config.from_pyfile(app.root_path + "/app.conf")
-    app.config['OPENAPI_VERSION'] = '3.0.2'
-    app.config['OPENAPI_URL_PREFIX'] = '/api'
+    app.config["OPENAPI_VERSION"] = "3.0.2"
+    app.config["OPENAPI_URL_PREFIX"] = "/api"
 
     verbosity = {
         "DEBUG": logging.DEBUG,
@@ -31,7 +31,9 @@ def create_app():
         format="%(asctime)s %(message)s",
         datefmt="%H:%M:%S",
         level=verbosity[
-            os.environ.get("BATIMAP_VERBOSITY") or app.config["VERBOSITY"] or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")
+            os.environ.get("BATIMAP_VERBOSITY")
+            or app.config["VERBOSITY"]
+            or ("DEBUG" if app.config["DEBUG"] else "CRITICAL")
         ],
     )
 

@@ -19,7 +19,8 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
-bp = Blueprint('app_routes', __name__)
+bp = Blueprint("app_routes", __name__)
+
 
 @bp.route("/status", methods=["GET"])
 def api_status() -> dict:
@@ -28,12 +29,22 @@ def api_status() -> dict:
 
 @bp.route("/status/<department>", methods=["GET"])
 def api_department_status(department) -> str:
-    return json.dumps([{x.insee: x.import_date} for x in batimap.stats(department=department, force=request.args.get("force", False))])
+    return json.dumps(
+        [
+            {x.insee: x.import_date}
+            for x in batimap.stats(
+                department=department, force=request.args.get("force", False)
+            )
+        ]
+    )
 
 
 @bp.route("/status/<department>/<city>", methods=["GET"])
 def api_city_status(department, city) -> str:
-    for city in batimap.stats(names_or_insees=[city], force=request.args.get("force", default=False, type=inputs.boolean)):
+    for city in batimap.stats(
+        names_or_insees=[city],
+        force=request.args.get("force", default=False, type=inputs.boolean),
+    ):
         return json.dumps({city.insee: city.import_date})
     return ""
 
@@ -48,8 +59,16 @@ def api_insee(insee) -> dict:
     city = db.get_city_for_insee(insee)
     if city:
         geo = db.get_city_geometry(insee)[0]
-        feature = Feature(properties={"name": f"{city.name} - {city.insee}", "date": city.import_date}, geometry=json.loads(geo))
-        return json.dumps(FeatureCollection(feature))  # fixme: no need for FeatureCollection here
+        feature = Feature(
+            properties={
+                "name": f"{city.name} - {city.insee}",
+                "date": city.import_date,
+            },
+            geometry=json.loads(geo),
+        )
+        return json.dumps(
+            FeatureCollection(feature)
+        )  # fixme: no need for FeatureCollection here
     abort(404, message=f"no city {insee}")
 
 
@@ -65,11 +84,20 @@ def api_bbox_cities() -> dict:
 
 @bp.route("/legend/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
 def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
-    result = db.get_imports_count_for_bbox(Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW)))
+    result = db.get_imports_count_for_bbox(
+        Bbox(float(lonNW), float(latSE), float(lonSE), float(latNW))
+    )
     total = sum([x[1] for x in result])
 
     return json.dumps(
-        [{"name": import_date, "count": count, "percent": round(count * 100.0 / total, 2)} for (import_date, count) in result]
+        [
+            {
+                "name": import_date,
+                "count": count,
+                "percent": round(count * 100.0 / total, 2),
+            }
+            for (import_date, count) in result
+        ]
     )
 
 
@@ -95,7 +123,9 @@ def api_department(dept) -> dict:
 @bp.route("/departments/<dept>/details", methods=["GET"])
 def api_department_details(dept) -> dict:
     stats = dict(db.get_department_import_stats(dept))
-    simplified = sorted([ids for city in db.get_department_simplified_buildings(dept) for ids in city])
+    simplified = sorted(
+        [ids for city in db.get_department_simplified_buildings(dept) for ids in city]
+    )
     return json.dumps({"simplified": simplified, "dates": stats})
 
 
@@ -110,7 +140,11 @@ def api_update_insee_list(insee) -> dict:
 
     new_task = task_update_insee.delay(insee)
     return Response(
-        response=json.dumps({"task_id": new_task.id}), status=202, headers={"Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)},
+        response=json.dumps({"task_id": new_task.id}),
+        status=202,
+        headers={
+            "Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)
+        },
     )
 
 
@@ -119,7 +153,11 @@ def api_josm_data(insee) -> dict:
     LOG.debug(f"Receive an josm request for {insee}")
     new_task = task_josm_data.delay(insee)
     return Response(
-        response=json.dumps({"task_id": new_task.id}), status=202, headers={"Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)},
+        response=json.dumps({"task_id": new_task.id}),
+        status=202,
+        headers={
+            "Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)
+        },
     )
 
 
@@ -132,7 +170,10 @@ def api_obsolete_city() -> dict:
         city = CityDTO(result.City)
         (osm_id,) = db.get_osm_id(city.insee)
         position = Point.from_pg(result.position)
-        return json.dumps({"position": [position.x, position.y], "city": city, "osmid": osm_id}, cls=CityEncoder)
+        return json.dumps(
+            {"position": [position.x, position.y], "city": city, "osmid": osm_id},
+            cls=CityEncoder,
+        )
 
 
 @bp.route("/initdb", methods=["POST"])
@@ -145,7 +186,9 @@ def api_initdb():
         return Response(
             response=json.dumps({"task_id": new_task.id}),
             status=202,
-            headers={"Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)},
+            headers={
+                "Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)
+            },
         )
     return Response(status=400)
 

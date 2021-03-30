@@ -20,8 +20,28 @@ LOG = logging.getLogger(__name__)
 
 class Batimap(object):
     MIN_BUILDINGS_COUNT = 50
-    IGNORED_SIMPLIFIED_TAGS = ["power", "public_transport", "ruins", "telecom", "historic", "ref:mhs", "tower:type", "telecom"]
-    IGNORED_SIMPLIFIED_BUILDING_VALUES = ["hut", "shed", "no", "ruins", "bunker", "wayside_shrine", "hunting_stand", "transformer_tower", "tent", "construction"]
+    IGNORED_SIMPLIFIED_TAGS = [
+        "power",
+        "public_transport",
+        "ruins",
+        "telecom",
+        "historic",
+        "ref:mhs",
+        "tower:type",
+        "telecom",
+    ]
+    IGNORED_SIMPLIFIED_BUILDING_VALUES = [
+        "hut",
+        "shed",
+        "no",
+        "ruins",
+        "bunker",
+        "wayside_shrine",
+        "hunting_stand",
+        "transformer_tower",
+        "tent",
+        "construction",
+    ]
     NO_BUILDING_CITIES = [
         "08300",
         "09260",
@@ -67,11 +87,20 @@ class Batimap(object):
         self.db = db
         self.overpass = overpass
 
-    def stats(self, department=None, names_or_insees=[], force=False, refresh_cadastre_state=False):
+    def stats(
+        self,
+        department=None,
+        names_or_insees=[],
+        force=False,
+        refresh_cadastre_state=False,
+    ):
         if department:
             cities = self.db.get_cities_for_department(department)
         else:
-            cities = [self.db.get_city_for_insee(x) or self.db.get_city_for_name(x) for x in names_or_insees]
+            cities = [
+                self.db.get_city_for_insee(x) or self.db.get_city_for_name(x)
+                for x in names_or_insees
+            ]
 
         if refresh_cadastre_state:
             if department:
@@ -89,8 +118,12 @@ class Batimap(object):
         # we do not store building changeset timestamp in database, so we need to ask Overpass for cities which such
         # buildings. For now, only ask for cities with a majority of unknown buildings, but we could whenever there is one
         if len(unknown_insees):
-            LOG.info(f"Using overpass for {len(unknown_insees)} unknown cities: {unknown_insees}")
-            for idx, _ in enumerate(self.stats(names_or_insees=unknown_insees, force=True)):
+            LOG.info(
+                f"Using overpass for {len(unknown_insees)} unknown cities: {unknown_insees}"
+            )
+            for idx, _ in enumerate(
+                self.stats(names_or_insees=unknown_insees, force=True)
+            ):
                 yield (idx + 1, len(unknown_insees))
 
     def update_departments_raster_state(self, departments):
@@ -106,11 +139,18 @@ class Batimap(object):
         csrf_token = r.read().split(b"CSRF_TOKEN=")[1].split(b'"')[0].decode("utf-8")
         op.addheaders = [("Accept-Encoding", "gzip")]
 
-        LOG.info(f"Récupération des infos cadastrales pour les départements {departments}")
+        LOG.info(
+            f"Récupération des infos cadastrales pour les départements {departments}"
+        )
         for idx, d in enumerate(departments):
             LOG.info(f"Récupération des infos cadastrales pour le département {d}")
-            if len(self.db.get_cities_for_department(d)) > 0 and self.db.get_raster_cities_count(d) == 0:
-                LOG.info(f"Le département {d} ne contient que des communes vectorisées, rien à faire")
+            if (
+                len(self.db.get_cities_for_department(d)) > 0
+                and self.db.get_raster_cities_count(d) == 0
+            ):
+                LOG.info(
+                    f"Le département {d} ne contient que des communes vectorisées, rien à faire"
+                )
                 continue
             d = f"{d}"
             r2 = op.open(
@@ -118,7 +158,11 @@ class Batimap(object):
                 f"&codeDepartement={d.zfill(3)}&libelle=&keepVolatileSession=&offset=5000"
             )
             cities = SoupStrainer("tbody", attrs={"class": "parcelles"})
-            fr = BeautifulSoup(zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS), "lxml", parse_only=cities)
+            fr = BeautifulSoup(
+                zlib.decompress(r2.read(), 16 + zlib.MAX_WBITS),
+                "lxml",
+                parse_only=cities,
+            )
             LOG.debug(f"Query result: {fr.prettify()}")
             for e in fr.find_all("tbody"):
                 y = e.find(title="Ajouter au panier")
@@ -140,7 +184,9 @@ class Batimap(object):
 
                 name = self.db.get_osm_city_name_for_insee(insee)
                 if not name:
-                    LOG.error(f"Cannot find city with insee {insee}, did you import OSM data for this department?")
+                    LOG.error(
+                        f"Cannot find city with insee {insee}, did you import OSM data for this department?"
+                    )
                     continue
 
                 city = self.db.get_city_for_insee(insee)
@@ -151,7 +197,9 @@ class Batimap(object):
                 city.department = dept
                 city.name = name
                 city.name_cadastre = f"{code_commune}-{nom_commune}"
-                city.import_date = "raster" if is_raster else city.import_date or "never"
+                city.import_date = (
+                    "raster" if is_raster else city.import_date or "never"
+                )
                 city.is_raster = is_raster
             LOG.debug("Inserting cities in database…")
             self.db.session.commit()
@@ -175,25 +223,38 @@ class Batimap(object):
                 osm_data = e.select("td > a")
                 if len(osm_data):
                     osm_data = osm_data[0].text
-                    if not osm_data.endswith("simplifie.osm") or "-extrait-" in osm_data:
+                    if (
+                        not osm_data.endswith("simplifie.osm")
+                        or "-extrait-" in osm_data
+                    ):
                         continue
 
                     name_cadastre = "-".join(osm_data.split("-")[:-2])
                     try:
-                        date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%Y-%m-%d %H:%M")
+                        date_cadastre = datetime.datetime.strptime(
+                            e.select("td:nth-of-type(3)")[0].text.strip(),
+                            "%Y-%m-%d %H:%M",
+                        )
                     except Exception:
-                        date_cadastre = datetime.datetime.strptime(e.select("td:nth-of-type(3)")[0].text.strip(), "%d-%b-%Y %H:%M")
+                        date_cadastre = datetime.datetime.strptime(
+                            e.select("td:nth-of-type(3)")[0].text.strip(),
+                            "%d-%b-%Y %H:%M",
+                        )
 
                     try:
                         name_index = cities_name_cadastre.index(name_cadastre)
                     except ValueError:
-                        LOG.warn(f"City {name_cadastre} could not be found?! Ignoring for now...")
+                        LOG.warn(
+                            f"City {name_cadastre} could not be found?! Ignoring for now..."
+                        )
                         continue
 
                     c = cities[name_index]
                     no_cadastre_cities.remove(c)
                     if c.date_cadastre != date_cadastre:
-                        LOG.info(f"Cadastre changed changed for {c} from {c.date_cadastre} to {date_cadastre}")
+                        LOG.info(
+                            f"Cadastre changed changed for {c} from {c.date_cadastre} to {date_cadastre}"
+                        )
                         refresh_tiles.append(c.insee)
                         c.date_cadastre = date_cadastre
 
@@ -224,7 +285,9 @@ class Batimap(object):
             "date": city.import_date,
         }
 
-    __total_pdfs_regex = re.compile(r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$")
+    __total_pdfs_regex = re.compile(
+        r".*coupe la bbox en (\d+) \* (\d+) \[(\d+) pdfs\]$"
+    )
     __pdf_progression_regex = re.compile(r".*\d+-(\d+)-(\d+).pdf$")
 
     def fetch_cadastre_data(self, city):
@@ -244,10 +307,17 @@ class Batimap(object):
             for e in bs.find_all("tr"):
                 if archive in [x.text for x in e.select("td:nth-of-type(2) a")]:
                     date = e.select("td:nth-of-type(3)")[0].text.strip()
-                    LOG.info(f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!")
+                    LOG.info(
+                        f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!"
+                    )
                     return
 
-        data = {"dep": dept, "type": "bati", "force": str(force).lower(), "ville": city.name_cadastre}
+        data = {
+            "dep": dept,
+            "type": "bati",
+            "force": str(force).lower(),
+            "ville": city.name_cadastre,
+        }
 
         # otherwise we invoke Cadastre generation
         with closing(requests.post(url, data=data, stream=True)) as r:
@@ -262,12 +332,20 @@ class Batimap(object):
                     x = int(match.groups()[0])
                     y = int(match.groups()[1])
                     current = x * total_y + y
-                    msg = f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
+                    msg = (
+                        f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)"
+                        if total > 0
+                        else f"{current}"
+                    )
                     LOG.info(msg)
                     yield current * 100 / total
                 if "Termin" in line:
                     current = total
-                    msg = f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)" if total > 0 else f"{current}"
+                    msg = (
+                        f"{city} - {current}/{total} ({current * 100.0 / total:.2f}%)"
+                        if total > 0
+                        else f"{current}"
+                    )
                     LOG.info(msg)
                     yield 100
                 elif "ERROR:" in line or "ERREUR:" in line:
@@ -294,9 +372,14 @@ class Batimap(object):
                     tags = element.get("tags")
                     if element.get("type") == "node":
                         # some buildings are mainly nodes, but we don't care much about them
-                        if len([x for x in self.IGNORED_SIMPLIFIED_TAGS if tags.get(x)]):
+                        if len(
+                            [x for x in self.IGNORED_SIMPLIFIED_TAGS if tags.get(x)]
+                        ):
                             continue
-                        if tags.get("building") in self.IGNORED_SIMPLIFIED_BUILDING_VALUES:
+                        if (
+                            tags.get("building")
+                            in self.IGNORED_SIMPLIFIED_BUILDING_VALUES
+                        ):
                             continue
 
                         LOG.info(
@@ -306,9 +389,14 @@ class Batimap(object):
 
                     buildings.append(element.get("timestamp")[:4])
                 has_simplified = len(simplified_buildings) > 0
-                (import_date, sources_date) = self.__date_for_buildings(city.insee, buildings, has_simplified)
+                (import_date, sources_date) = self.__date_for_buildings(
+                    city.insee, buildings, has_simplified
+                )
                 city.import_date = import_date
-                city.import_details = {"simplified": simplified_buildings, "dates": sources_date}
+                city.import_details = {
+                    "simplified": simplified_buildings,
+                    "dates": sources_date,
+                }
                 self.db.session.commit()
             except Exception as e:
                 LOG.error(f"Failed to count buildings for {city}: {e}")
@@ -328,12 +416,21 @@ class Batimap(object):
         date = max(counter, key=sources_date.count) if len(sources_date) else "never"
         if date != "never" and date != "raster":
             date_match = re.compile(r"^(\d{4})$").match(date)
-            date = date_match.groups()[0] if date_match and date_match.groups() else "unknown"
+            date = (
+                date_match.groups()[0]
+                if date_match and date_match.groups()
+                else "unknown"
+            )
             # If a city has few buildings, and **even if a date could be computed**, we assume
             # it was never imported (sometime only 1 building on the boundary is wrongly computed)
             # Almost all cities have at least church/school/townhall manually mapped
-            if len(dates) < self.MIN_BUILDINGS_COUNT and insee not in self.NO_BUILDING_CITIES:
-                LOG.info(f"City {insee}: too few buildings found ({len(dates)}), assuming it was never imported!")
+            if (
+                len(dates) < self.MIN_BUILDINGS_COUNT
+                and insee not in self.NO_BUILDING_CITIES
+            ):
+                LOG.info(
+                    f"City {insee}: too few buildings found ({len(dates)}), assuming it was never imported!"
+                )
                 date = "never"
             elif has_simplified_buildings:
                 date = "unfinished"
@@ -361,25 +458,44 @@ class Batimap(object):
 
             # 2. fetch all simplified buildings in current department
             LOG.debug(f"Récupération du bâti simplifié pour l'INSEE {insee_in}…")
-            city_with_simplified_building = self.db.get_point_buildings_per_city_for_insee(insee_in, self.IGNORED_SIMPLIFIED_BUILDING_VALUES, self.IGNORED_SIMPLIFIED_TAGS)
+            city_with_simplified_building = (
+                self.db.get_point_buildings_per_city_for_insee(
+                    insee_in,
+                    self.IGNORED_SIMPLIFIED_BUILDING_VALUES,
+                    self.IGNORED_SIMPLIFIED_TAGS,
+                )
+            )
 
             simplified_cities = list(set([x[0] for x in city_with_simplified_building]))
             if len(simplified_cities) > 0:
-                LOG.info(f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifiée, import à vérifier")
+                LOG.info(
+                    f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifiée, import à vérifier"
+                )
 
             # 3. finally compute city import date and update database
             LOG.debug(f"Mise à jour des statistiques pour l'INSEE {insee_in}…")
             for insee, buildings in buildings.items():
                 # compute city import date based on all its buildings date
-                (import_date, counts) = self.__date_for_buildings(insee, buildings, insee in simplified_cities)
-                simplified = [x[1] for x in city_with_simplified_building if x[0] == insee]
+                (import_date, counts) = self.__date_for_buildings(
+                    insee, buildings, insee in simplified_cities
+                )
+                simplified = [
+                    x[1] for x in city_with_simplified_building if x[0] == insee
+                ]
 
                 city = self.db.get_city_for_insee(insee)
                 city.name = insee_name[insee]
                 # do not erase date if what we found here is a bad date (unknown)
-                if city.import_date != import_date and (city.import_date in City.bad_dates() or import_date not in City.bad_dates()):
-                    simplified_msg = "" if len(simplified) == 0 else f"(simplifiée: {simplified})"
-                    LOG.info(f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date} {simplified_msg}")
+                if city.import_date != import_date and (
+                    city.import_date in City.bad_dates()
+                    or import_date not in City.bad_dates()
+                ):
+                    simplified_msg = (
+                        "" if len(simplified) == 0 else f"(simplifiée: {simplified})"
+                    )
+                    LOG.info(
+                        f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date} {simplified_msg}"
+                    )
                     city.import_date = import_date
                 city.import_details = {"dates": counts, "simplified": simplified}
 

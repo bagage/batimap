@@ -26,7 +26,11 @@ verbosity = {
 logging.basicConfig(
     format="%(asctime)s %(message)s",
     datefmt="%H:%M:%S",
-    level=verbosity[os.environ.get("IMPOSM_VERBOSITY") or config["DEFAULT"]["VERBOSITY"] or "CRITICAL"],
+    level=verbosity[
+        os.environ.get("IMPOSM_VERBOSITY")
+        or config["DEFAULT"]["VERBOSITY"]
+        or "CRITICAL"
+    ],
 )
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
@@ -66,7 +70,9 @@ class Handler(FileSystemEventHandler):
 
     @staticmethod
     def on_any_event(event):
-        LOG.debug(f"New event: {event}, is_directory={event.is_directory}, event_type={event.event_type}")
+        LOG.debug(
+            f"New event: {event}, is_directory={event.is_directory}, event_type={event.event_type}"
+        )
         if event.is_directory:
             return
 
@@ -82,7 +88,9 @@ class Handler(FileSystemEventHandler):
             LOG.info(f"You can follow the progress of initdb on {task_url}")
             Handler.get_task_status(task_url)
         else:
-            LOG.warning(f"Error {r.status_code} {r.reason} while invoking initdb: {r.text}")
+            LOG.warning(
+                f"Error {r.status_code} {r.reason} while invoking initdb: {r.text}"
+            )
 
     @staticmethod
     def get_task_status(url):
@@ -92,7 +100,9 @@ class Handler(FileSystemEventHandler):
         result = content["result"]
 
         if r.status_code != 200 or state in ["FAILURE", "SUCCESS"]:
-            LOG.info(f"initdb terminated {state}: {result if result else '<empty response>'}")
+            LOG.info(
+                f"initdb terminated {state}: {result if result else '<empty response>'}"
+            )
         else:
             if state == "PROGRESS":
                 LOG.debug(f"initdb progress: {result['current']}/{result['total']}")
@@ -141,7 +151,9 @@ class Handler(FileSystemEventHandler):
 
         if len(cities):
             LOG.info(f"Running initdb on {cities}")
-            Handler.wait_task_completion(requests.post(url=BACK_INITDB_URL, json={"cities": cities}))
+            Handler.wait_task_completion(
+                requests.post(url=BACK_INITDB_URL, json={"cities": cities})
+            )
         else:
             LOG.warning("No cities found in file!")
 
