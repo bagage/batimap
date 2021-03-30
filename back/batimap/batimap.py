@@ -149,7 +149,7 @@ class Batimap(object):
                 and self.db.get_raster_cities_count(d) == 0
             ):
                 LOG.info(
-                    f"Le département {d} ne contient que des communes vectorisées, rien à faire"
+                    f"Le département {d} ne contient que des communes vectorisées, rien à vérifier"
                 )
                 continue
             d = f"{d}"

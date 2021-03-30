@@ -22,6 +22,9 @@ def task_progress(task, current):
 
 @celery.task(bind=True)
 def task_initdb(self, items):
+    """
+    Fetch OSM and Cadastre data for given departments/cities.
+    """
     migration_base = Path("html/.maintenance.html")
     migration_file = Path("html/maintenance.html")
     initdb_is_done_file = Path("tiles/initdb_is_done")

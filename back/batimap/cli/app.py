@@ -8,12 +8,12 @@ bp = Blueprint("app_cli", __name__, cli_group=None)
 
 
 @bp.cli.command("initdb")
-@click.argument("departments", nargs=-1)
-def initdb_command(departments):
+@click.argument("insees", nargs=-1)
+def initdb_command(insees):
     """
-    Creates required tables in PostgreSQL server.
+    Fetch OSM and Cadastre data for given departments/cities INSEE.
     """
-    task_initdb(departments or db.get_departments())
+    task_initdb(insees or db.get_departments())
 
 
 @bp.cli.command("stats")
