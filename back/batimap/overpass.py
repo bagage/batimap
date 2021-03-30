@@ -26,11 +26,20 @@ class Overpass(object):
         for retry in range(9, 0, -1):
             try:
                 api = self.__apis[self.__request % apis]
-                LOG.warning(f"Executing Overpass on server {api.endpoint} with request:\n{request}")
+                LOG.warning(
+                    f"Executing Overpass on server {api.endpoint} with request:\n{request}"
+                )
                 self.__request += 1
                 return api.Get(request, responseformat=output_format, build=False)
-            except (overpass.errors.MultipleRequestsError, overpass.errors.ServerLoadError) as e:
-                LOG.warning("{} occurred. Will retry again {} times in a few seconds".format(type(e).__name__, retry))
+            except (
+                overpass.errors.MultipleRequestsError,
+                overpass.errors.ServerLoadError,
+            ) as e:
+                LOG.warning(
+                    "{} occurred. Will retry again {} times in a few seconds".format(
+                        type(e).__name__, retry
+                    )
+                )
                 if retry == 0:
                     raise e
                 else:
@@ -40,7 +49,9 @@ class Overpass(object):
                 if retry == 0:
                     raise e
                 else:
-                    LOG.warning(f"Unhandled exception occured: {e}, trying next endpoint")
+                    LOG.warning(
+                        f"Unhandled exception occured: {e}, trying next endpoint"
+                    )
         return None
 
     def get_city_buildings(self, city):

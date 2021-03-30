@@ -5,7 +5,17 @@ from flask_sqlalchemy import SQLAlchemy
 
 from dateutil import parser
 from geoalchemy2 import Geometry
-from sqlalchemy import Column, Boolean, TIMESTAMP, String, JSON, Integer, BigInteger, func, not_
+from sqlalchemy import (
+    Column,
+    Boolean,
+    TIMESTAMP,
+    String,
+    JSON,
+    Integer,
+    BigInteger,
+    func,
+    not_,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import HSTORE
 
@@ -29,12 +39,16 @@ class City(Base):
     import_date = Column(String, name="date")
     date_cadastre = Column(TIMESTAMP)
     import_details = Column(JSON, name="details")
+    buildings = Column(Integer)
 
     def __repr__(self):
         return f"{self.name}({self.insee})"
 
     def is_josm_ready(self):
-        return self.date_cadastre is not None and (datetime.now() - parser.parse(str(self.date_cadastre))).days < 30
+        return (
+            self.date_cadastre is not None
+            and (datetime.now() - parser.parse(str(self.date_cadastre))).days < 30
+        )
 
     @staticmethod
     def bad_dates():
@@ -66,6 +80,25 @@ class Boundary(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
+class Cadastre(Base):
+    __tablename__ = "cadastre_stats"
+
+    def __init__(self, insee, buildings):
+        super().__init__()
+        self.insee = insee
+        self.department = insee[:-3]
+        self.buildings = buildings
+        self.last_fetch = datetime.now()
+
+    insee = Column(String, primary_key=True)
+    department = Column(String)
+    buildings = Column(Integer)
+    last_fetch = Column(TIMESTAMP)
+
+    def __repr__(self):
+        return f"{self.insee}({self.buildings} buildings)"
+
+
 class Db(object):
     def __init__(self):
         self.is_initialized = False
@@ -73,6 +106,7 @@ class Db(object):
     def init_app(self, app, db):
         with app.app_context():
             City.metadata.create_all(db.engine)
+            Cadastre.metadata.create_all(db.engine)
         self.session = db.session
         self.is_initialized = True
 
@@ -89,7 +123,9 @@ class Db(object):
     def __filter_city(query, insee=None):
         filtered = query.filter(Boundary.admin_level >= 8)
         if insee:
-            filtered = filtered.filter(Boundary.insee == insee).order_by(Boundary.admin_level)
+            filtered = filtered.filter(Boundary.insee == insee).order_by(
+                Boundary.admin_level
+            )
         return filtered
 
     @staticmethod
@@ -108,8 +144,17 @@ class Db(object):
         return self.__filter_city(self.session.query(Boundary.name), insee).first()
 
     @__isInitialized
+    def get_cities(self) -> [City]:
+        return self.session.query(City).order_by(City.insee).all()
+
+    @__isInitialized
     def get_cities_for_department(self, department) -> [City]:
-        return self.session.query(City).filter(City.department == department.zfill(2)).order_by(City.insee).all()
+        return (
+            self.session.query(City)
+            .filter(City.department == department.zfill(2))
+            .order_by(City.insee)
+            .all()
+        )
 
     @__isInitialized
     def get_city_for_insee(self, insee) -> City:
@@ -121,38 +166,60 @@ class Db(object):
 
     @__isInitialized
     def get_city_for_cadastre_name(self, name_cadastre):
-        return self.session.query(City).filter(City.name_cadastre == name_cadastre).first()
+        return (
+            self.session.query(City).filter(City.name_cadastre == name_cadastre).first()
+        )
 
     @__isInitialized
     def get_osm_id(self, insee) -> int:
-        return self.session.query(-1 * Boundary.osm_id).filter(Boundary.insee == insee).first()
+        return (
+            self.session.query(-1 * Boundary.osm_id)
+            .filter(Boundary.insee == insee)
+            .first()
+        )
 
     @__isInitialized
     def get_city_bbox(self, insee):
         # first() is required because of multipolygons cities (76218 - Doudeauville for instance)
         return Bbox.from_pg(
-            self.__filter_city(self.session.query(func.Box2D(Boundary.geometry)), insee).first()[0]
+            self.__filter_city(
+                self.session.query(func.Box2D(Boundary.geometry)), insee
+            ).first()[0]
         )
 
     @__isInitialized
     def get_imports_count_per_year(self):
         return (
-            self.session.query(City.import_date, func.count(City.import_date)).group_by(City.import_date).order_by(City.import_date).all()
+            self.session.query(City.import_date, func.count(City.import_date))
+            .group_by(City.import_date)
+            .order_by(City.import_date)
+            .all()
         )
 
     @__isInitialized
     def get_imports_count_for_bbox(self, bbox: Bbox):
         return (
-            self.__filter_city(self.session.query(City.import_date, func.count(".*").label("count")))
+            self.__filter_city(
+                self.session.query(City.import_date, func.count(".*").label("count"))
+            )
             .filter(Boundary.insee == City.insee)
-            .filter(Boundary.geometry.ST_DWithin(self.__build_srid(bbox), bbox.max_distance()))
+            .filter(
+                Boundary.geometry.ST_DWithin(
+                    self.__build_srid(bbox), bbox.max_distance()
+                )
+            )
             .group_by(City.import_date)
             .all()
         )
 
     @__isInitialized
     def get_cities_for_year(self, date):
-        return self.session.query(City.name, City.insee).filter(City.import_date == date).order_by(City.name).all()
+        return (
+            self.session.query(City.name, City.insee)
+            .filter(City.import_date == date)
+            .order_by(City.name)
+            .all()
+        )
 
     @__isInitialized
     def get_cities_for_bbox(self, bbox: Bbox):
@@ -161,7 +228,9 @@ class Db(object):
         return (
             self.__filter_city(self.session.query(City))
             .filter(Boundary.insee == City.insee)
-            .filter(func.ST_DWithin(Boundary.geometry, self.__build_srid(bbox), distance))
+            .filter(
+                func.ST_DWithin(Boundary.geometry, self.__build_srid(bbox), distance)
+            )
             .order_by(func.ST_Distance(self.__build_srid(bbox), Boundary.geometry))
             .all()
         )
@@ -220,7 +289,13 @@ class Db(object):
 
     @__isInitialized
     def get_city_geometry(self, insee):
-        return self.__filter_city(self.session.query(Boundary.geometry.ST_AsGeoJSON()), insee).filter(Boundary.insee == City.insee).first()
+        return (
+            self.__filter_city(
+                self.session.query(Boundary.geometry.ST_AsGeoJSON()), insee
+            )
+            .filter(Boundary.insee == City.insee)
+            .first()
+        )
 
     @__isInitialized
     def get_unknown_cities(self, departments) -> [City]:
@@ -235,14 +310,17 @@ class Db(object):
     @__isInitialized
     def get_obsolete_city(self, ignored):
         """
-            Find the city that has the most urging need of import (never > unknown > old import > raster).
-            Also privileges ready-to-work cities (cadastre data available) upon the others.
-            However we do NOT want this to be a fixed-order list (to avoid multiple users working on the
-            same city), so we finally randomize final list of matching cities.
+        Find the city that has the most urging need of import (never > unknown > old import > raster).
+        Also privileges ready-to-work cities (cadastre data available) upon the others.
+        However we do NOT want this to be a fixed-order list (to avoid multiple users working on the
+        same city), so we finally randomize final list of matching cities.
         """
         past_month = datetime.now() - timedelta(days=30)
         return (
-            self.session.query(City, Boundary.geometry.ST_Centroid().ST_AsText().label("position"),)
+            self.session.query(
+                City,
+                Boundary.geometry.ST_Centroid().ST_AsText().label("position"),
+            )
             .filter(Boundary.insee == City.insee)
             .order_by(City.import_date.in_(ignored))
             .order_by(City.import_date != "never")
@@ -258,7 +336,12 @@ class Db(object):
 
     @__isInitialized
     def get_raster_cities_count(self, department):
-        return self.session.query(func.count("*")).filter(City.department == department.zfill(2)).filter(City.is_raster).scalar()
+        return (
+            self.session.query(func.count("*"))
+            .filter(City.department == department.zfill(2))
+            .filter(City.is_raster)
+            .scalar()
+        )
 
     @__isInitialized
     def get_building_dates_per_city_for_insee(self, insee):
@@ -267,7 +350,9 @@ class Db(object):
                 self.session.query(
                     City.insee,
                     City.name,
-                    func.concat(Building.source, Building.source_date).label("dated_source"),
+                    func.concat(Building.source, Building.source_date).label(
+                        "dated_source"
+                    ),
                     func.count("*"),
                     City.is_raster,
                 )
@@ -282,9 +367,15 @@ class Db(object):
         )
 
     @__isInitialized
-    def get_point_buildings_per_city_for_insee(self, insee, ignored_buildings, ignored_tags):
+    def get_point_buildings_per_city_for_insee(
+        self, insee, ignored_buildings, ignored_tags
+    ):
         GeoCities = (
-            self.__filter_city(self.session.query(Boundary.insee, Boundary.name, City.is_raster, Boundary.geometry))
+            self.__filter_city(
+                self.session.query(
+                    Boundary.insee, Boundary.name, City.is_raster, Boundary.geometry
+                )
+            )
             .filter(City.insee == Boundary.insee)
             .filter(City.insee.startswith(insee.zfill(2)))
             .filter(City.is_raster == False)

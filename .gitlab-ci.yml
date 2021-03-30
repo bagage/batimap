@@ -27,6 +27,36 @@ test:front:
       - .gitlab-ci.yml
       - front/**/*
 
+test:back:
+  image: python:3.9
+  stage: test
+  services:
+    - name: registry.gitlab.com/bagage/batimap/postgis
+      alias: postgis
+  before_script:
+    - pip install pipenv
+    - sed -i 's/localhost:5432/postgis:5432/' back/batimap/app.conf
+  variables:
+    POSTGRES_DB: gis
+    POSTGRES_USER: docker
+    POSTGRES_PASSWORD: "batimap"
+    POSTGRES_HOST_AUTH_METHOD: trust
+  script:
+    - cd back/
+    - pipenv install -d
+    - pipenv run pytest --log-cli-level INFO --junit-xml=tests-report.xml --cov batimap
+    - pipenv run coverage xml
+  artifacts:
+    reports:
+      junit: tests-report.xml
+      cobertura: coverage.xml
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - .gitlab-ci.yml
+      - back/**/*
+
 .build_docker_image: &build_docker_image
   image: docker:stable
   services:

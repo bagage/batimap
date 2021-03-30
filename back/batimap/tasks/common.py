@@ -8,17 +8,23 @@ import logging
 
 LOG = logging.getLogger(__name__)
 
+
 def task_progress(task, current):
     current = int(min(current, 100) * 100) / 100  # round to 2 digits
 
     if task.request.id:
-        task.update_state(state="PROGRESS", meta=json.dumps({"current": current, "total": 100}))
+        task.update_state(
+            state="PROGRESS", meta=json.dumps({"current": current, "total": 100})
+        )
     else:
         LOG.warning(f"Task id not set, cannot update its progress to {current}%")
 
 
 @celery.task(bind=True)
 def task_initdb(self, items):
+    """
+    Fetch OSM and Cadastre data for given departments/cities.
+    """
     migration_base = Path("html/.maintenance.html")
     migration_file = Path("html/maintenance.html")
     initdb_is_done_file = Path("tiles/initdb_is_done")
@@ -28,7 +34,9 @@ def task_initdb(self, items):
 
     items_are_cities = len([1 for x in items if len(x) > 3]) > 0
     if items_are_cities:
-        departments = list(set([db.get_city_for_insee(insee).department for insee in items]))
+        departments = list(
+            set([db.get_city_for_insee(insee).department for insee in items])
+        )
         departments = sorted([d for d in departments if d is not None])
         LOG.debug(f"Will run initdb on departments {departments} from cities {items}")
     else:
