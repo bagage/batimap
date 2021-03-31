@@ -53,7 +53,12 @@ def cadastre_command(cities, all):
     """
     Store cadastre stats in DB for given cities.
     """
+    if not all and not len(cities):
+        click.echo("Missing cities argument or --all flag!")
+        return
+
     insees = [x.insee for x in db.get_cities()] if all else cities
     for insee in insees:
         c = odcadastre.compute_count(insee)
+        batimap.clear_tiles(insee)
         click.echo(c)

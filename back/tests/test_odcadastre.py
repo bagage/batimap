@@ -23,7 +23,7 @@ def test_city_has_buildings(app, insee, count, exact_match):
         cadastre = odcadastre.compute_count(insee)
         assert cadastre.insee == insee
         if exact_match:
-            assert cadastre.buildings == count
+            assert cadastre.od_buildings == count
         else:
-            assert cadastre.buildings >= count
+            assert cadastre.od_buildings >= count
         assert cadastre.last_fetch > now

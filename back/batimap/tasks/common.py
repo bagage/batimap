@@ -1,4 +1,4 @@
-from batimap.extensions import celery, batimap, db
+from batimap.extensions import celery, batimap, db, odcadastre
 from batimap.citydto import CityDTO, CityEncoder
 from pathlib import Path
 from shutil import copyfile
@@ -47,20 +47,23 @@ def task_initdb(self, items):
         initdb_is_done_file.unlink()
 
     # fill table with cities from cadastre website
-    p = 25
+    p = 20
+    for (idx, d) in enumerate(departments):
+        odcadastre.compute_count(d)
+        task_progress(self, 0 * p + (idx + 1) / len(departments) * p)
     for d in batimap.update_departments_raster_state(departments):
-        task_progress(self, 0 * p + d / len(departments) * p)
-    for d in batimap.fetch_departments_osm_state(departments):
         task_progress(self, 1 * p + d / len(departments) * p)
+    for d in batimap.fetch_departments_osm_state(departments):
+        task_progress(self, 2 * p + d / len(departments) * p)
     for d in batimap.import_city_stats_from_osmplanet(items):
-        task_progress(self, 2 * p + d / len(items) * p)
+        task_progress(self, 3 * p + d / len(items) * p)
     unknowns = (
         [c for c in items if db.get_city_for_insee(c).import_date == "unknown"]
         if items_are_cities
         else [c.insee for c in db.get_unknown_cities(departments)]
     )
     for (d, total) in batimap.compute_date_for_undated_cities(unknowns):
-        task_progress(self, 3 * p + d / total * p)
+        task_progress(self, 4 * p + d / total * p)
     db.session.commit()
 
     initdb_is_done_file.touch()

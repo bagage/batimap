@@ -48,7 +48,7 @@ class ODCadastre(object):
             result = self.department_count(insee)
         else:
             result = self.city_count(insee)
-        print(result, len(insee))
+
         self.db.session.commit()
         return result
 
@@ -77,6 +77,6 @@ class ODCadastre(object):
             return None
 
         c = self.db.session.merge(Cadastre(insee, buildings))
-        self.db.session.add((c))
+        self.db.session.add(c)
 
         return c

@@ -1,3 +1,10 @@
 mat-dialog-actions > * {
     margin: 0px 4px;
 }
+
+.dot {
+    height: 19px;
+    width: 19px;
+    border-radius: 50%;
+    display: inline-block;
+}

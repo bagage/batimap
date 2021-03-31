@@ -32,8 +32,8 @@ sql = """
     cast(cs.details as text) as details,
     cs.date,
     case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready,
-    cs.buildings as osm_buildings,
-    cadastre_stats.buildings as od_buildings
+    cs.osm_buildings,
+    cadastre_stats.od_buildings
   FROM
     osm_admin oa,
     city_stats cs
@@ -61,8 +61,8 @@ sql = """
     cs.insee,
     cs.date,
     case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready,
-    cs.buildings as osm_buildings,
-    cadastre_stats.buildings as od_buildings
+    cs.osm_buildings,
+    cadastre_stats.od_buildings
   FROM
     osm_admin  oa,
     city_stats cs
@@ -87,7 +87,7 @@ sql = """
     oa.insee AS insee,
     ABS(oa.osm_id) AS osmid,
     oa.osm_id,
-    cadastre.buildings as od_buildings
+    cadastre.od_buildings
   FROM
     osm_admin oa,
     (
@@ -106,7 +106,7 @@ sql = """
     left join (
       SELECT DISTINCT
         ON (department) department,
-        SUM(buildings) as buildings
+        SUM(od_buildings) as od_buildings
       FROM
         cadastre_stats
       GROUP BY

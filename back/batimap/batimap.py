@@ -397,7 +397,7 @@ class Batimap(object):
                     "simplified": simplified_buildings,
                     "dates": sources_date,
                 }
-                city.buildings = len(overpass_buildings)
+                city.osm_buildings = len(overpass_buildings)
                 self.db.session.commit()
             except Exception as e:
                 LOG.error(f"Failed to count buildings for {city}: {e}")
@@ -499,7 +499,7 @@ class Batimap(object):
                     )
                     city.import_date = import_date
                 city.import_details = {"dates": counts, "simplified": simplified}
-                city.buildings = len(buildings)
+                city.osm_buildings = len(buildings)
 
             self.db.session.commit()
             yield idx + 1

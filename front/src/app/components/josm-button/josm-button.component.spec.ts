@@ -30,6 +30,8 @@ describe('JosmButtonComponent', () => {
             details: undefined,
             insee: '',
             josm_ready: false,
+            osm_buildings: 10,
+            od_buildings: 32,
         };
         component.city = expectedCity;
         fixture.detectChanges();

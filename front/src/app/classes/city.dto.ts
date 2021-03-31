@@ -12,4 +12,8 @@ export class CityDTO {
     insee: string;
     // tslint:disable-next-line:variable-name
     @Type(() => Boolean) josm_ready: boolean;
+    // tslint:disable-next-line:variable-name
+    osm_buildings: number;
+    // tslint:disable-next-line:variable-name
+    od_buildings: number;
 }
