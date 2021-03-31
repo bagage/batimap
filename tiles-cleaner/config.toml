@@ -31,10 +31,13 @@ sql = """
     cs.insee,
     cast(cs.details as text) as details,
     cs.date,
-    case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready
+    case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready,
+    cs.buildings as osm_buildings,
+    cadastre_stats.buildings as od_buildings
   FROM
     osm_admin oa,
     city_stats cs
+    LEFT JOIN cadastre_stats on cadastre_stats.insee = cs.insee
   WHERE
     oa.admin_level::int >= '7'
     AND cs.insee = oa.insee
@@ -57,10 +60,13 @@ sql = """
     cast(cs.details as text) as details,
     cs.insee,
     cs.date,
-    case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready
+    case when cs.date_cadastre > NOW() - INTERVAL '30 days' then 'true' else '' end as josm_ready,
+    cs.buildings as osm_buildings,
+    cadastre_stats.buildings as od_buildings
   FROM
     osm_admin  oa,
     city_stats cs
+    LEFT JOIN cadastre_stats on cadastre_stats.insee = cs.insee
   WHERE
     oa.admin_level::int >= '7'
     AND cs.insee = oa.insee
@@ -80,7 +86,8 @@ sql = """
     oa.name,
     oa.insee AS insee,
     ABS(oa.osm_id) AS osmid,
-    oa.osm_id
+    oa.osm_id,
+    cadastre.buildings as od_buildings
   FROM
     osm_admin oa,
     (
@@ -96,6 +103,17 @@ sql = """
         department,
         COUNT(date) DESC
     ) vds
+    left join (
+      SELECT DISTINCT
+        ON (department) department,
+        SUM(buildings) as buildings
+      FROM
+        cadastre_stats
+      GROUP BY
+        department
+      ORDER BY
+        department
+    ) cadastre on cadastre.department = vds.department
   WHERE
     oa.admin_level = '6'
     AND oa.insee LIKE vds.department || '%'
