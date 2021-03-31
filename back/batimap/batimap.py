@@ -492,10 +492,10 @@ class Batimap(object):
                     or import_date not in City.bad_dates()
                 ):
                     simplified_msg = (
-                        "" if len(simplified) == 0 else f"(simplifiée: {simplified})"
+                        "" if len(simplified) == 0 else f", simplifiée: {simplified}"
                     )
                     LOG.info(
-                        f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date} {simplified_msg}"
+                        f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date} ({len(buildings)} bâtis{simplified_msg})"
                     )
                     city.import_date = import_date
                 city.import_details = {"dates": counts, "simplified": simplified}
