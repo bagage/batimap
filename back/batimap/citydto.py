@@ -15,7 +15,8 @@ class CityDTO:
         self.name = city.name
         self.insee = city.insee
         self.details = city.import_details
-        self.buildings = city.buildings
+        self.osm_buildings = city.osm_buildings
+        self.od_buildings = city.cadastre.od_buildings if city.cadastre else None
         self.josm_ready = city.is_josm_ready()
 
     @property
@@ -25,7 +26,8 @@ class CityDTO:
             "insee": self.insee,
             "date": self.date,
             "details": self.details,
-            "buildings": self.buildings,
+            "osm_buildings": self.osm_buildings,
+            "od_buildings": self.od_buildings,
             "josm_ready": self.josm_ready,
         }
 

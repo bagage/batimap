@@ -11,7 +11,19 @@
             <mat-icon>link</mat-icon>
         </a>
     </h3>
-    {{ lastImport }}
+    <div>
+        {{ lastImport }}
+    </div>
+    <div *ngIf="city | buildingsratio as ratio">
+        <p>
+            <span class="dot" [style.background-color]="city | buildingsratio: 'color'"></span> {{ ratio }}% d'écart OSM
+            et le cadastre :
+        </p>
+        <ul>
+            <li>{{ city.osm_buildings }} bâtiments dans OSM</li>
+            <li>{{ city.od_buildings }} bâtiments dans le cadastre</li>
+        </ul>
+    </div>
 
     <apx-chart
         *ngIf="(city.details?.dates | count) > 0"

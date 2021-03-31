@@ -1,20 +1,20 @@
-FROM debian:sid-slim
+FROM debian:bullseye-slim
 
 RUN apt update && apt install --no-install-recommends -y axel wget postgresql-client && apt clean
 
-ARG IMPOSM_VERSION=0.10.0
-ARG IMPOSM_TARFILE="imposm-${IMPOSM_VERSION}-linux-x86-64.tar.gz"
-ARG IMPOSM_BASE_URL="https://github.com/omniscale/imposm3/releases/download/v${IMPOSM_VERSION}/${IMPOSM_TARFILE}"
+ARG IMPOSM3_VERSION=0.11.1
+ARG IMPOSM3_TARFILE="imposm-${IMPOSM3_VERSION}-linux-x86-64.tar.gz"
+ARG IMPOSM3_BASE_URL="https://github.com/omniscale/imposm3/releases/download/v${IMPOSM3_VERSION}/${IMPOSM3_TARFILE}"
 
 RUN cd /tmp/ && \
-    wget -q --no-check-certificate $IMPOSM_BASE_URL && \
-    dir=$(tar --exclude="*/*" -tf $IMPOSM_TARFILE) && \
-    tar xzf $IMPOSM_TARFILE && \
+    wget -q --no-check-certificate $IMPOSM3_BASE_URL && \
+    dir=$(tar -tf $IMPOSM3_TARFILE | head -n1) && \
+    tar xzf $IMPOSM3_TARFILE && \
     cd $dir && \
     mv imposm /usr/bin/imposm && \
     mv lib/* /usr/lib && \
     cd / && \
-    rm /tmp/$IMPOSM_TARFILE && \
+    rm /tmp/$IMPOSM3_TARFILE && \
     rm -r /tmp/$dir && \
     chmod +x /usr/bin/imposm
 

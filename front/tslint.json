@@ -13,6 +13,8 @@
         "prefer-inline-decorator": false, // prettier's responsibility
         "trailing-comma": false, // prettier's responsability
 
+        "unnecessary-else": false,
+
         "no-floating-promises": false,
         "typedef": false,
         "no-void-expression": false,

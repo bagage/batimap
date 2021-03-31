@@ -1,8 +1,5 @@
 from datetime import datetime, timedelta
 
-from flask import current_app, g
-from flask_sqlalchemy import SQLAlchemy
-
 from dateutil import parser
 from geoalchemy2 import Geometry
 from sqlalchemy import (
@@ -11,6 +8,7 @@ from sqlalchemy import (
     TIMESTAMP,
     String,
     JSON,
+    ForeignKey,
     Integer,
     BigInteger,
     func,
@@ -18,6 +16,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import HSTORE
+from sqlalchemy.orm import relationship
 
 from .bbox import Bbox
 
@@ -26,33 +25,6 @@ import logging
 LOG = logging.getLogger(__name__)
 
 Base = declarative_base()
-
-
-class City(Base):
-    __tablename__ = "city_stats"
-
-    insee = Column(String, primary_key=True)
-    department = Column(String)
-    name = Column(String)
-    name_cadastre = Column(String)
-    is_raster = Column(Boolean)
-    import_date = Column(String, name="date")
-    date_cadastre = Column(TIMESTAMP)
-    import_details = Column(JSON, name="details")
-    buildings = Column(Integer)
-
-    def __repr__(self):
-        return f"{self.name}({self.insee})"
-
-    def is_josm_ready(self):
-        return (
-            self.date_cadastre is not None
-            and (datetime.now() - parser.parse(str(self.date_cadastre))).days < 30
-        )
-
-    @staticmethod
-    def bad_dates():
-        return [None, "unfinished", "unknown", "never"]
 
 
 class Building(Base):
@@ -80,23 +52,54 @@ class Boundary(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
+class City(Base):
+    __tablename__ = "city_stats"
+
+    insee = Column(String, primary_key=True)
+    department = Column(String)
+    name = Column(String)
+    name_cadastre = Column(String)
+    is_raster = Column(Boolean)
+    import_date = Column(String, name="date")
+    date_cadastre = Column(TIMESTAMP)
+    import_details = Column(JSON, name="details")
+    osm_buildings = Column(Integer)
+
+    cadastre = relationship(
+        "Cadastre", primaryjoin="foreign(City.insee) == Cadastre.insee", lazy=True
+    )
+
+    def __repr__(self):
+        return f"{self.name}({self.insee})"
+
+    def is_josm_ready(self):
+        return (
+            self.date_cadastre is not None
+            and (datetime.now() - parser.parse(str(self.date_cadastre))).days < 30
+        )
+
+    @staticmethod
+    def bad_dates():
+        return [None, "unfinished", "unknown", "never"]
+
+
 class Cadastre(Base):
     __tablename__ = "cadastre_stats"
 
-    def __init__(self, insee, buildings):
+    def __init__(self, insee, od_buildings):
         super().__init__()
         self.insee = insee
         self.department = insee[:-3]
-        self.buildings = buildings
+        self.od_buildings = od_buildings
         self.last_fetch = datetime.now()
 
     insee = Column(String, primary_key=True)
     department = Column(String)
-    buildings = Column(Integer)
+    od_buildings = Column(Integer)
     last_fetch = Column(TIMESTAMP)
 
     def __repr__(self):
-        return f"{self.insee}({self.buildings} buildings)"
+        return f"{self.insee}({self.od_buildings} buildings)"
 
 
 class Db(object):
@@ -345,6 +348,11 @@ class Db(object):
 
     @__isInitialized
     def get_building_dates_per_city_for_insee(self, insee):
+        """
+        INSEE might represent either a department or a city.
+
+        Returns tuple (insee, date, number_of_buildings)
+        """
         return (
             self.__filter_city(
                 self.session.query(
@@ -360,9 +368,12 @@ class Db(object):
             .filter(City.insee.startswith(insee.zfill(2)))
             .filter(City.insee == Boundary.insee)
             .filter(Building.building != None)
-            .filter(Building.geometry.ST_GeometryType() != "ST_Point")
+            # avoid counting buildings twice (https://github.com/omniscale/imposm3/issues/85)
+            .filter(Building.geometry.ST_GeometryType() != "ST_LineString")
             .filter(Boundary.geometry.ST_Contains(Building.geometry))
-            .group_by(City.insee, City.name, "dated_source", City.is_raster)
+            .group_by(
+                City.insee, City.name, "dated_source", City.is_raster, Building.osm_id
+            )
             .all()
         )
 
