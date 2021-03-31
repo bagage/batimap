@@ -13,10 +13,6 @@ cp .env-example .env
 docker-compose up
 ```
 
-# Support
-
-<a href="https://www.jetbrains.com/?from=batimap"><img src="https://gitlab.com/bagage/batimap/uploads/275aeec5373e2508a030cce9b940557e/jetbrains.png" width="80"></img></a>
-
 # Licence
 
 ![MIT](./LICENSE)
