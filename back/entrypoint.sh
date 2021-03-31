@@ -11,6 +11,7 @@ PGPASSWORD="$POSTGRES_PASSWORD" psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p
 # initialize database if no record can be found
 if [ $result != 0 ] || [ "$count" -lt 10 ]; then
     flask initdb
+    echo "Batimap initialization done, starting now..."
 else
     # create ready file
     touch tiles/initdb_is_done

@@ -10,8 +10,10 @@ L'état actuel des données peut être visualisé sur [l'instance officiel](http
 
 ```sh
 cp .env-example .env
-docker-compose up
+docker-compose up # this might take 5-15minutes… App is ready when you see "Batimap initialization done, starting now..."
 ```
+
+You can then open http://localhost:4200 in a browser.
 
 # Licence
 
