@@ -13,6 +13,17 @@ export class JosmService {
     private readonly JOSM_URL_BASE = 'http://127.0.0.1:8111/';
     private readonly JOSM_URL_VERSION = `${this.JOSM_URL_BASE}version`;
 
+    private readonly overpassAPI = 'https://overpass-api.de/api/interpreter?data=';
+
+    private static GenerateOverpassQuery(name: string): string {
+        return `[out:xml][timeout:600];
+    {{geocodeArea:"${name}, France"}}->.searchArea;
+    (
+    nwr(area.searchArea);
+    );
+    out meta; >; out meta qt;`;
+    }
+
     constructor(private readonly http: HttpClient) {}
 
     isStarted(): Observable<boolean> {
@@ -34,12 +45,12 @@ export class JosmService {
             return EMPTY;
         }
         const imagery$ = this.josmUrlImageryBdortho$();
-        const buildings$ = this.josmUrlImport$(dto.buildingsUrl, true, false, "never");
+        const buildings$ = this.josmUrlImport$(dto.buildingsUrl, true, false, 'never');
         const segmented$ = this.josmUrlImport$(
             dto.segmententationPredictionssUrl,
             true,
             false, // cannot be locked otherwise todo plugin wont work
-            "never"
+            'never'
         );
 
         // for OSM data first we create the layer, then we try to load data
@@ -53,6 +64,16 @@ export class JosmService {
                     dto.bbox[1].toString(),
                     dto.bbox[2].toString(),
                     dto.bbox[3].toString()
+                ).pipe(
+                    catchError(error => {
+                        // use overpass query to download when city is too big for JOSM
+                        if (error && error.status === 502) {
+                            const encodedUrl =
+                                this.overpassAPI + encodeURIComponent(JosmService.GenerateOverpassQuery(city.name));
+
+                            return this.josmUrlImport$(encodedUrl, false, false, 'true', this.getOsmLayer(city));
+                        }
+                    })
                 )
             )
         );
@@ -73,7 +94,13 @@ export class JosmService {
         ]);
     }
 
-    josmUrlImport$(url: string, checkExists: boolean, locked: boolean, uploadPolicy: string, layerName?: string): Observable<string> {
+    josmUrlImport$(
+        url: string,
+        checkExists: boolean,
+        locked: boolean,
+        uploadPolicy: string,
+        layerName?: string
+    ): Observable<string> {
         // first ensure that the file exists, then load it into JOSM
         return (checkExists ? this.http.head(url, HttpErrorInterceptor.ByPassInterceptor()) : of(true)).pipe(
             catchError(e => {
