@@ -345,6 +345,11 @@ class Db(object):
 
     @__isInitialized
     def get_building_dates_per_city_for_insee(self, insee):
+        """
+        INSEE might represent either a department or a city.
+
+        Returns tuple (insee, date, number_of_buildings)
+        """
         return (
             self.__filter_city(
                 self.session.query(
@@ -360,9 +365,12 @@ class Db(object):
             .filter(City.insee.startswith(insee.zfill(2)))
             .filter(City.insee == Boundary.insee)
             .filter(Building.building != None)
-            .filter(Building.geometry.ST_GeometryType() != "ST_Point")
+            # avoid counting buildings twice (https://github.com/omniscale/imposm3/issues/85)
+            .filter(Building.geometry.ST_GeometryType() != "ST_LineString")
             .filter(Boundary.geometry.ST_Contains(Building.geometry))
-            .group_by(City.insee, City.name, "dated_source", City.is_raster)
+            .group_by(
+                City.insee, City.name, "dated_source", City.is_raster, Building.osm_id
+            )
             .all()
         )
 
