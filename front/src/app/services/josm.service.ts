@@ -13,6 +13,16 @@ export class JosmService {
     private readonly JOSM_URL_BASE = 'http://127.0.0.1:8111/';
     private readonly JOSM_URL_VERSION = `${this.JOSM_URL_BASE}version`;
 
+    overpassAPI = 'https://overpass-api.de/api/interpreter?data=';
+    generateOverpassQuery(name: string) {
+        return `[out:xml][timeout:600];
+    {{geocodeArea:"${name}, France"}}->.searchArea;
+    (
+    nwr(area.searchArea);
+    );
+    out meta; >; out meta qt;`;
+    }
+
     constructor(private readonly http: HttpClient) {}
 
     isStarted(): Observable<boolean> {
@@ -45,7 +55,7 @@ export class JosmService {
         // for OSM data first we create the layer, then we try to load data
         // cf https://gitlab.com/bagage/batimap/-/issues/70
         const osm$ = this.josmUrlLoadObject$(`r${osmID}`, this.getOsmLayer(city)).pipe(
-            switchMap(() =>
+            switchMap(() => {
                 this.josmUrlLoadAndZoom$(
                     false,
                     undefined,
@@ -53,8 +63,24 @@ export class JosmService {
                     dto.bbox[1].toString(),
                     dto.bbox[2].toString(),
                     dto.bbox[3].toString()
-                )
-            )
+                ).pipe(
+                    catchError(error => {
+                        // use overpass query to download when city is too big for JOSM
+                        if (error && error.status === 502) {
+                        const encodedUrl =
+                        this.overpassAPI + encodeURIComponent(this.generateOverpassQuery(city.name));
+
+                        return this.josmUrlImport$(
+                                encodedUrl,
+                                false,
+                                false,
+                                "true",
+                                this.getOsmLayer(city)
+                                );
+                        }
+                    })
+                );
+            })
         );
 
         return forkJoin([imagery$, segmented$, buildings$]).pipe(switchMap(() => osm$));
