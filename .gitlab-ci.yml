@@ -3,7 +3,7 @@ stages:
   - test
 
 test:front:
-  image: registry.gitlab.com/bagage/batimap/ci-test
+  image: registry.gitlab.com/bagage/batimap/ci-test-front
   stage: test
   cache:
     untracked: true
@@ -28,20 +28,18 @@ test:front:
       - front/**/*
 
 test:back:
-  image: python:3.9
+  image: registry.gitlab.com/bagage/batimap/ci-test-back
   stage: test
   services:
     - name: registry.gitlab.com/bagage/batimap/postgis
       alias: postgis
-  before_script:
-    - pip install pipenv
-    - sed -i 's/localhost:5432/postgis:5432/' back/batimap/app.conf
   variables:
     POSTGRES_DB: gis
     POSTGRES_USER: docker
     POSTGRES_PASSWORD: "batimap"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
+    - sed -i 's/localhost:5432/postgis:5432/' back/batimap/app.conf
     - cd back/
     - pipenv install -d
     - pipenv run pytest --log-cli-level INFO --junit-xml=tests-report.xml --cov batimap
@@ -70,7 +68,7 @@ test:back:
     - docker push registry.gitlab.com/bagage/batimap/$CONTAINER:latest
     - docker push registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG
 
-build:ci_test:
+build:ci_test_front:
   <<: *build_docker_image
   only:
     refs:
@@ -79,9 +77,22 @@ build:ci_test:
       - .gitlab-ci.yml
       - front/**/*
   variables:
-    CONTAINER: ci-test
+    CONTAINER: ci-test-front
     DOCKERFILE: Dockerfile.ci
     BASE_DIR: front
+
+build:ci_test_back:
+  <<: *build_docker_image
+  only:
+    refs:
+      - master
+    changes:
+      - .gitlab-ci.yml
+      - back/**/*
+  variables:
+    CONTAINER: ci-test-back
+    DOCKERFILE: Dockerfile.ci
+    BASE_DIR: back
 
 build:tiles-cleaner:
   <<: *build_docker_image
