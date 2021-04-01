@@ -58,7 +58,8 @@ def cadastre_command(cities, all):
         return
 
     insees = [x.insee for x in db.get_cities()] if all else cities
+    click.echo(f"Will stats given cities {', '.join(insees)}")
     for insee in insees:
         c = odcadastre.compute_count(insee)
-        batimap.clear_tiles(insee)
         click.echo(c)
+        batimap.clear_tiles(insee)
