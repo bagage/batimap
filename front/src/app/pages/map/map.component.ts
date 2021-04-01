@@ -83,9 +83,6 @@ export class MapComponent implements AfterViewInit {
         const color = this.legendService.date2color(date);
         // tslint:disable
         const visible = properties.insee.length <= 3 || this.legendService.isActive(date);
-        if (isIgnored) {
-            console.log(properties.insee, date, color, visible);
-        }
         return {
             weight: 2,
             color,
@@ -147,7 +144,6 @@ export class MapComponent implements AfterViewInit {
         } else {
             dialogType = CityDetailsDialogComponent;
             if (properties) {
-                console.log(properties);
                 const city = plainToClass(CityDTO, properties);
                 city.details = city.details ? deserialize(StatsDetailsDTO, city.details.toString()) : undefined;
                 data$ = [of(city), of(properties.osmid), of(this.cadastreLayer)];

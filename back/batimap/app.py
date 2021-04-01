@@ -4,6 +4,9 @@ import logging
 from flask import Flask
 from flask_cors import CORS
 
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
 from batimap.extensions import (
     api_smorest,
     celery,
@@ -55,6 +58,15 @@ def create_app():
     api_smorest.register_blueprint(api.routes.bp)
 
     init_celery(app)
+
+    sentry_dsn = os.environ.get("SENTRY_DSN")
+    if sentry_dsn:
+        app.logger.info("setting up sentry")
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=0,
+        )
 
     return app
 
