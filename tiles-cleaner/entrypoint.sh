@@ -43,7 +43,7 @@ while true; do
         fi
         echo -n > $UPDATE_FILE
         rm -f -- $INIT_FILE
-        echo "Initialization terminated"
+        echo "Tiles initial (re)generation terminated"
     elif [ -s $UPDATE_FILE ]; then
         echo "There is $(wc -l $UPDATE_FILE) outdated tiles to treat..."
         cat $UPDATE_FILE | sort | uniq > $WORK_FILE

@@ -1,10 +1,14 @@
 <div leaflet (leafletMapReady)="onMapReady($event)" [leafletOptions]="options"></div>
 
-<app-map-date-legend
-    #legend
-    [ngClass]="{ hidden: !displayLegend }"
-    [hideCheckboxes]="map?.getZoom() < 7"
-    (hideLegend)="displayLegend = false"
-></app-map-date-legend>
+<div class="legend">
+    <app-map-date-legend
+        #legend
+        [ngClass]="{ hidden: !displayLegend }"
+        [hideCheckboxes]="map?.getZoom() < 7"
+        (hideLegend)="displayLegend = false"
+    ></app-map-date-legend>
 
-<app-legend-button *ngIf="!displayLegend" (showLegend)="displayLegend = true"> </app-legend-button>
+    <app-legend-button *ngIf="!displayLegend" (showLegend)="displayLegend = true"> </app-legend-button>
+
+    <app-tasks *ngIf="displayTasks"></app-tasks>
+</div>

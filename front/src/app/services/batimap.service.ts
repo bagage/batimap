@@ -12,6 +12,7 @@ import { ConflateCityDTO } from '../classes/conflate-city.dto';
 import { DepartmentDTO } from '../classes/department.dto';
 import { LegendDTO } from '../classes/legend.dto';
 import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
+import { TaskDTO } from '../classes/task.dto';
 import { HttpErrorInterceptor } from './http-error.interceptor';
 import { LegendService } from './legend.service';
 
@@ -29,6 +30,7 @@ export interface TaskResult<T> {
 }
 
 export interface Task {
+    // tslint:disable-next-line:variable-name
     task_id: string;
 }
 
@@ -104,7 +106,7 @@ export class BatimapService {
     }
 
     departmentDetails(insee: string): Observable<StatsDetailsDTO> {
-        return this.http.get<StatsDetailsDTO>(this.URL_DEPARMENT_DETAILS(insee));
+        return this.http.get<StatsDetailsDTO>(this.URL_DEPARTMENT_DETAILS(insee));
     }
 
     department(insee: string): Observable<DepartmentDTO> {
@@ -119,8 +121,38 @@ export class BatimapService {
         return this.http.get<number>(this.URL_OSMID(insee));
     }
 
-    private URL_TASK(task: Task): string {
-        return `${this.configService.getConfig().backServerUrl}/tasks/${task.task_id}`;
+    tasks(): Observable<TaskDTO[]> {
+        return this.http.get<TaskDTO[]>(this.URL_TASKS());
+    }
+
+    cityTasks(insee: string): Observable<TaskDTO[]> {
+        return this.http.get<TaskDTO[]>(this.URL_CITY_TASKS(insee));
+    }
+
+    waitTask<T>(taskId: string, resultType?: ClassType<T>): Observable<TaskResult<T>> {
+        return timer(0, 3000).pipe(
+            switchMap(() => this.http.get<TaskResult<T>>(this.URL_TASK(taskId))),
+            takeWhile(r => r.state === TaskState.PENDING || r.state === TaskState.PROGRESS, true),
+            tap(r => {
+                if (r.state === TaskState.PENDING) {
+                    r.progress = new TaskProgress(0, 100);
+                } else if (r.state === TaskState.PROGRESS) {
+                    r.progress = plainToClass(TaskProgress, r.result);
+                    r.result = undefined;
+                } else if (r.state === TaskState.FAILURE) {
+                    throw new Error(r.result.toString());
+                } else {
+                    if (resultType) {
+                        r.result = plainToClass(resultType, r.result);
+                    }
+                    r.progress = new TaskProgress(100, 100);
+                }
+            })
+        );
+    }
+
+    private URL_TASK(taskId: string): string {
+        return `${this.configService.getConfig().backServerUrl}/tasks/${taskId}`;
     }
 
     private URL_CITY_DATA(insee: string): string {
@@ -143,7 +175,7 @@ export class BatimapService {
         return `${this.configService.getConfig().backServerUrl}departments/${insee}`;
     }
 
-    private URL_DEPARMENT_DETAILS(insee: string) {
+    private URL_DEPARTMENT_DETAILS(insee: string) {
         return `${this.configService.getConfig().backServerUrl}departments/${insee}/details`;
     }
 
@@ -155,27 +187,15 @@ export class BatimapService {
         return `${this.configService.getConfig().backServerUrl}insees/${insee}/osm_id`;
     }
 
-    private longRunningAPI<T>(url, cls: ClassType<T>): Observable<TaskResult<T>> {
-        return this.http.get<Task>(url).pipe(
-            switchMap(task =>
-                timer(0, 3000).pipe(
-                    switchMap(() => this.http.get<TaskResult<T>>(this.URL_TASK(task))),
-                    takeWhile(r => r.state === TaskState.PENDING || r.state === TaskState.PROGRESS, true),
-                    tap(r => {
-                        if (r.state === TaskState.PENDING) {
-                            r.progress = new TaskProgress(0, 100);
-                        } else if (r.state === TaskState.PROGRESS) {
-                            r.progress = plainToClass(TaskProgress, r.result);
-                            r.result = undefined;
-                        } else if (r.state === TaskState.FAILURE) {
-                            throw new Error(r.result.toString());
-                        } else {
-                            r.result = plainToClass(cls, r.result);
-                            r.progress = new TaskProgress(100, 100);
-                        }
-                    })
-                )
-            )
-        );
+    private URL_TASKS() {
+        return `${this.configService.getConfig().backServerUrl}tasks`;
+    }
+
+    private URL_CITY_TASKS(insee: string) {
+        return `${this.configService.getConfig().backServerUrl}cities/${insee}/tasks`;
+    }
+
+    private longRunningAPI<T>(url: string, resultType: ClassType<T>): Observable<TaskResult<T>> {
+        return this.http.get<Task>(url).pipe(switchMap(task => this.waitTask<T>(task.task_id, resultType)));
     }
 }

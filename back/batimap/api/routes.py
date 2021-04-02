@@ -5,9 +5,11 @@ from geojson import Feature, FeatureCollection
 
 from batimap.bbox import Bbox
 from batimap.citydto import CityEncoder, CityDTO
+from batimap.taskdto import TaskEncoder, TaskDTO
 from batimap.extensions import batimap, db
 from batimap.point import Point
 from batimap.tasks.common import task_initdb, task_josm_data, task_update_insee
+from batimap.tasks.utils import find_task_id, list_tasks
 
 from celery.result import AsyncResult
 from sqlalchemy.exc import IntegrityError
@@ -134,30 +136,47 @@ def api_city(insee) -> dict:
     return json.dumps(CityDTO(db.get_city_for_insee(insee)), cls=CityEncoder)
 
 
+@bp.route("/cities/<insee>/tasks", methods=["GET"])
+def api_city_tasks(insee) -> dict:
+    city_tasks = [TaskDTO(t) for t in list_tasks() if t["args"] == [insee]]
+    return json.dumps(city_tasks, cls=TaskEncoder)
+
+
 @bp.route("/cities/<insee>/update", methods=["GET"])
 def api_update_insee_list(insee) -> dict:
     LOG.debug(f"Receive an update request for {insee}")
 
-    new_task = task_update_insee.delay(insee)
+    task_id = find_task_id("batimap.tasks.common.task_update_insee", [insee])
+
+    if task_id:
+        LOG.info(f"Returning an already running update request for {insee}: {task_id}")
+    else:
+        # only create a new task if none already exists
+        task_id = task_update_insee.delay(insee).id
+
     return Response(
-        response=json.dumps({"task_id": new_task.id}),
+        response=json.dumps({"task_id": task_id}),
         status=202,
-        headers={
-            "Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)
-        },
+        headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
 
 
 @bp.route("/cities/<insee>/josm", methods=["GET"])
 def api_josm_data(insee) -> dict:
     LOG.debug(f"Receive an josm request for {insee}")
-    new_task = task_josm_data.delay(insee)
+
+    task_id = find_task_id("batimap.tasks.common.task_josm_data", [insee])
+
+    if task_id:
+        LOG.info(f"Returning an already running josm request for {insee}: {task_id}")
+    else:
+        # only create a new task if none already exists
+        task_id = task_josm_data.delay(insee).id
+
     return Response(
-        response=json.dumps({"task_id": new_task.id}),
+        response=json.dumps({"task_id": task_id}),
         status=202,
-        headers={
-            "Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)
-        },
+        headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
 
 
@@ -177,26 +196,34 @@ def api_obsolete_city() -> dict:
 
 
 @bp.route("/initdb", methods=["POST"])
-# @bp.arguments(BBoxSchema, location='json')
 def api_initdb():
     items = (request.get_json() or {}).get("cities")
-    LOG.debug("Receive an initdb request for " + str(items))
-    if items:
-        new_task = task_initdb.delay(items)
-        return Response(
-            response=json.dumps({"task_id": new_task.id}),
-            status=202,
-            headers={
-                "Location": url_for("app_routes.api_tasks_status", task_id=new_task.id)
-            },
+
+    if not items:
+        return Response(status=400)
+
+    LOG.debug(f"Receive an initdb request for {', '.join(items)}")
+    task_id = find_task_id("batimap.tasks.common.task_initdb", [items])
+
+    if task_id:
+        LOG.info(
+            f"Returning an already running initdb request for {', '.join(items)}: {task_id}"
         )
-    return Response(status=400)
+    else:
+        # only create a new task if none already exists
+        task_id = task_initdb.delay(items).id
+
+    return Response(
+        response=json.dumps({"task_id": task_id}),
+        status=202,
+        headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
+    )
 
 
-@bp.route("/tasks/<task_id>", methods=["GET"])
+@bp.route("/tasks/<uuid:task_id>", methods=["GET"])
 def api_tasks_status(task_id):
     # task_id could be wrong, but we can not check it
-    task = AsyncResult(task_id)
+    task = AsyncResult(str(task_id))
     LOG.debug(f"Check status of {task_id} => {task.status}")
     try:
         result = json.loads(task.result) if task.result else None
@@ -205,3 +232,8 @@ def api_tasks_status(task_id):
     response = {"state": task.state, "result": result}
 
     return json.dumps(response, cls=CityEncoder)
+
+
+@bp.route("/tasks", methods=["GET"])
+def api_tasks():
+    return json.dumps([TaskDTO(t) for t in list_tasks()], cls=TaskEncoder)

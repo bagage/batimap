@@ -42,9 +42,9 @@ services:
 
   redis:
     image: redis:5-alpine
-    command: redis-server
+    command: redis-server --appendonly yes
     volumes:
-      - ./data/redis:/var/lib/redis/data
+      - ./data/redis:/data
 
   celery:
     image: registry.gitlab.com/bagage/batimap/back

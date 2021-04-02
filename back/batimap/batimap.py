@@ -291,6 +291,7 @@ class Batimap(object):
 
     def fetch_cadastre_data(self, city):
         if not city or not city.name_cadastre:
+            LOG.warning(f"Missing city or city.name_cadastre for {city}, aborting")
             return
 
         # force refresh if cadastre data is too old
@@ -318,6 +319,7 @@ class Batimap(object):
             "ville": city.name_cadastre,
         }
 
+        LOG.debug(f"Querying cadastre for {city} ({city.name_cadastre}) - {data}")
         # otherwise we invoke Cadastre generation
         with closing(requests.post(url, data=data, stream=True)) as r:
             (total_y, total) = (0, 0)
@@ -338,6 +340,7 @@ class Batimap(object):
                     )
                     LOG.info(msg)
                     yield current * 100 / total
+
                 if "Termin" in line:
                     current = total
                     msg = (
@@ -347,10 +350,16 @@ class Batimap(object):
                     )
                     LOG.info(msg)
                     yield 100
+                    return
                 elif "ERROR:" in line or "ERREUR:" in line:
                     LOG.error(line)
                     # may happen when cadastre.gouv.fr is in maintenance mode
                     raise Exception(line)
+
+        # we should never raise this statement. However it may happen when you
+        # do the same request twice - the response is returning 200 OK while
+        # the city is stil lactually being processed
+        raise Exception(f"Invalid cadastre server response for {city}, please retry")
 
     def clear_tiles(self, insee):
         bbox = self.db.get_city_bbox(insee)
