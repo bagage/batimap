@@ -27,12 +27,14 @@ class ODCadastre(object):
     def query_city_od(self, insee):
         url = f"https://cadastre.data.gouv.fr/bundler/cadastre-etalab/communes/{insee}/geojson/batiments"
         r = requests.get(url)
+        LOG.debug(f"parsing department od for {insee}")
         data = r.json()
         return len(data["features"])
 
     def query_department_od(self, dept):
-        url = f"https://cadastre.data.gouv.fr/data/etalab-cadastre/2021-02-01/geojson/departements/{dept}/cadastre-{dept}-batiments.json.gz"
+        url = f"https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/departements/{dept}/cadastre-{dept}-batiments.json.gz"
         r = requests.get(url)
+        LOG.debug(f"parsing department od for {dept}")
         data = json.loads(gzip.decompress(r.content))
 
         # there is one feature per building, properties.commune containing its city INSEE

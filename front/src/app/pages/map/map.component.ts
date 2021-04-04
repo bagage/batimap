@@ -38,6 +38,7 @@ export class MapComponent implements AfterViewInit {
     map: L.Map;
     cadastreLayer: any;
     displayLegend = true;
+    displayTasks = false;
     private searchControl: L.Control;
 
     constructor(
@@ -59,6 +60,7 @@ export class MapComponent implements AfterViewInit {
     onMapReady(map) {
         this.map = map;
         this.legend.map = map;
+        this.displayTasks = localStorage.getItem('displayTasks') === 'true';
         const hash = L.hash(map);
         hash.formatHash = (m: any) => {
             const center = m.getCenter();

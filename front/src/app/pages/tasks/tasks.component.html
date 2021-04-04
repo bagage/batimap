@@ -1,0 +1,27 @@
+<mat-card>
+    <mat-card-title id="title">Statut des tâches </mat-card-title>
+    <mat-card-content>
+        <ng-container *ngIf="metatasks$ | async as metatasks; else loading">
+            <ng-container *ngIf="metatasks.length > 0; else noTasks">
+                <ul>
+                    <li *ngFor="let meta of metatasks" [title]="meta.task.task_id">
+                        {{ meta.task.name }} {{ meta.task.args }}
+                        <mat-progress-bar
+                            *ngIf="meta.task.running"
+                            color="primary"
+                            mode="buffer"
+                            [value]="meta.status.progress.current"
+                            [bufferValue]="meta.status.progress.current"
+                        ></mat-progress-bar>
+                    </li>
+                </ul>
+            </ng-container>
+        </ng-container>
+
+        <ng-template #loading>
+            <app-loader></app-loader>
+        </ng-template>
+
+        <ng-template #noTasks> Aucune tâche en cours d'execution. </ng-template>
+    </mat-card-content>
+</mat-card>

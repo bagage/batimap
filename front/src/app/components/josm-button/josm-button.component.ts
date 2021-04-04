@@ -5,11 +5,12 @@ import {
     EventEmitter,
     HostListener,
     Input,
+    OnInit,
     Output,
 } from '@angular/core';
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable, of } from 'rxjs';
-import { catchError, filter, map, switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { CityDTO } from '../../classes/city.dto';
 import { ConflateCityDTO } from '../../classes/conflate-city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
@@ -22,7 +23,7 @@ import { JosmService } from '../../services/josm.service';
     templateUrl: './josm-button.component.html',
     styleUrls: ['./josm-button.component.css'],
 })
-export class JosmButtonComponent extends Unsubscriber {
+export class JosmButtonComponent extends Unsubscriber implements OnInit {
     @Output() readonly newerDate = new EventEmitter<CityDTO>();
 
     options: MatProgressButtonOptions = {
@@ -42,6 +43,7 @@ export class JosmButtonComponent extends Unsubscriber {
     private _city: CityDTO;
     @Input()
     set city(value: CityDTO) {
+        const changed = value && this._city && this._city.insee !== value.insee;
         this._city = value;
         if (value.josm_ready) {
             this.tooltip =
@@ -53,6 +55,10 @@ export class JosmButtonComponent extends Unsubscriber {
             this.tooltip = 'Prépare les données pour pouvoir être ensuite éditer avec JOSM. [Raccourci : P]';
             this.options.text = 'Préparer';
             this.options.barColor = this.options.buttonColor = 'accent';
+
+            if (changed) {
+                this.checkIsPreparing();
+            }
         }
     }
 
@@ -69,6 +75,23 @@ export class JosmButtonComponent extends Unsubscriber {
         super();
     }
 
+    ngOnInit() {
+        if (this._city) {
+            this.checkIsPreparing();
+        }
+    }
+
+    checkIsPreparing() {
+        // check if the current city
+        this.autoUnsubscribe(
+            this.batimapService.cityTasks(this._city.insee).subscribe(tasks => {
+                if (tasks.length) {
+                    this.onClick();
+                }
+            })
+        );
+    }
+
     @HostListener('document:keydown.j') onClick() {
         this.options.active = true;
         const onEnd = () => {
@@ -77,7 +100,7 @@ export class JosmButtonComponent extends Unsubscriber {
             this.changeDetector.detectChanges();
         };
 
-        const obs$ = (this._city.josm_ready ? this.conflateCity() : this.prepareCity());
+        const obs$ = this._city.josm_ready ? this.conflateCity() : this.prepareCity();
 
         this.autoUnsubscribe(
             obs$.subscribe(

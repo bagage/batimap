@@ -1,0 +1,10 @@
+#title {
+    font-size: medium;
+}
+
+ul {
+    padding-left: 0;
+}
+ul > li {
+    list-style: none;
+}

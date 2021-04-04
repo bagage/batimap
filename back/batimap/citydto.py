@@ -21,17 +21,9 @@ class CityDTO:
 
     @property
     def __geo_interface__(self):
-        return {
-            "name": self.name,
-            "insee": self.insee,
-            "date": self.date,
-            "details": self.details,
-            "osm_buildings": self.osm_buildings,
-            "od_buildings": self.od_buildings,
-            "josm_ready": self.josm_ready,
-        }
+        return self.__dict__
 
 
 class CityEncoder(JSONEncoder):
-    def default(self, o):
-        return o.__dict__
+    def default(self, city):
+        return city.__dict__
