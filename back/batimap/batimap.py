@@ -11,9 +11,8 @@ from collections import Counter
 from contextlib import closing
 
 import requests
-from bs4 import BeautifulSoup, SoupStrainer
-
 from batimap.db import City
+from bs4 import BeautifulSoup, SoupStrainer
 
 LOG = logging.getLogger(__name__)
 
