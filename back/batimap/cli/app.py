@@ -1,7 +1,6 @@
 from batimap.extensions import batimap, db, odcadastre
 from batimap.tasks.common import task_initdb
-from flask import Blueprint, g
-
+from flask import Blueprint
 import click
 
 bp = Blueprint("app_cli", __name__, cli_group=None)

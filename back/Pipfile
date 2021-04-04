@@ -5,6 +5,9 @@ verify_ssl = true
 
 [dev-packages]
 black = "*"
+flake8 = "*"
+flake8-pathlib = "*"
+flake8-use-fstring = "*"
 coverage = "*"
 pytest = "*"
 pytest-cov = "*"
@@ -33,3 +36,6 @@ sentry-sdk = {extras = ["flask"], version = "*"}
 
 [requires]
 python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true

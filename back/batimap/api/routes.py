@@ -69,7 +69,6 @@ def api_insee(insee) -> dict:
 
 
 @bp.route("/bbox/cities", methods=["POST"])
-# @bp.arguments(BBoxSchema, location='json')
 def api_bbox_cities() -> dict:
     bboxes = (request.get_json() or {}).get("bboxes")
     cities = set()

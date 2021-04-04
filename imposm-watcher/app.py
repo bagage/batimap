@@ -10,6 +10,7 @@ import time
 import logging
 import os
 import threading
+from pathlib import Path
 
 config = configparser.ConfigParser()
 config.read("app.conf")
@@ -114,14 +115,14 @@ class Handler(FileSystemEventHandler):
     def chunks(array, n):
         """Yield striped chunks from array of n items."""
         for i in range(0, len(array), n):
-            yield array[i : i + n]
+            yield array[i : i + n]  # noqa: E203
 
     @staticmethod
     def parse_entries(file_path):
         LOG.info(f"New entries in {file_path}")
         lines = []
         try:
-            with open(file_path) as f:
+            with Path(file_path).open() as f:
                 lines = f.readlines()
         except Exception as e:
             LOG.warning(f"Could not read entries in {file_path}: {e}")

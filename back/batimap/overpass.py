@@ -36,9 +36,7 @@ class Overpass(object):
                 overpass.errors.ServerLoadError,
             ) as e:
                 LOG.warning(
-                    "{} occurred. Will retry again {} times in a few seconds".format(
-                        type(e).__name__, retry
-                    )
+                    f"{type(e).__name__} occurred. Will retry again {retry} times in a few seconds"
                 )
                 if retry == 0:
                     raise e
@@ -50,7 +48,7 @@ class Overpass(object):
                     raise e
                 else:
                     LOG.warning(
-                        f"Unhandled exception occured: {e}, trying next endpoint"
+                        f"Unhandled exception occurred: {e}, trying next endpoint"
                     )
         return None
 

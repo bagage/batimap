@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 
 from dateutil import parser
 from geoalchemy2 import Geometry
@@ -8,7 +9,6 @@ from sqlalchemy import (
     TIMESTAMP,
     String,
     JSON,
-    ForeignKey,
     Integer,
     BigInteger,
     func,
@@ -147,11 +147,11 @@ class Db(object):
         return self.__filter_city(self.session.query(Boundary.name), insee).first()
 
     @__isInitialized
-    def get_cities(self) -> [City]:
+    def get_cities(self) -> List[City]:
         return self.session.query(City).order_by(City.insee).all()
 
     @__isInitialized
-    def get_cities_for_department(self, department) -> [City]:
+    def get_cities_for_department(self, department) -> List[City]:
         return (
             self.session.query(City)
             .filter(City.department == department.zfill(2))
@@ -301,7 +301,7 @@ class Db(object):
         )
 
     @__isInitialized
-    def get_unknown_cities(self, departments) -> [City]:
+    def get_unknown_cities(self, departments) -> List[City]:
         return (
             self.session.query(City)
             .filter(City.department.in_([x.zfill(2) for x in departments]))
@@ -367,7 +367,7 @@ class Db(object):
             )
             .filter(City.insee.startswith(insee.zfill(2)))
             .filter(City.insee == Boundary.insee)
-            .filter(Building.building != None)
+            .filter(Building.building.isnot(None))
             # avoid counting buildings twice (https://github.com/omniscale/imposm3/issues/85)
             .filter(Building.geometry.ST_GeometryType() != "ST_LineString")
             .filter(Boundary.geometry.ST_Contains(Building.geometry))
@@ -389,13 +389,13 @@ class Db(object):
             )
             .filter(City.insee == Boundary.insee)
             .filter(City.insee.startswith(insee.zfill(2)))
-            .filter(City.is_raster == False)
+            .filter(City.is_raster.is_(False))
             .subquery(name="GeoCities")
         )
 
         return (
             self.session.query(GeoCities.c.insee, Building.osm_id)
-            .filter(Building.building != None)
+            .filter(Building.building.isnot(None))
             .filter(Building.building.notin_(ignored_buildings))
             .filter(not_(Building.tags.has_any(ignored_tags)))
             .filter(Building.geometry.ST_GeometryType() == "ST_Point")

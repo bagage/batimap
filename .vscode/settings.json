@@ -1,0 +1,37 @@
+{
+    "python.languageServer": "Pylance",
+    "python.formatting.provider": "black",
+    "python.analysis.extraPaths": ["./back"],
+    "[python]": {
+        "editor.formatOnPaste": false,
+        "editor.formatOnSaveMode": "file"
+    },
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modifications",
+    "cSpell.words": [
+        "IMPOSM",
+        "Unsubscriber",
+        "asymmetrik",
+        "bati",
+        "bboxes",
+        "citydto",
+        "depts",
+        "ijson",
+        "initdb",
+        "insees",
+        "isnot",
+        "notin",
+        "odcadastre",
+        "osmid",
+        "protobuf",
+        "smorest",
+        "taskdto"
+    ],
+    "python.pythonPath": "back/.venv/bin/python",
+    "prettier.configPath": "front/.prettierrc",
+    "prettier.documentSelectors": ["front/**"],
+    "htmlhint.options": {
+        "attr-lowercase": false
+    }
+}

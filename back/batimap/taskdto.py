@@ -1,7 +1,5 @@
 from json import JSONEncoder
 
-from .db import City
-
 
 class TaskDTO:
     task_id = None
