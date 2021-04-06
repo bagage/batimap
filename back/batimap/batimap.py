@@ -274,7 +274,7 @@ class Batimap(object):
             return None
 
         base_url = f"https://cadastre.openstreetmap.fr/data/{c.department.zfill(3)}/{c.name_cadastre}-houses-"
-        bbox = self.db.get_city_bbox(insee)
+        bbox = self.db.get_insee_bbox(insee)
 
         # force refreshing city latest import date
         city = self.__compute_city_date(c)
@@ -363,7 +363,7 @@ class Batimap(object):
         raise Exception(f"Invalid cadastre server response for {city}, please retry")
 
     def clear_tiles(self, insee):
-        bbox = self.db.get_city_bbox(insee)
+        bbox = self.db.get_insee_bbox(insee)
         LOG.info(f"Tiles for city {insee} must be regenerated in bbox {str(bbox)}")
         with Path("tiles/outdated.txt").open("a") as fd:
             fd.write(f"{bbox}\n")

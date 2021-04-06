@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import gzip
-import json
 import logging
 from collections import Counter
 
+import ijson
 import requests
 from batimap.db import Cadastre
 from flask import current_app
@@ -31,11 +31,11 @@ class ODCadastre(object):
         )
         r = requests.get(url)
         LOG.debug(f"parsing department od for {dept}")
-        data = json.loads(gzip.decompress(r.content))
+        data = gzip.decompress(r.content)
 
         # there is one feature per building, properties.commune containing its city INSEE
         buildings_per_insee = Counter(
-            [b["properties"]["commune"] for b in data["features"]]
+            list(ijson.items(data, "features.item.properties.commune"))
         )
 
         return buildings_per_insee

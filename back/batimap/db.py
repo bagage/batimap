@@ -182,12 +182,14 @@ class Db(object):
         )
 
     @__isInitialized
-    def get_city_bbox(self, insee):
-        # first() is required because of multipolygons cities (76218 - Doudeauville for instance)
+    def get_insee_bbox(self, insee):
+        # first() is required because of multipolygons (76218 - Doudeauville for instance)
+        # fixme: ideally we should wrap all parts in a meta bbox instead
         return Bbox.from_pg(
-            self.__filter_city(
-                self.session.query(func.Box2D(Boundary.geometry)), insee
-            ).first()[0]
+            self.session.query(func.Box2D(Boundary.geometry))
+            .filter(Boundary.insee == insee)
+            .order_by(Boundary.admin_level)
+            .first()[0]
         )
 
     @__isInitialized
