@@ -14,6 +14,7 @@ import { BatimapService } from '../../services/batimap.service';
 import { LegendService } from '../../services/legend.service';
 
 import * as L from 'leaflet';
+import { BuildingsRatioPipe } from '../../pipes/buildings-ratio.pipe';
 
 @Component({
     selector: 'app-map',
@@ -48,7 +49,8 @@ export class MapComponent implements AfterViewInit {
         private readonly configService: AppConfigService,
         private readonly route: ActivatedRoute,
         private readonly router: Router,
-        private readonly batimapService: BatimapService
+        private readonly batimapService: BatimapService,
+        private readonly buildingsRatioPipe: BuildingsRatioPipe
     ) {}
 
     ngAfterViewInit(): void {
@@ -80,11 +82,16 @@ export class MapComponent implements AfterViewInit {
     }
 
     stylingFunction(properties, zoom, type): any {
+        const minRatio = +localStorage.getItem('min-buildings-ratio') || 0;
         const isIgnored = this.batimapService.ignoredInsees().indexOf(properties.insee) !== -1;
         const date = isIgnored ? 'ignored' : this.legendService.city2date.get(properties.insee) || properties.date;
         const color = this.legendService.date2color(date);
+        const ratio = Math.abs(+this.buildingsRatioPipe.transform([properties.od_buildings, properties.osm_buildings]));
         // tslint:disable
-        const visible = properties.insee.length <= 3 || this.legendService.isActive(date);
+        const visible =
+            properties.insee.length <= 3 /* dept are always visible */ ||
+            (this.legendService.isActive(date) && ratio >= minRatio);
+
         return {
             weight: 2,
             color,

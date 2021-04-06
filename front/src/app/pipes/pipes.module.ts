@@ -10,6 +10,7 @@ import { SortedPipe } from './sorted.pipe';
 @NgModule({
     declarations: [CountPipe, LegendPipe, AnyPipe, MapPipe, SortedPipe, BuildingsRatioPipe],
     exports: [CountPipe, LegendPipe, AnyPipe, MapPipe, SortedPipe, BuildingsRatioPipe],
+    providers: [CountPipe, LegendPipe, AnyPipe, MapPipe, SortedPipe, BuildingsRatioPipe],
     imports: [CommonModule],
 })
 export class PipesModule {}

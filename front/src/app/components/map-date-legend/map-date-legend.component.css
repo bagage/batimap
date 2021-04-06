@@ -4,3 +4,30 @@ ul {
 #title {
     font-size: medium;
 }
+
+mat-label {
+    display: block;
+    margin-top: 10px;
+}
+
+mat-slider {
+    height: auto;
+    width: 100%;
+}
+
+/* based on buildings-ratio.pipe.ts colors */
+:host ::ng-deep .ratio-green .mat-slider-thumb,
+:host ::ng-deep .ratio-green .mat-slider-thumb-label,
+:host ::ng-deep .ratio-green .mat-slider-thumbtrack-fill {
+    background-color: green;
+}
+:host ::ng-deep .ratio-orange .mat-slider-thumb,
+:host ::ng-deep .ratio-orange .mat-slider-thumb-label,
+:host ::ng-deep .ratio-orange .mat-slider-thumbtrack-fill {
+    background-color: orange;
+}
+:host ::ng-deep .ratio-red .mat-slider-thumb,
+:host ::ng-deep .ratio-red .mat-slider-thumb-label,
+:host ::ng-deep .ratio-red .mat-slider-thumbtrack-fill {
+    background-color: red;
+}
