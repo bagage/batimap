@@ -455,6 +455,9 @@ class Batimap(object):
             # 1. fetch global stats for current department of all buildings
             LOG.debug(f"Calcul des statistiques du bâti pour l'INSEE {insee_in}…")
             result = self.db.get_building_dates_per_city_for_insee(insee_in)
+            LOG.debug(
+                f"Calcul des statistiques du bâti pour l'INSEE {insee_in}: {result}"
+            )
 
             buildings = {}
             insee_name = {}

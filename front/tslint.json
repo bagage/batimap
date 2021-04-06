@@ -14,6 +14,9 @@
         "trailing-comma": false, // prettier's responsability
 
         "unnecessary-else": false,
+        "comment-type": false,
+        "prefer-conditional-expression": false,
+        "strict-boolean-expressions": false,
 
         "no-floating-promises": false,
         "typedef": false,

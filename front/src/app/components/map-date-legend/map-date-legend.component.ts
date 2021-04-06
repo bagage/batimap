@@ -1,7 +1,17 @@
-import { Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output } from '@angular/core';
+import {
+    AfterViewInit,
+    Component,
+    EventEmitter,
+    HostListener,
+    Input,
+    NgZone,
+    OnInit,
+    Output,
+    ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { combineLatest, concat, Observable, of, zip } from 'rxjs';
-import { catchError, map, switchMap, tap, toArray } from 'rxjs/operators';
+import { combineLatest, concat, EMPTY, fromEvent, Observable, of, zip } from 'rxjs';
+import { catchError, debounce, debounceTime, distinctUntilChanged, map, switchMap, tap, toArray } from 'rxjs/operators';
 import { LegendDTO } from '../../classes/legend.dto';
 import { ObsoleteCityDTO } from '../../classes/obsolete-city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
@@ -11,6 +21,7 @@ import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { CityDetailsDialogComponent } from '../city-details-dialog/city-details-dialog.component';
 import { MapDateLegendModel } from './map-date-legend.model';
 
+import { MatSlider, MatSliderChange } from '@angular/material/slider';
 import * as L from 'leaflet';
 
 @Component({
@@ -29,6 +40,16 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     bounds: L.LatLngBounds;
     error = false;
 
+    @ViewChild(MatSlider)
+    set countSlider(countSlider: MatSlider) {
+        if (countSlider) {
+            setTimeout(() => {
+                countSlider.value = +(localStorage.getItem('min-buildings-ratio') || '0');
+                this.redrawMapOnSliderChanges(countSlider);
+            });
+        }
+    }
+
     constructor(
         private readonly zone: NgZone,
         private readonly batimapService: BatimapService,
@@ -45,6 +66,16 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                 this.refreshLegend();
             });
         });
+    }
+
+    redrawMapOnSliderChanges(countSlider) {
+        /* redraw map on slider value update */
+        this.autoUnsubscribe(
+            countSlider.change.pipe(debounceTime(300), distinctUntilChanged()).subscribe((event: any) => {
+                localStorage.setItem('min-buildings-ratio', event.value.toFixed(0));
+                this.cadastreLayer.redraw();
+            })
+        );
     }
 
     refreshLegend() {
@@ -124,5 +155,13 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                     }, 0);
                 })
         );
+    }
+
+    formatPercentage(value: number) {
+        if (value > 99) {
+            return '>99%';
+        } else {
+            return `${value}%`;
+        }
     }
 }

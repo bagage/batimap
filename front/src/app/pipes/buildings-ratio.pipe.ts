@@ -5,13 +5,21 @@ import { CityDTO } from '../classes/city.dto';
     name: 'buildingsratio',
 })
 export class BuildingsRatioPipe implements PipeTransform {
-    transform(city: CityDTO, attribute?: string | undefined): number | string {
-        if (city.osm_buildings === undefined || city.od_buildings === undefined) {
-            return undefined;
-        }
+    transform(input, attribute?: string | undefined): number | string {
+        let ratio: number;
+        if (input instanceof CityDTO || input.osm_buildings) {
+            if (input.osm_buildings === undefined || input.od_buildings === undefined) {
+                return undefined;
+            }
 
-        // tslint:disable-next-line:binary-expression-operand-order
-        const ratio = +(100 * (1 - city.od_buildings / city.osm_buildings)).toFixed(2);
+            // tslint:disable-next-line:binary-expression-operand-order
+            ratio = +(100 * (1 - input.od_buildings / input.osm_buildings)).toFixed(2);
+        } else if (Array.isArray(input)) {
+            // tslint:disable-next-line:binary-expression-operand-order
+            ratio = +(100 * (1 - input[0] / input[1])).toFixed(2);
+        } else {
+            ratio = input;
+        }
 
         if (attribute === 'color') {
             if (Math.abs(ratio) < 5) {
