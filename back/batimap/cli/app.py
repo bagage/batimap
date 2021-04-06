@@ -1,7 +1,7 @@
+from pathlib import Path
 from batimap.extensions import batimap, db, odcadastre
 from batimap.tasks.common import task_initdb
-from flask import Blueprint, g
-
+from flask import Blueprint
 import click
 
 bp = Blueprint("app_cli", __name__, cli_group=None)
@@ -62,4 +62,10 @@ def cadastre_command(cities, all):
     for insee in insees:
         c = odcadastre.compute_count(insee)
         click.echo(c)
-        batimap.clear_tiles(insee)
+
+    if all:
+        initdb_is_done_file = Path("tiles/initdb_is_done")
+        initdb_is_done_file.touch()
+    else:
+        for insee in insees:
+            batimap.clear_tiles(insee)

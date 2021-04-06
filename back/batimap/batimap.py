@@ -9,11 +9,11 @@ import urllib.request
 import zlib
 from collections import Counter
 from contextlib import closing
+from pathlib import Path
 
 import requests
-from bs4 import BeautifulSoup, SoupStrainer
-
 from batimap.db import City
+from bs4 import BeautifulSoup, SoupStrainer
 
 LOG = logging.getLogger(__name__)
 
@@ -115,7 +115,8 @@ class Batimap(object):
 
     def compute_date_for_undated_cities(self, unknown_insees):
         # we do not store building changeset timestamp in database, so we need to ask Overpass for cities which such
-        # buildings. For now, only ask for cities with a majority of unknown buildings, but we could whenever there is one
+        # buildings.
+        # For now, only ask for cities with a majority of unknown buildings, but we could whenever there is one
         if len(unknown_insees):
             LOG.info(
                 f"Using overpass for {len(unknown_insees)} unknown cities: {unknown_insees}"
@@ -273,7 +274,7 @@ class Batimap(object):
             return None
 
         base_url = f"https://cadastre.openstreetmap.fr/data/{c.department.zfill(3)}/{c.name_cadastre}-houses-"
-        bbox = self.db.get_city_bbox(insee)
+        bbox = self.db.get_insee_bbox(insee)
 
         # force refreshing city latest import date
         city = self.__compute_city_date(c)
@@ -362,10 +363,10 @@ class Batimap(object):
         raise Exception(f"Invalid cadastre server response for {city}, please retry")
 
     def clear_tiles(self, insee):
-        bbox = self.db.get_city_bbox(insee)
+        bbox = self.db.get_insee_bbox(insee)
         LOG.info(f"Tiles for city {insee} must be regenerated in bbox {str(bbox)}")
-        with open("tiles/outdated.txt", "a") as fd:
-            fd.write(str(bbox) + "\n")
+        with Path("tiles/outdated.txt").open("a") as fd:
+            fd.write(f"{bbox}\n")
 
     def __compute_city_date(self, city):
         """
@@ -392,7 +393,8 @@ class Batimap(object):
                             continue
 
                         LOG.info(
-                            f"{city} contient des bâtiments avec une géométrie simplifée {element}, import probablement jamais réalisé"
+                            f"{city} contient des bâtiments avec une géométrie simplifiée {element}, "
+                            "import probablement jamais réalisé"
                         )
                         simplified_buildings.append(element.get("id"))
 
@@ -479,7 +481,8 @@ class Batimap(object):
             simplified_cities = list(set([x[0] for x in city_with_simplified_building]))
             if len(simplified_cities) > 0:
                 LOG.info(
-                    f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifiée, import à vérifier"
+                    f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifiée, "
+                    "import à vérifier"
                 )
 
             # 3. finally compute city import date and update database
@@ -504,7 +507,8 @@ class Batimap(object):
                         "" if len(simplified) == 0 else f", simplifiée: {simplified}"
                     )
                     LOG.info(
-                        f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> {import_date} ({len(buildings)} bâtis{simplified_msg})"
+                        f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> "
+                        f"{import_date} ({len(buildings)} bâtis{simplified_msg})"
                     )
                     city.import_date = import_date
                 city.import_details = {"dates": counts, "simplified": simplified}

@@ -160,3 +160,4 @@ pyvenv.cfg
 pip-selfcheck.json
 .idea/dataSources/
 app.conf
+tiles

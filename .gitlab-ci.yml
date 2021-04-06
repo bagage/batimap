@@ -42,6 +42,8 @@ test:back:
     - sed -i 's/localhost:5432/postgis:5432/' back/batimap/app.conf
     - cd back/
     - pipenv install -d
+    - pipenv run flake8
+    - pipenv run black --check
     - pipenv run pytest --log-cli-level INFO --junit-xml=tests-report.xml --cov batimap
     - pipenv run coverage xml
   artifacts:

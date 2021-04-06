@@ -1,21 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import datetime
-import http.cookiejar
-import logging
-import re
-import urllib.request
-import zlib
-from datetime import datetime
-from collections import Counter
-from contextlib import closing
-from flask import current_app, g
 import gzip
+import logging
+from collections import Counter
+
+import ijson
 import requests
-from bs4 import BeautifulSoup, SoupStrainer
-from batimap.db import City, Cadastre
-import json
+from batimap.db import Cadastre
+from flask import current_app
 
 LOG = logging.getLogger(__name__)
 
@@ -32,14 +25,17 @@ class ODCadastre(object):
         return len(data["features"])
 
     def query_department_od(self, dept):
-        url = f"https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/departements/{dept}/cadastre-{dept}-batiments.json.gz"
+        url = (
+            "https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/departements/"
+            f"{dept}/cadastre-{dept}-batiments.json.gz"
+        )
         r = requests.get(url)
         LOG.debug(f"parsing department od for {dept}")
-        data = json.loads(gzip.decompress(r.content))
+        data = gzip.decompress(r.content)
 
         # there is one feature per building, properties.commune containing its city INSEE
         buildings_per_insee = Counter(
-            [b["properties"]["commune"] for b in data["features"]]
+            list(ijson.items(data, "features.item.properties.commune"))
         )
 
         return buildings_per_insee

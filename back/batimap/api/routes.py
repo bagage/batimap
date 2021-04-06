@@ -1,26 +1,20 @@
-from flask import request, Response, url_for
-from flask_restful import inputs
-from flask_smorest import abort, Blueprint
-from geojson import Feature, FeatureCollection
-
-from batimap.bbox import Bbox
-from batimap.citydto import CityEncoder, CityDTO
-from batimap.taskdto import TaskEncoder, TaskDTO
-from batimap.extensions import batimap, db
-from batimap.point import Point
-from batimap.tasks.common import task_initdb, task_josm_data, task_update_insee
-from batimap.tasks.utils import find_task_id, list_tasks
-
-from celery.result import AsyncResult
-from sqlalchemy.exc import IntegrityError
-
-import click
 import json
 import logging
 
+from batimap.bbox import Bbox
+from batimap.citydto import CityDTO, CityEncoder
+from batimap.extensions import batimap, db
+from batimap.point import Point
+from batimap.taskdto import TaskDTO, TaskEncoder
+from batimap.tasks.common import task_initdb, task_josm_data, task_update_insee
+from batimap.tasks.utils import find_task_id, list_tasks
+from celery.result import AsyncResult
+from flask import Response, request, url_for
+from flask_restful import inputs
+from flask_smorest import Blueprint, abort
+from geojson import Feature, FeatureCollection
+
 LOG = logging.getLogger(__name__)
-
-
 bp = Blueprint("app_routes", __name__)
 
 
@@ -75,7 +69,6 @@ def api_insee(insee) -> dict:
 
 
 @bp.route("/bbox/cities", methods=["POST"])
-# @bp.arguments(BBoxSchema, location='json')
 def api_bbox_cities() -> dict:
     bboxes = (request.get_json() or {}).get("bboxes")
     cities = set()
