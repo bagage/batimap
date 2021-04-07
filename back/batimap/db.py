@@ -164,6 +164,10 @@ class Db(object):
         return self.session.query(City).filter(City.insee == insee).first()
 
     @__isInitialized
+    def get_cadastre_for_insee(self, insee) -> City:
+        return self.session.query(Cadastre).filter(Cadastre.insee == insee).first()
+
+    @__isInitialized
     def get_city_for_name(self, name) -> City:
         return self.session.query(City).filter(City.name == name).first()
 

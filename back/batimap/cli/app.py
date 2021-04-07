@@ -57,15 +57,22 @@ def cadastre_command(cities, all):
         click.echo("Missing cities argument or --all flag!")
         return
 
+    clear = []
+
     insees = [x.insee for x in db.get_cities()] if all else cities
-    click.echo(f"Will stats given cities {', '.join(insees)}")
+    click.echo(f"Will stats given insees {', '.join(insees)}")
     for insee in insees:
         c = odcadastre.compute_count(insee)
-        click.echo(c)
-
+        if c:
+            click.echo(c)
+            clear.append(insee)
+        else:
+            click.echo(
+                f"couldn't compute count for {insee}, it is a valid INSEE and/or imported in DB?"
+            )
     if all:
         initdb_is_done_file = Path("tiles/initdb_is_done")
         initdb_is_done_file.touch()
     else:
-        for insee in insees:
+        for insee in clear:
             batimap.clear_tiles(insee)
