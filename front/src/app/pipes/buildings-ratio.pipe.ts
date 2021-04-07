@@ -8,7 +8,7 @@ export class BuildingsRatioPipe implements PipeTransform {
     transform(input, attribute?: string | undefined): number | string {
         let ratio: number;
         if (input instanceof CityDTO || input.osm_buildings) {
-            if (input.osm_buildings === undefined || input.od_buildings === undefined) {
+            if (!Number.isInteger(input.osm_buildings) || !Number.isInteger(input.od_buildings)) {
                 return undefined;
             }
 
