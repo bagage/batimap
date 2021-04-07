@@ -86,11 +86,12 @@ export class MapComponent implements AfterViewInit {
         const isIgnored = this.batimapService.ignoredInsees().indexOf(properties.insee) !== -1;
         const date = isIgnored ? 'ignored' : this.legendService.city2date.get(properties.insee) || properties.date;
         const color = this.legendService.date2color(date);
-        const ratio = Math.abs(+this.buildingsRatioPipe.transform([properties.od_buildings, properties.osm_buildings]));
+        const ratio = this.buildingsRatioPipe.transform(properties);
+        const ratioValid = minRatio === undefined || ratio === undefined || Math.abs(+ratio) >= minRatio;
         // tslint:disable
         const visible =
             properties.insee.length <= 3 /* dept are always visible */ ||
-            (this.legendService.isActive(date) && ratio >= minRatio);
+            (this.legendService.isActive(date) && ratioValid);
 
         return {
             weight: 2,
