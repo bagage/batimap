@@ -14,9 +14,6 @@ export class BuildingsRatioPipe implements PipeTransform {
 
             // tslint:disable-next-line:binary-expression-operand-order
             ratio = +(100 * (1 - input.od_buildings / input.osm_buildings)).toFixed(2);
-        } else if (Array.isArray(input)) {
-            // tslint:disable-next-line:binary-expression-operand-order
-            ratio = +(100 * (1 - input[0] / input[1])).toFixed(2);
         } else {
             ratio = input;
         }

@@ -91,7 +91,6 @@ class ODCadastre(object):
 
         try:
             counts = self.query_city_od(insee)
-            print(insee, counts)
             cadastre = self.db.session.merge(Cadastre(insee, sum(counts.values())))
             self.db.session.add(cadastre)
         except Exception as e:

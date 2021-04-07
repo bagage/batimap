@@ -14,16 +14,18 @@
     <div>
         {{ lastImport }}
     </div>
-    <div *ngIf="city | buildingsratio as ratio">
-        <p>
-            <span class="dot" [style.background-color]="city | buildingsratio: 'color'"></span> {{ ratio }}% d'écart OSM
-            et le cadastre :
-        </p>
-        <ul>
-            <li>{{ city.osm_buildings }} bâtiments dans OSM</li>
-            <li>{{ city.od_buildings }} bâtiments dans le cadastre</li>
-        </ul>
-    </div>
+    <ng-container *ngIf="{ ratio: city | buildingsratio } as data">
+        <div *ngIf="data.ratio !== undefined">
+            <p>
+                <span class="dot" [style.background-color]="city | buildingsratio: 'color'"></span> {{ data.ratio }}%
+                d'écart OSM et le cadastre :
+            </p>
+            <ul>
+                <li>{{ city.osm_buildings }} bâtiments dans OSM</li>
+                <li>{{ city.od_buildings }} bâtiments dans le cadastre</li>
+            </ul>
+        </div>
+    </ng-container>
 
     <apx-chart
         *ngIf="(city.details?.dates | count) > 0"
