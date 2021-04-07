@@ -87,7 +87,7 @@ export class MapComponent implements AfterViewInit {
         const date = isIgnored ? 'ignored' : this.legendService.city2date.get(properties.insee) || properties.date;
         const color = this.legendService.date2color(date);
         const ratio = this.buildingsRatioPipe.transform(properties);
-        const ratioValid = minRatio === undefined || ratio === undefined || Math.abs(+ratio) >= minRatio;
+        const ratioValid = minRatio === 0 || (ratio !== undefined && Math.abs(+ratio) >= minRatio);
         // tslint:disable
         const visible =
             properties.insee.length <= 3 /* dept are always visible */ ||
