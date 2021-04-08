@@ -50,7 +50,19 @@ services:
     image: registry.gitlab.com/bagage/batimap/back
     env_file:
       - ./.env
-    command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info
+    command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info --queues celery
+    volumes:
+      - ./back/app-docker.conf/:/code/batimap/app.conf:ro
+      - ./data/tiles:/code/tiles
+    depends_on:
+      - redis
+      - postgis
+
+  celery-slow:
+    image: registry.gitlab.com/bagage/batimap/back
+    env_file:
+      - ./.env
+    command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info --queues celery_slow
     volumes:
       - ./back/app-docker.conf/:/code/batimap/app.conf:ro
       - ./data/tiles:/code/tiles

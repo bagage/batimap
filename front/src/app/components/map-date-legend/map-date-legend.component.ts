@@ -1,17 +1,9 @@
-import {
-    AfterViewInit,
-    Component,
-    EventEmitter,
-    HostListener,
-    Input,
-    NgZone,
-    OnInit,
-    Output,
-    ViewChild,
-} from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { combineLatest, concat, EMPTY, fromEvent, Observable, of, zip } from 'rxjs';
-import { catchError, debounce, debounceTime, distinctUntilChanged, map, switchMap, tap, toArray } from 'rxjs/operators';
+import { MatSlider } from '@angular/material/slider';
+import * as L from 'leaflet';
+import { BehaviorSubject, combineLatest, Observable, of, zip } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap, tap } from 'rxjs/operators';
 import { LegendDTO } from '../../classes/legend.dto';
 import { ObsoleteCityDTO } from '../../classes/obsolete-city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
@@ -20,9 +12,6 @@ import { LegendService } from '../../services/legend.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { CityDetailsDialogComponent } from '../city-details-dialog/city-details-dialog.component';
 import { MapDateLegendModel } from './map-date-legend.model';
-
-import { MatSlider, MatSliderChange } from '@angular/material/slider';
-import * as L from 'leaflet';
 
 @Component({
     selector: 'app-map-date-legend',
@@ -39,13 +28,14 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     legendItems$: Observable<MapDateLegendModel[]>;
     bounds: L.LatLngBounds;
     error = false;
+    legendChanged$ = new BehaviorSubject<LegendDTO>(undefined);
 
     @ViewChild(MatSlider)
     set countSlider(countSlider: MatSlider) {
         if (countSlider) {
             setTimeout(() => {
                 countSlider.value = +(localStorage.getItem('min-buildings-ratio') || '0');
-                this.redrawMapOnSliderChanges(countSlider);
+                this.redrawMapOnChange(countSlider);
             });
         }
     }
@@ -68,13 +58,24 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         });
     }
 
-    redrawMapOnSliderChanges(countSlider) {
+    redrawMapOnChange(countSlider: MatSlider) {
         /* redraw map on slider value update */
         this.autoUnsubscribe(
-            countSlider.change.pipe(debounceTime(300), distinctUntilChanged()).subscribe((event: any) => {
-                localStorage.setItem('min-buildings-ratio', event.value.toFixed(0));
-                this.cadastreLayer.redraw();
-            })
+            combineLatest([
+                countSlider.change.pipe(
+                    startWith({ value: countSlider.value }),
+                    tap((event: any) => {
+                        localStorage.setItem('min-buildings-ratio', event.value.toFixed(0));
+                    })
+                ),
+                this.legendChanged$,
+            ])
+                .pipe(debounceTime(200), distinctUntilChanged())
+                .subscribe(() => {
+                    this.zone.runOutsideAngular(() => {
+                        this.cadastreLayer.redraw();
+                    });
+                })
         );
     }
 
@@ -124,7 +125,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
 
     legendChanges(legend: LegendDTO) {
         this.legendService.toggleActive(legend, legend.checked);
-        this.cadastreLayer.redraw();
+        this.legendChanged$.next(legend);
     }
 
     @HostListener('document:keydown.shift.a') openHelp() {

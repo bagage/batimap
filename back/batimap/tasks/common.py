@@ -11,6 +11,10 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
+class JosmNotReadyException(Exception):
+    pass
+
+
 @celery.task(bind=True)
 def task_initdb(self, items):
     """
@@ -70,6 +74,18 @@ def task_initdb(self, items):
         migration_file.unlink()
 
     task_progress(self, 100)
+
+
+@celery.task(bind=True)
+def task_josm_data_fast(self, insee):
+    """
+    Do not prepare JOSM data - if unready, it will fail
+    """
+    c = db.get_city_for_insee(insee)
+    if not c.is_josm_ready():
+        raise JosmNotReadyException("city is not JOSM ready")
+
+    return self.task_josm_data(insee)
 
 
 @celery.task(bind=True)

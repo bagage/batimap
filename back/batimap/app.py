@@ -76,6 +76,12 @@ def init_celery(app=None):
 
     celery.conf.broker_url = app.config["CELERY_BROKER_URL"]
     celery.conf.result_backend = app.config["CELERY_BACK_URL"]
+    celery.conf.task_routes = {
+        "batimap.tasks.common.task_josm_data_fast": {"queue": "celery"},
+        "batimap.tasks.common.task_update_insee": {"queue": "celery"},
+        "batimap.tasks.common.task_initdb": {"queue": "celery_slow"},
+        "batimap.tasks.common.task_josm_data": {"queue": "celery_slow"},
+    }
     celery.conf.update(app.config)
 
     class ContextTask(celery.Task):

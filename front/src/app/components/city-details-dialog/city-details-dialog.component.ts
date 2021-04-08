@@ -1,4 +1,4 @@
-import { Component, HostListener, Inject, OnInit } from '@angular/core';
+import { Component, HostListener, Inject, NgZone, OnInit } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable } from 'rxjs';
@@ -40,7 +40,8 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         public josmService: JosmService,
         public batimapService: BatimapService,
         private readonly dialogRef: MatDialogRef<CityDetailsDialogComponent>,
-        private readonly matDialog: MatDialog
+        private readonly matDialog: MatDialog,
+        private readonly zone: NgZone
     ) {
         super();
         this.city = data[0];
@@ -81,7 +82,13 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         }
         this.batimapService.updateIgnoredInsees(ignoredCities);
         this.dialogRef.close(0);
-        this.cadastreLayer.redraw();
+        this.redrawMap();
+    }
+
+    private redrawMap() {
+        this.zone.runOutsideAngular(() => {
+            this.cadastreLayer.redraw();
+        });
     }
 
     @HostListener('document:keydown.r') updateCity() {
@@ -97,7 +104,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
                     this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
                     if (task.state === TaskState.SUCCESS) {
                         this.cityDateChanged(task.result);
-                        this.cadastreLayer.redraw();
+                        this.redrawMap();
                     }
                 },
                 onEnd,
