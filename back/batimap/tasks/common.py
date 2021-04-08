@@ -85,12 +85,16 @@ def task_josm_data_fast(self, insee):
     if not c.is_josm_ready():
         raise JosmNotReadyException("city is not JOSM ready")
 
-    return self.task_josm_data(insee)
+    return task_josm_data_internal(self, insee)
 
 
 @celery.task(bind=True)
 def task_josm_data(self, insee):
-    task_progress(self, 1)
+    return task_josm_data_internal(self, insee)
+
+
+def task_josm_data_internal(task, insee):
+    task_progress(task, 1)
     c = db.get_city_for_insee(insee)
     # force refreshing cadastre date
     next(batimap.fetch_departments_osm_state([c.department]))
@@ -100,16 +104,16 @@ def task_josm_data(self, insee):
         LOG.debug(f"Fetching cadastre data for {c}")
         # first, generate cadastre data for that city
         for d in batimap.fetch_cadastre_data(c):
-            task_progress(self, 1 + d / 100 * 79)
-        task_progress(self, 80)
+            task_progress(task, 1 + d / 100 * 79)
+        task_progress(task, 80)
         next(batimap.fetch_departments_osm_state([c.department]))
-    task_progress(self, 90)
+    task_progress(task, 90)
     result = batimap.josm_data(insee)
-    task_progress(self, 95)
+    task_progress(task, 95)
     # refresh tiles if import date has changed or josm data was generated
     if db.get_city_for_insee(insee).import_date != result["date"] or must_generate_data:
         batimap.clear_tiles(insee)
-    task_progress(self, 99)
+    task_progress(task, 99)
     return json.dumps(result)
 
 
