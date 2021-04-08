@@ -6,7 +6,7 @@ import { BehaviorSubject, combineLatest, Observable, of, zip } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap, tap } from 'rxjs/operators';
 import { LegendDTO } from '../../classes/legend.dto';
 import { ObsoleteCityDTO } from '../../classes/obsolete-city.dto';
-import { Unsubscriber } from '../../classes/unsubscriber';
+import { Unsubscriber } from '../unsubscriber';
 import { BatimapService } from '../../services/batimap.service';
 import { LegendService } from '../../services/legend.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';

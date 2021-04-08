@@ -13,7 +13,7 @@ import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { CityDTO } from '../../classes/city.dto';
 import { ConflateCityDTO } from '../../classes/conflate-city.dto';
-import { Unsubscriber } from '../../classes/unsubscriber';
+import { Unsubscriber } from '../unsubscriber';
 import { BatimapService, TaskProgress, TaskState } from '../../services/batimap.service';
 import { JosmService } from '../../services/josm.service';
 
