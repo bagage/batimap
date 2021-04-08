@@ -3,11 +3,11 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable } from 'rxjs';
 import { CityDTO } from '../../classes/city.dto';
-import { Unsubscriber } from '../unsubscriber';
 import { BatimapService, TaskState } from '../../services/batimap.service';
 import { JosmService } from '../../services/josm.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { HowtoDialogComponent } from '../howto-dialog/howto-dialog.component';
+import { Unsubscriber } from '../unsubscriber';
 
 @Component({
     templateUrl: './city-details-dialog.component.html',
