@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSlider } from '@angular/material/slider';
 import * as L from 'leaflet';
 import { BehaviorSubject, combineLatest, Observable, of, zip } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap, tap } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, skip, startWith, switchMap, tap } from 'rxjs/operators';
 import { LegendDTO } from '../../classes/legend.dto';
 import { ObsoleteCityDTO } from '../../classes/obsolete-city.dto';
 import { BatimapService } from '../../services/batimap.service';
@@ -70,7 +70,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                 ),
                 this.legendChanged$,
             ])
-                .pipe(debounceTime(200), distinctUntilChanged())
+                .pipe(skip(1), debounceTime(200), distinctUntilChanged())
                 .subscribe(() => {
                     this.zone.runOutsideAngular(() => {
                         this.cadastreLayer.redraw();
