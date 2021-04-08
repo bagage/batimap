@@ -28,6 +28,13 @@ services:
 
   celery:
     build: back
+    command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info --queues celery --concurrency 1
+    volumes:
+      - ./back/:/code
+
+  celery-slow:
+    build: back
+    command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info --queues celery_slow --concurrency 1
     volumes:
       - ./back/:/code
 
