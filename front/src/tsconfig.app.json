@@ -1,8 +1,14 @@
 {
-    "extends": "../tsconfig.base.json",
+    "extends": "../tsconfig.json",
     "compilerOptions": {
         "outDir": "../out-tsc/app",
         "types": ["node"]
     },
-    "exclude": ["**/test.ts", "**/*.mock.ts", "**/*.spec.ts", "**/environment.prod.ts"]
+    "files": [
+      "main.ts",
+      "polyfills.ts"
+    ],
+    "include": [
+      "src/**/*.d.ts"
+    ]
 }

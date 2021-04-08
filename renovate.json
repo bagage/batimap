@@ -8,7 +8,14 @@
     "packageRules": [
         {
             "groupName": "angular",
-            "packagePatterns": ["angular"]
+            "packagePatterns": ["angular"],
+            "postUpgradeTasks": {
+                "commands": [
+                    "npm ci --ignore-scripts",
+                    "npx ng update {{{depName}}} --from={{{currentVersion}}} --to={{{newVersion}}} --migrateOnly --allowDirty --force"
+                ],
+                "fileFilters": ["**/**"]
+            }
         },
         {
             "packageNames": ["typescript"],

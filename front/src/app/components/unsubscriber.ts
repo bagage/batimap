@@ -2,7 +2,6 @@ import { Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-unsubscriber',
     template: '',
 })
 //tslint:disable

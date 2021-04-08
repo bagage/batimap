@@ -12,6 +12,7 @@ import { JosmScriptUpdateDialogComponent } from './josm-script-update-dialog/jos
 import { LegendButtonComponent } from './legend-button/legend-button.component';
 import { LoaderComponent } from './loader/loader.component';
 import { MapDateLegendComponent } from './map-date-legend/map-date-legend.component';
+import { Unsubscriber } from './unsubscriber';
 
 @NgModule({
     imports: [CommonModule, MatLibModule, PipesModule, NgApexchartsModule],
@@ -25,6 +26,7 @@ import { MapDateLegendComponent } from './map-date-legend/map-date-legend.compon
         JosmScriptUpdateDialogComponent,
         LegendButtonComponent,
         DepartmentDetailsDialogComponent,
+        Unsubscriber,
     ],
     exports: [
         CityDetailsDialogComponent,
