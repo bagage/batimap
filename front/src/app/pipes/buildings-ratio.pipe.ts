@@ -5,9 +5,12 @@ import { CityDTO } from '../classes/city.dto';
     name: 'buildingsratio',
 })
 export class BuildingsRatioPipe implements PipeTransform {
+    greenPercentage = 20;
+    orangePercentage = 50;
+
     transform(input, attribute?: string | undefined): number | string {
         let ratio: number;
-        if (input instanceof CityDTO || input.osm_buildings) {
+        if (input instanceof CityDTO || input.osm_buildings !== undefined) {
             if (!Number.isInteger(input.osm_buildings) || !Number.isInteger(input.od_buildings)) {
                 return undefined;
             }
@@ -18,10 +21,11 @@ export class BuildingsRatioPipe implements PipeTransform {
             ratio = input;
         }
 
+        /* do not forget to update map-date-legend.component.css if colors are modified */
         if (attribute === 'color') {
-            if (Math.abs(ratio) < 5) {
+            if (Math.abs(ratio) < this.greenPercentage) {
                 return 'green';
-            } else if (Math.abs(ratio) < 20) {
+            } else if (Math.abs(ratio) < this.orangePercentage) {
                 return 'orange';
             }
 
