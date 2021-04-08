@@ -1,27 +1,9 @@
-import {
-    AfterViewInit,
-    Component,
-    EventEmitter,
-    HostListener,
-    Input,
-    NgZone,
-    OnInit,
-    Output,
-    ViewChild,
-} from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { combineLatest, BehaviorSubject, concat, EMPTY, fromEvent, merge, Observable, of, Subject, zip } from 'rxjs';
-import {
-    catchError,
-    debounce,
-    debounceTime,
-    distinctUntilChanged,
-    map,
-    startWith,
-    switchMap,
-    tap,
-    toArray,
-} from 'rxjs/operators';
+import { MatSlider } from '@angular/material/slider';
+import * as L from 'leaflet';
+import { BehaviorSubject, combineLatest, Observable, of, zip } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap, tap } from 'rxjs/operators';
 import { LegendDTO } from '../../classes/legend.dto';
 import { ObsoleteCityDTO } from '../../classes/obsolete-city.dto';
 import { Unsubscriber } from '../../classes/unsubscriber';
@@ -30,9 +12,6 @@ import { LegendService } from '../../services/legend.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { CityDetailsDialogComponent } from '../city-details-dialog/city-details-dialog.component';
 import { MapDateLegendModel } from './map-date-legend.model';
-
-import { MatSlider, MatSliderChange } from '@angular/material/slider';
-import * as L from 'leaflet';
 
 @Component({
     selector: 'app-map-date-legend',
