@@ -6,7 +6,12 @@ from batimap.citydto import CityDTO, CityEncoder
 from batimap.extensions import batimap, db
 from batimap.point import Point
 from batimap.taskdto import TaskDTO, TaskEncoder
-from batimap.tasks.common import task_initdb, task_josm_data, task_update_insee
+from batimap.tasks.common import (
+    task_initdb,
+    task_josm_data,
+    task_josm_data_fast,
+    task_update_insee,
+)
 from batimap.tasks.utils import find_task_id, list_tasks
 from celery.result import AsyncResult
 from flask import Response, request, url_for
@@ -158,13 +163,19 @@ def api_update_insee_list(insee) -> dict:
 def api_josm_data(insee) -> dict:
     LOG.debug(f"Receive an josm request for {insee}")
 
-    task_id = find_task_id("batimap.tasks.common.task_josm_data", [insee])
-
-    if task_id:
-        LOG.info(f"Returning an already running josm request for {insee}: {task_id}")
+    c = db.get_city_for_insee(insee)
+    if c.is_josm_ready():
+        task_id = task_josm_data_fast.delay(insee).id
     else:
-        # only create a new task if none already exists
-        task_id = task_josm_data.delay(insee).id
+        task_id = find_task_id("batimap.tasks.common.task_josm_data", [insee])
+
+        if task_id:
+            LOG.info(
+                f"Returning an already running josm request for {insee}: {task_id}"
+            )
+        else:
+            # only create a new task if none already exists
+            task_id = task_josm_data.delay(insee).id
 
     return Response(
         response=json.dumps({"task_id": task_id}),
