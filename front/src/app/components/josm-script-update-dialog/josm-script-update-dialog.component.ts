@@ -1,5 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { LocalStorage } from '../../classes/local-storage';
 
 @Component({
     selector: 'app-josm-script-update-dialog',
@@ -13,6 +14,10 @@ export class JosmScriptUpdateDialogComponent implements OnDestroy {
         const part1 = version1.match('(\\d+).(\\d+).(\\d+)');
         const part2 = version2.match('(\\d+).(\\d+).(\\d+)');
 
+        if (!part1 || !part2) {
+            return false;
+        }
+
         for (let i = 1; i < part1.length; i += 1) {
             const diff = Number.parseInt(part1[i], 10) - Number.parseInt(part2[i], 10);
             if (diff !== 0) {
@@ -24,12 +29,12 @@ export class JosmScriptUpdateDialogComponent implements OnDestroy {
     }
 
     static shouldDisplayDialog(): boolean {
-        const userVersion = localStorage.getItem(JosmScriptUpdateDialogComponent.storageKey) || '0.0.0';
+        const userVersion = LocalStorage.get(JosmScriptUpdateDialogComponent.storageKey, '0.0.0');
 
         return JosmScriptUpdateDialogComponent.strictlyLowerThanVersion(userVersion, environment.version);
     }
 
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         localStorage.setItem(JosmScriptUpdateDialogComponent.storageKey, environment.version);
     }
 }

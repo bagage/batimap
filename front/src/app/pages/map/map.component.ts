@@ -12,6 +12,7 @@ import { MapDateLegendComponent } from '../../components/map-date-legend/map-dat
 import { AppConfigService } from '../../services/app-config.service';
 import { BatimapService } from '../../services/batimap.service';
 import { LegendService } from '../../services/legend.service';
+import { LocalStorage } from '../../classes/local-storage';
 
 import * as L from 'leaflet';
 import { BuildingsRatioPipe } from '../../pipes/buildings-ratio.pipe';
@@ -23,7 +24,7 @@ import { BuildingsRatioPipe } from '../../pipes/buildings-ratio.pipe';
 })
 export class MapComponent implements AfterViewInit {
     @ViewChild(MapDateLegendComponent, { static: true })
-    legend: MapDateLegendComponent;
+    legend!: MapDateLegendComponent;
 
     options = {
         layers: [
@@ -36,11 +37,11 @@ export class MapComponent implements AfterViewInit {
         maxZoom: 11,
         center: L.latLng(46.111, 3.977),
     };
-    map: L.Map;
-    cadastreLayer: any;
+    map?: L.Map;
+    cadastreLayer: any = undefined;
     displayLegend = true;
     displayTasks = false;
-    private searchControl: L.Control;
+    private searchControl!: L.Control;
 
     constructor(
         private readonly matDialog: MatDialog,
@@ -59,10 +60,10 @@ export class MapComponent implements AfterViewInit {
         }
     }
 
-    onMapReady(map) {
+    onMapReady(map: L.Map): void {
         this.map = map;
         this.legend.map = map;
-        this.displayTasks = localStorage.getItem('displayTasks') === 'true';
+        this.displayTasks = LocalStorage.bool('displayTasks', false);
         const hash = L.hash(map);
         hash.formatHash = (m: any) => {
             const center = m.getCenter();
@@ -81,8 +82,8 @@ export class MapComponent implements AfterViewInit {
         this.setupVectorTiles(map);
     }
 
-    stylingFunction(properties, zoom, type): any {
-        const minRatio = +localStorage.getItem('min-buildings-ratio') || 0;
+    stylingFunction(properties: any, zoom: number, type: string): any {
+        const minRatio = LocalStorage.number('min-buildings-ratio', 0);
         const isIgnored = this.batimapService.ignoredInsees().indexOf(properties.insee) !== -1;
         const date = isIgnored ? 'ignored' : this.legendService.city2date.get(properties.insee) || properties.date;
         const color = this.legendService.date2color(date);
@@ -104,20 +105,20 @@ export class MapComponent implements AfterViewInit {
         };
     }
 
-    setupVectorTiles(map) {
+    setupVectorTiles(map: L.Map) {
         // noinspection JSUnusedGlobalSymbols
         const vectorTileOptions = {
             vectorTileLayerStyles: {
-                cities: (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),
-                'cities-point': (properties, zoom) => this.stylingFunction(properties, zoom, 'point'),
-                departments: (properties, zoom) => this.stylingFunction(properties, zoom, 'polygon'),
+                cities: (properties: any, zoom: number) => this.stylingFunction(properties, zoom, 'polygon'),
+                'cities-point': (properties: any, zoom: number) => this.stylingFunction(properties, zoom, 'point'),
+                departments: (properties: any, zoom: number) => this.stylingFunction(properties, zoom, 'polygon'),
             },
-            getFeatureId: feat => feat.properties.insee,
+            getFeatureId: (feat: any) => feat.properties.insee,
             interactive: true, // Make sure that this VectorGrid fires mouse/pointer events
         };
 
         this.cadastreLayer = L.vectorGrid.protobuf(this.configService.getConfig().tilesServerUrl, vectorTileOptions);
-        this.cadastreLayer.on('click', e => {
+        this.cadastreLayer.on('click', (e: any) => {
             this.zone.run(() => {
                 // do not open popup when clicking hidden cities
                 if (e.layer.options.opacity !== 1) {
@@ -131,7 +132,7 @@ export class MapComponent implements AfterViewInit {
         this.legend.cadastreLayer = this.cadastreLayer;
     }
 
-    @HostListener('document:keydown.shift.f', ['$event']) search(event) {
+    @HostListener('document:keydown.shift.f', ['$event']) search(event: Event) {
         event.preventDefault();
         (this.searchControl as any).toggle();
     }

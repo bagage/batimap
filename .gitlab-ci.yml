@@ -16,7 +16,7 @@ test:front:
     - yarn
     - yarn lint
     - yarn prettier --check
-    - yarn test --karma-config src/karma-ci.conf.js
+    - yarn test --karma-config karma-ci.conf.js
   artifacts:
     reports:
       junit: front/src/junit_karma.xml

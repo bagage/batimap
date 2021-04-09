@@ -1,4 +1,3 @@
-declare module 'leaflet-hash' {
-    import * as L from 'leaflet';
-    export function hash(map: L.Map): any;
+declare module L {
+    export function hash(map: Map): any;
 }

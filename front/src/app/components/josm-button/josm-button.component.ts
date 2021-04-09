@@ -9,7 +9,7 @@ import {
     Output,
 } from '@angular/core';
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
-import { Observable, of } from 'rxjs';
+import { EMPTY, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { CityDTO } from '../../classes/city.dto';
 import { ConflateCityDTO } from '../../classes/conflate-city.dto';
@@ -39,8 +39,9 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
     };
     tooltip = '';
 
-    @Input() osmID: number;
-    private _city: CityDTO;
+    @Input() osmID!: number;
+    //tslint:disable:variable-name
+    private _city!: CityDTO;
     @Input()
     set city(value: CityDTO) {
         const changed = value && this._city && this._city.insee !== value.insee;
@@ -63,7 +64,7 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
     }
 
     @Input()
-    set josmReady(value: boolean) {
+    set josmReady(value: boolean | null) {
         this.options.disabled = this._city.josm_ready && !value;
     }
 
@@ -75,13 +76,13 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
         super();
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         if (this._city) {
             this.checkIsPreparing();
         }
     }
 
-    checkIsPreparing() {
+    checkIsPreparing(): void {
         // check if the current city
         this.autoUnsubscribe(
             this.batimapService.cityTasks(this._city.insee).subscribe(tasks => {
@@ -92,7 +93,7 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
         );
     }
 
-    @HostListener('document:keydown.j') onClick() {
+    @HostListener('document:keydown.j') onClick(): void {
         this.options.active = true;
         const onEnd = () => {
             this.options.active = false;
@@ -124,33 +125,40 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
     private conflateCity(): Observable<any> {
         return this.prepareCity().pipe(
             switchMap(dto =>
-                dto instanceof TaskProgress ? of(dto) : this.josmService.openCityInJosm(this._city, this.osmID, dto)
+                dto instanceof TaskProgress
+                    ? of(dto)
+                    : dto
+                    ? this.josmService.openCityInJosm(this._city, this.osmID, dto)
+                    : EMPTY
             )
         );
     }
 
-    private prepareCity(): Observable<ConflateCityDTO | TaskProgress> {
+    private prepareCity(): Observable<ConflateCityDTO | TaskProgress | undefined> {
         return this.batimapService.cityData(this._city.insee).pipe(
             map(task => {
                 if (task.state === TaskState.SUCCESS) {
-                    const progressConflateDTO = task.result;
+                    if (task.result) {
+                        const progressConflateDTO = task.result;
 
-                    if (progressConflateDTO.buildingsUrl) {
-                        const c = this._city;
-                        c.josm_ready = true;
-                        this.city = c;
+                        if (progressConflateDTO.buildingsUrl) {
+                            const c = this._city;
+                            c.josm_ready = true;
+                            this.city = c;
+                        }
+
+                        if (this._city.date !== progressConflateDTO.date) {
+                            this._city.date = progressConflateDTO.date;
+                            this.newerDate.emit(this._city);
+
+                            return undefined;
+                        }
+
+                        if (progressConflateDTO.buildingsUrl) {
+                            return progressConflateDTO;
+                        }
                     }
-
-                    if (this._city.date !== progressConflateDTO.date) {
-                        this._city.date = progressConflateDTO.date;
-                        this.newerDate.emit(this._city);
-
-                        return undefined;
-                    }
-
-                    if (progressConflateDTO.buildingsUrl) {
-                        return progressConflateDTO;
-                    }
+                    throw Error('unexpected state');
                 } else {
                     return task.progress;
                 }

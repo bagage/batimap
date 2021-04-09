@@ -14,7 +14,7 @@ import { catchError } from 'rxjs/operators';
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
     static BYPASS_HEADER = 'No-Http-Error-Interceptor';
-    ref: MatSnackBarRef<SimpleSnackBar>;
+    private ref?: MatSnackBarRef<SimpleSnackBar> = undefined;
 
     static ByPassInterceptor(): { headers: HttpHeaders } {
         let headers = new HttpHeaders();
@@ -40,7 +40,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
                     // client-side error
                     errorMessage = `Une erreur est survenue : ${error.error.message}.`;
                 } else {
-                    if (error.status === 0) {
+                    if (error.status === 0 && error.url) {
                         const host = new URL(error.url);
                         if (host.host === '127.0.0.1:8111') {
                             errorMessage = 'JOSM est injoignable. Est-il toujours lancé ?';

@@ -8,7 +8,7 @@ import { JosmScriptUpdateDialogComponent } from '../josm-script-update-dialog/jo
     styleUrls: ['./howto-dialog.component.css'],
 })
 export class HowtoDialogComponent implements OnDestroy {
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         localStorage.setItem('first-time-howto', 'false');
         localStorage.setItem(JosmScriptUpdateDialogComponent.storageKey, environment.version);
     }

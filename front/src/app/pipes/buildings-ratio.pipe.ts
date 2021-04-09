@@ -8,7 +8,7 @@ export class BuildingsRatioPipe implements PipeTransform {
     greenPercentage = 20;
     orangePercentage = 50;
 
-    transform(input, attribute?: string | undefined): number | string {
+    transform(input: any, attribute?: string | undefined): number | string | undefined {
         let ratio: number;
         if (input instanceof CityDTO || input.osm_buildings !== undefined) {
             if (!Number.isInteger(input.osm_buildings) || !Number.isInteger(input.od_buildings)) {

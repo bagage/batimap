@@ -5,6 +5,7 @@ import * as L from 'leaflet';
 import { BehaviorSubject, combineLatest, Observable, of, zip } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, skip, startWith, switchMap, tap } from 'rxjs/operators';
 import { LegendDTO } from '../../classes/legend.dto';
+import { LocalStorage } from '../../classes/local-storage';
 import { ObsoleteCityDTO } from '../../classes/obsolete-city.dto';
 import { BatimapService } from '../../services/batimap.service';
 import { LegendService } from '../../services/legend.service';
@@ -19,22 +20,22 @@ import { MapDateLegendModel } from './map-date-legend.model';
     styleUrls: ['./map-date-legend.component.css'],
 })
 export class MapDateLegendComponent extends Unsubscriber implements OnInit {
-    @Input() map: L.Map;
-    @Input() cadastreLayer;
-    @Input() hideCheckboxes: boolean;
+    @Input() map!: L.Map;
+    @Input() cadastreLayer!: any;
+    @Input() hideCheckboxes!: boolean;
 
     @Output() readonly hideLegend = new EventEmitter();
 
-    legendItems$: Observable<MapDateLegendModel[]>;
-    bounds: L.LatLngBounds;
+    legendItems$!: Observable<MapDateLegendModel[]>;
+    bounds?: L.LatLngBounds = undefined;
     error = false;
-    legendChanged$ = new BehaviorSubject<LegendDTO>(undefined);
+    legendChanged$ = new BehaviorSubject<LegendDTO | undefined>(undefined);
 
     @ViewChild(MatSlider)
     set countSlider(countSlider: MatSlider) {
         if (countSlider) {
             setTimeout(() => {
-                countSlider.value = +(localStorage.getItem('min-buildings-ratio') || '0');
+                countSlider.value = LocalStorage.number('min-buildings-ratio', 0);
                 this.redrawMapOnChange(countSlider);
             });
         }
@@ -49,7 +50,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         super();
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.refreshLegend();
         this.map.on('moveend', () => {
             this.zone.run(() => {
@@ -58,7 +59,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         });
     }
 
-    redrawMapOnChange(countSlider: MatSlider) {
+    redrawMapOnChange(countSlider: MatSlider): void {
         /* redraw map on slider value update */
         this.autoUnsubscribe(
             combineLatest([
@@ -79,7 +80,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         );
     }
 
-    refreshLegend() {
+    refreshLegend(): void {
         const bounds = this.map.getBounds();
         if (this.bounds && this.bounds.toBBoxString() === bounds.toBBoxString()) {
             return;
@@ -113,7 +114,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                         'ignored',
                         this.legendService.isActive('ignored'),
                         this.batimapService.ignoredInsees().length,
-                        undefined,
+                        -1,
                         this.legendService.date2name('ignored'),
                         this.legendService.date2color('ignored')
                     ),
@@ -123,12 +124,12 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         }
     }
 
-    legendChanges(legend: LegendDTO) {
+    legendChanges(legend: LegendDTO): void {
         this.legendService.toggleActive(legend, legend.checked);
         this.legendChanged$.next(legend);
     }
 
-    @HostListener('document:keydown.shift.a') openHelp() {
+    @HostListener('document:keydown.shift.a') openHelp(): void {
         this.matDialog.open(AboutDialogComponent);
     }
 
@@ -136,7 +137,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         this.hideLegend.emit();
     }
 
-    @HostListener('document:keydown.shift.c') feelingLucky() {
+    @HostListener('document:keydown.shift.c') feelingLucky(): void {
         this.autoUnsubscribe(
             this.legendItems$
                 .pipe(
@@ -158,7 +159,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         );
     }
 
-    formatPercentage(value: number) {
+    formatPercentage(value: number): string {
         if (value > 99) {
             return '>99%';
         } else {

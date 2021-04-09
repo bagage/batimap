@@ -14,6 +14,7 @@ import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
 import { TaskDTO } from '../classes/task.dto';
 import { HttpErrorInterceptor } from './http-error.interceptor';
 import { LegendService } from './legend.service';
+import { LocalStorage } from '../classes/local-storage';
 
 export enum TaskState {
     PENDING = 'PENDING',
@@ -24,7 +25,7 @@ export enum TaskState {
 
 export interface TaskResult<T> {
     state: TaskState;
-    result: T;
+    result?: T;
     progress: TaskProgress;
 }
 
@@ -34,7 +35,7 @@ export interface Task {
 }
 
 export class TaskProgress {
-    constructor(public current: number, public _total: number) {}
+    constructor(public current: number, public total: number) {}
 }
 
 @Injectable({
@@ -49,12 +50,12 @@ export class BatimapService {
         private readonly configService: AppConfigService
     ) {}
 
-    ignoredInsees() {
-        const ignoredStr = localStorage.getItem(BatimapService.storageIgnoredCities);
+    ignoredInsees(): string[] {
+        const ignoredStr = LocalStorage.get(BatimapService.storageIgnoredCities, '');
 
         return ignoredStr && ignoredStr.length > 0 ? ignoredStr.split(',') : [];
     }
-    updateIgnoredInsees(ignored: string[]) {
+    updateIgnoredInsees(ignored: string[]): void {
         return localStorage.setItem(BatimapService.storageIgnoredCities, ignored.join(','));
     }
 
@@ -89,7 +90,7 @@ export class BatimapService {
     updateCity(insee: string): Observable<TaskResult<CityDTO>> {
         return this.longRunningAPI<CityDTO>(this.URL_CITY_UPDATE(insee), CityDTO).pipe(
             tap(progress => {
-                if (progress.state === TaskState.SUCCESS) {
+                if (progress.state === TaskState.SUCCESS && progress.result) {
                     this.legendService.city2date.set(progress.result.insee, progress.result.date);
                 }
             })
@@ -139,7 +140,8 @@ export class BatimapService {
                     r.progress = plainToClass(TaskProgress, r.result);
                     r.result = undefined;
                 } else if (r.state === TaskState.FAILURE) {
-                    throw new Error(r.result.toString());
+                    const result: any = r.result;
+                    throw new Error(r.result ? result.toString() : 'unknown error');
                 } else {
                     if (resultType) {
                         r.result = plainToClass(resultType, r.result);
@@ -162,35 +164,35 @@ export class BatimapService {
         return `${this.configService.getConfig().backServerUrl}cities/${insee}/update`;
     }
 
-    private URL_LEGEND(lonNW: number, latNW: number, lonSE: number, latSE: number) {
+    private URL_LEGEND(lonNW: number, latNW: number, lonSE: number, latSE: number): string {
         return `${this.configService.getConfig().backServerUrl}legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
-    private URL_CITY_OBSOLETE() {
+    private URL_CITY_OBSOLETE(): string {
         return `${this.configService.getConfig().backServerUrl}cities/obsolete`;
     }
 
-    private URL_DEPARTMENT(insee: string) {
+    private URL_DEPARTMENT(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}departments/${insee}`;
     }
 
-    private URL_DEPARTMENT_DETAILS(insee: string) {
+    private URL_DEPARTMENT_DETAILS(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}departments/${insee}/details`;
     }
 
-    private URL_CITY(insee: string) {
+    private URL_CITY(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}cities/${insee}`;
     }
 
-    private URL_OSMID(insee: string) {
+    private URL_OSMID(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}insees/${insee}/osm_id`;
     }
 
-    private URL_TASKS() {
+    private URL_TASKS(): string {
         return `${this.configService.getConfig().backServerUrl}tasks`;
     }
 
-    private URL_CITY_TASKS(insee: string) {
+    private URL_CITY_TASKS(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}cities/${insee}/tasks`;
     }
 

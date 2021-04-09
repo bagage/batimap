@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { palette } from '../classes/colors';
 import { LegendDTO } from '../classes/legend.dto';
+import { LocalStorage } from '../classes/local-storage';
 
 @Injectable({
     providedIn: 'root',
@@ -15,8 +16,8 @@ export class LegendService {
     yearColors = palette(this.currentYear - this.oldestYear + 1);
 
     constructor() {
-        const ignored = localStorage.getItem(this.storageName);
-        if (ignored) {
+        const ignored = LocalStorage.get(this.storageName, '');
+        if (ignored.length) {
             ignored.split(',').map(v => this.inactiveLegendItems.add(v));
         }
     }
@@ -27,7 +28,7 @@ export class LegendService {
         return !this.inactiveLegendItems.has(id);
     }
 
-    toggleActive(legend: LegendDTO, isActive: boolean) {
+    toggleActive(legend: LegendDTO, isActive: boolean): void {
         if (legend) {
             const currentActive = !this.inactiveLegendItems.has(legend.name);
             if (currentActive !== isActive) {
@@ -37,7 +38,7 @@ export class LegendService {
                     this.inactiveLegendItems.add(legend.name);
                 }
                 // persist settings
-                const value = [];
+                const value: string[] = [];
                 this.inactiveLegendItems.forEach(v => value.push(v));
                 if (value.length > 0) {
                     localStorage.setItem(this.storageName, value.join(','));
@@ -72,7 +73,7 @@ export class LegendService {
         return '#6200EE';
     }
 
-    date2name(yearStr: string) {
+    date2name(yearStr: string): string {
         if (yearStr === 'ignored') {
             return 'ignoré';
         }

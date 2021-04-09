@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, TemplateRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { environment } from '../environments/environment';
+import { LocalStorage } from './classes/local-storage';
 import { AboutDialogComponent } from './components/about-dialog/about-dialog.component';
 import { JosmScriptUpdateDialogComponent } from './components/josm-script-update-dialog/josm-script-update-dialog.component';
 
@@ -21,7 +22,7 @@ export class AppComponent {
         const version = environment.version;
         titleService.setTitle(`État du bâti dans OSM (${version})`);
 
-        if (localStorage.getItem('first-time-help') !== 'false') {
+        if (LocalStorage.bool('first-time-help', true)) {
             this.openDialog(AboutDialogComponent);
         } else if (JosmScriptUpdateDialogComponent.shouldDisplayDialog()) {
             this.openDialog(JosmScriptUpdateDialogComponent);
@@ -32,7 +33,7 @@ export class AppComponent {
         });
     }
 
-    private openDialog(dialog) {
+    private openDialog(dialog: any): void {
         // open asyncly because otherwise on chrome the popup is immediately closed
         setTimeout(() => this.matDialog.open(dialog), 1000);
     }

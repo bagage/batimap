@@ -31,11 +31,11 @@ export class DepartmentDetailsDialogComponent {
     }
 
     // no need to add hostListener here, there is already one present for help
-    openHelp() {
+    openHelp(): void {
         this.matDialog.open(AboutDialogComponent);
     }
 
-    @HostListener('document:keydown.f') close() {
+    @HostListener('document:keydown.f') close(): void {
         this.dialogRef.close(0);
     }
 
@@ -57,7 +57,7 @@ export class DepartmentDetailsDialogComponent {
         return 'Le bâti existant ne semble globalement pas provenir du cadastre.';
     }
 
-    editNodes(nodes: number[]) {
+    editNodes(nodes: number[]): void {
         this.josmService.openNodes(nodes, this.department.insee, this.department.name).subscribe();
     }
 }

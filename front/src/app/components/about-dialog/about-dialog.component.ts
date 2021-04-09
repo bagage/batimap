@@ -17,16 +17,16 @@ export class AboutDialogComponent implements OnDestroy {
         private readonly dialogRef: MatDialogRef<AboutDialogComponent>
     ) {}
 
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         localStorage.setItem('first-time-help', 'false');
         localStorage.setItem(JosmScriptUpdateDialogComponent.storageKey, environment.version);
     }
 
-    @HostListener('document:keydown.m') showHowto() {
+    @HostListener('document:keydown.m') showHowto(): void {
         this.matDialog.open(HowtoDialogComponent);
     }
 
-    @HostListener('document:keydown.g') close() {
+    @HostListener('document:keydown.g') close(): void {
         this.dialogRef.close(0);
     }
 }

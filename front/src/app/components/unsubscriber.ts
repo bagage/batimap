@@ -11,7 +11,7 @@ export class Unsubscriber implements OnDestroy {
     autoUnsubscribe(subscription: Subscription) {
         this.subscriptions.push(subscription);
     }
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         this.subscriptions.forEach(it => it.unsubscribe());
     }
 }
