@@ -7,7 +7,7 @@ import { LegendService } from '../services/legend.service';
 export class LegendPipe implements PipeTransform {
     constructor(private readonly legendService: LegendService) {}
     transform(value: string | string[], type?: string): string | string[] {
-        const legendFunc = v =>
+        const legendFunc = (v: string) =>
             type === 'color'
                 ? this.legendService.date2color(v)
                 : this.legendService.date2name(v) === 'indéterminé' && v !== 'unknown'

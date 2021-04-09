@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class AppConfigService {
-    private appConfig;
+    private appConfig: any;
 
     constructor(private readonly http: HttpClient) {}
 
@@ -16,7 +16,7 @@ export class AppConfigService {
             });
     }
 
-    getConfig() {
+    getConfig(): any {
         return this.appConfig;
     }
 }

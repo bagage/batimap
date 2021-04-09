@@ -15,7 +15,7 @@ export class JosmService {
 
     private readonly overpassAPI = 'https://overpass-api.de/api/interpreter?data=';
 
-    private static GenerateOverpassQuery(name: string): string {
+    private static generateOverpassQuery(name: string): string {
         return `[out:xml][timeout:600];
     {{geocodeArea:"${name}, France"}}->.searchArea;
     (
@@ -59,19 +59,21 @@ export class JosmService {
             switchMap(() =>
                 this.josmUrlLoadAndZoom$(
                     false,
-                    undefined,
                     dto.bbox[0].toString(),
                     dto.bbox[1].toString(),
                     dto.bbox[2].toString(),
-                    dto.bbox[3].toString()
+                    dto.bbox[3].toString(),
+                    undefined
                 ).pipe(
                     catchError(error => {
                         // use overpass query to download when city is too big for JOSM
                         if (error && error.status === 502) {
                             const encodedUrl =
-                                this.overpassAPI + encodeURIComponent(JosmService.GenerateOverpassQuery(city.name));
+                                this.overpassAPI + encodeURIComponent(JosmService.generateOverpassQuery(city.name));
 
                             return this.josmUrlImport$(encodedUrl, false, false, 'true', this.getOsmLayer(city));
+                        } else {
+                            throw error;
                         }
                     })
                 )
@@ -147,23 +149,27 @@ export class JosmService {
 
     private josmUrlLoadAndZoom$(
         newLayer: boolean,
-        layerName: string,
         left: string,
         right: string,
         bottom: string,
-        top: string
+        top: string,
+        layerName?: string
     ): Observable<string> {
+        const params: any = {
+            new_layer: newLayer ? 'true' : 'false',
+            left,
+            right,
+            bottom,
+            top,
+        };
+        if (newLayer) {
+            params.layer_name = layerName;
+        }
+
         return this.http.get(`${this.JOSM_URL_BASE}load_and_zoom`, {
             headers: HttpErrorInterceptor.ByPassInterceptor().headers,
             responseType: 'text',
-            params: {
-                new_layer: newLayer ? 'true' : 'false',
-                layer_name: newLayer ? layerName : undefined, // unsupported
-                left,
-                right,
-                bottom,
-                top,
-            },
+            params,
         });
     }
 

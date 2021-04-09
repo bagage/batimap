@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Tests" type="JavaScriptTestRunnerKarma">
-    <config-file value="$PROJECT_DIR$/front/src/karma.conf.js" />
+    <config-file value="$PROJECT_DIR$/front/karma.conf.js" />
     <karma-package-dir value="$PROJECT_DIR$/front/node_modules/@angular/cli" />
     <working-directory value="$PROJECT_DIR$/front" />
     <node-interpreter value="project" />

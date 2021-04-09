@@ -1,6 +1,4 @@
-import * as L from 'leaflet';
-
-declare module 'leaflet-geocoder' {
+declare namespace L {
     interface GeocoderBanOptions {
         position?: string; // 'topleft',
         style?: string; // 'control',

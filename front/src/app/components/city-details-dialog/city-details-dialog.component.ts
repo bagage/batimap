@@ -3,6 +3,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 import { MatProgressButtonOptions } from 'mat-progress-buttons';
 import { Observable } from 'rxjs';
 import { CityDTO } from '../../classes/city.dto';
+import { LocalStorage } from '../../classes/local-storage';
 import { BatimapService, TaskState } from '../../services/batimap.service';
 import { JosmService } from '../../services/josm.service';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
@@ -16,7 +17,7 @@ import { Unsubscriber } from '../unsubscriber';
 export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     city: CityDTO;
 
-    josmIsStarted: Observable<boolean>;
+    josmIsStarted!: Observable<boolean>;
     osmID: number;
 
     cadastreLayer: any;
@@ -32,8 +33,8 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         value: 0,
         disabled: false,
     };
-    moreRecentDate: boolean;
-    lastImport: string;
+    moreRecentDate?: boolean;
+    lastImport?: string;
 
     constructor(
         @Inject(MAT_DIALOG_DATA) data: [CityDTO, number, any],
@@ -51,7 +52,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     ngOnInit(): void {
-        if (localStorage.getItem('first-time-howto') !== 'false') {
+        if (LocalStorage.asBool('first-time-howto', true)) {
             this.matDialog.open(HowtoDialogComponent);
         }
 
@@ -59,20 +60,20 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     // no need to add hostListener here, there is already one present for help
-    openHelp() {
+    openHelp(): void {
         this.matDialog.open(AboutDialogComponent);
     }
 
-    @HostListener('document:keydown.f') close() {
+    @HostListener('document:keydown.f') close(): void {
         this.dialogRef.close(0);
     }
 
-    isCityIgnored() {
+    isCityIgnored(): boolean {
         return this.batimapService.ignoredInsees().indexOf(this.city.insee) !== -1;
     }
 
-    @HostListener('document:keydown.i') toggleIgnoreCity() {
-        // tslint:disable
+    @HostListener('document:keydown.i') toggleIgnoreCity(): void {
+        /* eslint-disable */
         var ignoredCities = this.batimapService.ignoredInsees();
         const cityIndex = ignoredCities.indexOf(this.city.insee);
         if (cityIndex !== -1) {
@@ -85,13 +86,13 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         this.redrawMap();
     }
 
-    private redrawMap() {
+    private redrawMap(): void {
         this.zone.runOutsideAngular(() => {
             this.cadastreLayer.redraw();
         });
     }
 
-    @HostListener('document:keydown.r') updateCity() {
+    @HostListener('document:keydown.r') updateCity(): void {
         const onEnd = () => {
             this.updateButtonOpts.active = false;
             this.updateButtonOpts.text = 'Rafraîchir';
@@ -102,7 +103,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
             this.batimapService.updateCity(this.city.insee).subscribe(
                 task => {
                     this.updateButtonOpts.text = `Rafraîchir (${task.progress.current}%)`;
-                    if (task.state === TaskState.SUCCESS) {
+                    if (task.state === TaskState.SUCCESS && task.result) {
                         this.cityDateChanged(task.result);
                         this.redrawMap();
                     }
@@ -113,7 +114,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         );
     }
 
-    computeLastImport() {
+    computeLastImport(): void {
         const d = this.city ? this.city.date : undefined;
         let val: string;
         if (!d || d === 'never') {

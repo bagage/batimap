@@ -4,7 +4,7 @@
     <app-map-date-legend
         #legend
         [ngClass]="{ hidden: !displayLegend }"
-        [hideCheckboxes]="map?.getZoom() < 7"
+        [hideCheckboxes]="map?.getZoom()! < 7"
         (hideLegend)="displayLegend = false"
     ></app-map-date-legend>
 

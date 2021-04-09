@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { AppConfigService } from './app-config.service';
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { plainToClass } from 'class-transformer';
-import { ClassType } from 'class-transformer/ClassTransformer';
+import { ClassConstructor, plainToClass } from 'class-transformer';
 import { LatLngBounds } from 'leaflet';
 import { Observable, of, pipe, timer } from 'rxjs';
 import { debounceTime, map, switchMap, takeWhile, tap } from 'rxjs/operators';
@@ -15,6 +14,7 @@ import { ObsoleteCityDTO } from '../classes/obsolete-city.dto';
 import { TaskDTO } from '../classes/task.dto';
 import { HttpErrorInterceptor } from './http-error.interceptor';
 import { LegendService } from './legend.service';
+import { LocalStorage } from '../classes/local-storage';
 
 export enum TaskState {
     PENDING = 'PENDING',
@@ -25,17 +25,17 @@ export enum TaskState {
 
 export interface TaskResult<T> {
     state: TaskState;
-    result: T;
+    result?: T;
     progress: TaskProgress;
 }
 
 export interface Task {
-    // tslint:disable-next-line:variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle, id-blacklist, id-match
     task_id: string;
 }
 
 export class TaskProgress {
-    constructor(public current: number, public _total: number) {}
+    constructor(public current: number, public total: number) {}
 }
 
 @Injectable({
@@ -50,12 +50,12 @@ export class BatimapService {
         private readonly configService: AppConfigService
     ) {}
 
-    ignoredInsees() {
-        const ignoredStr = localStorage.getItem(BatimapService.storageIgnoredCities);
+    ignoredInsees(): string[] {
+        const ignoredStr = LocalStorage.get(BatimapService.storageIgnoredCities, '');
 
         return ignoredStr && ignoredStr.length > 0 ? ignoredStr.split(',') : [];
     }
-    updateIgnoredInsees(ignored: string[]) {
+    updateIgnoredInsees(ignored: string[]): void {
         return localStorage.setItem(BatimapService.storageIgnoredCities, ignored.join(','));
     }
 
@@ -90,7 +90,7 @@ export class BatimapService {
     updateCity(insee: string): Observable<TaskResult<CityDTO>> {
         return this.longRunningAPI<CityDTO>(this.URL_CITY_UPDATE(insee), CityDTO).pipe(
             tap(progress => {
-                if (progress.state === TaskState.SUCCESS) {
+                if (progress.state === TaskState.SUCCESS && progress.result) {
                     this.legendService.city2date.set(progress.result.insee, progress.result.date);
                 }
             })
@@ -129,7 +129,7 @@ export class BatimapService {
         return this.http.get<TaskDTO[]>(this.URL_CITY_TASKS(insee));
     }
 
-    waitTask<T>(taskId: string, resultType?: ClassType<T>): Observable<TaskResult<T>> {
+    waitTask<T>(taskId: string, resultType?: ClassConstructor<T>): Observable<TaskResult<T>> {
         return timer(0, 3000).pipe(
             switchMap(() => this.http.get<TaskResult<T>>(this.URL_TASK(taskId))),
             takeWhile(r => r.state === TaskState.PENDING || r.state === TaskState.PROGRESS, true),
@@ -140,7 +140,8 @@ export class BatimapService {
                     r.progress = plainToClass(TaskProgress, r.result);
                     r.result = undefined;
                 } else if (r.state === TaskState.FAILURE) {
-                    throw new Error(r.result.toString());
+                    const result: any = r.result;
+                    throw new Error(r.result ? result.toString() : 'unknown error');
                 } else {
                     if (resultType) {
                         r.result = plainToClass(resultType, r.result);
@@ -163,39 +164,39 @@ export class BatimapService {
         return `${this.configService.getConfig().backServerUrl}cities/${insee}/update`;
     }
 
-    private URL_LEGEND(lonNW: number, latNW: number, lonSE: number, latSE: number) {
+    private URL_LEGEND(lonNW: number, latNW: number, lonSE: number, latSE: number): string {
         return `${this.configService.getConfig().backServerUrl}legend/${lonNW}/${latNW}/${lonSE}/${latSE}`;
     }
 
-    private URL_CITY_OBSOLETE() {
+    private URL_CITY_OBSOLETE(): string {
         return `${this.configService.getConfig().backServerUrl}cities/obsolete`;
     }
 
-    private URL_DEPARTMENT(insee: string) {
+    private URL_DEPARTMENT(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}departments/${insee}`;
     }
 
-    private URL_DEPARTMENT_DETAILS(insee: string) {
+    private URL_DEPARTMENT_DETAILS(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}departments/${insee}/details`;
     }
 
-    private URL_CITY(insee: string) {
+    private URL_CITY(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}cities/${insee}`;
     }
 
-    private URL_OSMID(insee: string) {
+    private URL_OSMID(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}insees/${insee}/osm_id`;
     }
 
-    private URL_TASKS() {
+    private URL_TASKS(): string {
         return `${this.configService.getConfig().backServerUrl}tasks`;
     }
 
-    private URL_CITY_TASKS(insee: string) {
+    private URL_CITY_TASKS(insee: string): string {
         return `${this.configService.getConfig().backServerUrl}cities/${insee}/tasks`;
     }
 
-    private longRunningAPI<T>(url: string, resultType: ClassType<T>): Observable<TaskResult<T>> {
+    private longRunningAPI<T>(url: string, resultType: ClassConstructor<T>): Observable<TaskResult<T>> {
         return this.http.get<Task>(url).pipe(switchMap(task => this.waitTask<T>(task.task_id, resultType)));
     }
 }

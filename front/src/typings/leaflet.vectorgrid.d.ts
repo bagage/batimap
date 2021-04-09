@@ -1,6 +1,4 @@
-import * as L from 'leaflet';
-
-declare module 'leaflet-vectorgrid' {
+declare namespace L {
     namespace vectorGrid {
         export function protobuf(url: string, options?: any): any;
     }

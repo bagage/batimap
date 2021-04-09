@@ -8,14 +8,14 @@ export class BuildingsRatioPipe implements PipeTransform {
     greenPercentage = 20;
     orangePercentage = 50;
 
-    transform(input, attribute?: string | undefined): number | string {
+    transform(input: any, attribute?: string | undefined): number | string | undefined {
         let ratio: number;
         if (input instanceof CityDTO || input.osm_buildings !== undefined) {
             if (!Number.isInteger(input.osm_buildings) || !Number.isInteger(input.od_buildings)) {
                 return undefined;
             }
 
-            // tslint:disable-next-line:binary-expression-operand-order
+            // eslint-disable-next-line yoda
             ratio = +(100 * (1 - input.od_buildings / input.osm_buildings)).toFixed(2);
         } else {
             ratio = input;

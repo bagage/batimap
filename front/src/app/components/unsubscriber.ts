@@ -4,14 +4,14 @@ import { Subscription } from 'rxjs';
 @Component({
     template: '',
 })
-//tslint:disable
+/* eslint-disable */
 export class Unsubscriber implements OnDestroy {
     private readonly subscriptions: Subscription[] = [];
 
     autoUnsubscribe(subscription: Subscription) {
         this.subscriptions.push(subscription);
     }
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         this.subscriptions.forEach(it => it.unsubscribe());
     }
 }

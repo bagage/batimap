@@ -12,18 +12,19 @@ import { BatimapService } from '../../services/batimap.service';
 export class TasksComponent implements OnInit {
     metatasks$: Observable<any>;
 
-    constructor(private readonly batimapService: BatimapService) {}
-
-    ngOnInit() {
-        localStorage.setItem('displayTasks', 'true');
-        this.metatasks$ = this.batimapService.tasks().pipe(
+    constructor(batimapService: BatimapService) {
+        this.metatasks$ = batimapService.tasks().pipe(
             switchMap((tasks: TaskDTO[]) => {
                 const taskDetails$ = tasks.map(task =>
-                    this.batimapService.waitTask<any>(task.task_id).pipe(map(status => ({ task, status })))
+                    batimapService.waitTask<any>(task.task_id).pipe(map(status => ({ task, status })))
                 );
 
                 return taskDetails$.length ? combineLatest(taskDetails$) : of([]);
             })
         );
+    }
+
+    ngOnInit(): void {
+        localStorage.setItem('displayTasks', 'true');
     }
 }
