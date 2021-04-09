@@ -9,8 +9,7 @@
         "lint": "ng lint --fix",
         "lintquick": "bash ./quick-lint.sh",
         "e2e": "ng e2e",
-        "prettier": "prettier --write '**/*'",
-        "postinstall": "ngcc"
+        "prettier": "prettier --write '**/*'"
     },
     "husky": {
         "hooks": {
