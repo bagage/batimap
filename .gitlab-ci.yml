@@ -34,13 +34,14 @@ test:back:
     - name: registry.gitlab.com/bagage/batimap/postgis
       alias: postgis
   variables:
-    POSTGRES_DB: gis
-    POSTGRES_USER: docker
+    POSTGRES_DB: testdb
+    POSTGRES_USER: test
     POSTGRES_PASSWORD: "batimap"
     POSTGRES_HOST_AUTH_METHOD: trust
-  script:
-    - sed -i 's/localhost:5432/postgis:5432/' back/batimap/app.conf
+    POSTGRES_URI: postgresql://test:batimap@postgis:5432/testdb
+  before_script:
     - cd back/
+  script:
     - pipenv install -d
     - pipenv run flake8
     - pipenv run black --check
@@ -48,8 +49,8 @@ test:back:
     - pipenv run coverage xml
   artifacts:
     reports:
-      junit: tests-report.xml
-      cobertura: coverage.xml
+      junit: back/tests-report.xml
+      cobertura: back/coverage.xml
   only:
     refs:
       - merge_requests

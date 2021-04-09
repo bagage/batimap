@@ -16,8 +16,7 @@ def test_city_has_buildings(app, insee, count, exact_match):
     with app.app_context():
         now = datetime.now()
 
-        city = City()
-        city.insee = insee
+        city = City(insee=insee)
         db.session.add(db.session.merge(city))
         db.session.query(Cadastre).delete()
 
@@ -34,17 +33,12 @@ def test_city_has_buildings(app, insee, count, exact_match):
 def test_department_has_buildings(app):
     with app.app_context():
         now = datetime.now()
-        department = "05"
 
-        boundary = Boundary()
-        boundary.osm_id = 9999
-        boundary.name = "test-dept-05"
-        boundary.admin_level = 6
-        boundary.insee = department
+        boundary = Boundary(osm_id=9999, name="test-dept-05", admin_level=6, insee="05")
         db.session.add(db.session.merge(boundary))
 
-        cadastre = odcadastre.compute_count(department)
+        cadastre = odcadastre.compute_count(boundary.insee)
         assert cadastre is not None
-        assert cadastre.department == department
+        assert cadastre.department == boundary.insee
         assert cadastre.od_buildings >= 160000
         assert cadastre.last_fetch > now

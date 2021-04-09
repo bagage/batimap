@@ -1,0 +1,12 @@
+version: "3"
+services:
+  postgis:
+    image: registry.gitlab.com/bagage/batimap/postgis
+    ports:
+      - "15432:5432"
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=batimap
+      - POSTGRES_DB=testdb
+      - POSTGRES_HOST=postgis
+      - POSTGRES_PORT=5432

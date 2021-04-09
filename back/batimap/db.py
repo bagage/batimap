@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List
+from dataclasses import dataclass
 
 from dateutil import parser
 from geoalchemy2 import Geometry
@@ -27,6 +28,7 @@ LOG = logging.getLogger(__name__)
 Base = declarative_base()
 
 
+@dataclass
 class Building(Base):
     __tablename__ = "osm_buildings"
 
@@ -40,6 +42,7 @@ class Building(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
+@dataclass
 class Boundary(Base):
     __tablename__ = "osm_admin"
 
@@ -52,6 +55,7 @@ class Boundary(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
+@dataclass
 class City(Base):
     __tablename__ = "city_stats"
 
@@ -83,6 +87,7 @@ class City(Base):
         return [None, "unfinished", "unknown", "never"]
 
 
+@dataclass
 class Cadastre(Base):
     __tablename__ = "cadastre_stats"
 
@@ -106,11 +111,11 @@ class Db(object):
     def __init__(self):
         self.is_initialized = False
 
-    def init_app(self, app, db):
+    def init_app(self, app, sqlalchemy):
+        self.sqlalchemy = sqlalchemy
         with app.app_context():
-            City.metadata.create_all(db.engine)
-            Cadastre.metadata.create_all(db.engine)
-        self.session = db.session
+            Base.metadata.create_all(bind=sqlalchemy.engine)
+        self.session = sqlalchemy.session
         self.is_initialized = True
 
     def __isInitialized(func):
