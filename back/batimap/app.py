@@ -18,13 +18,15 @@ from batimap.extensions import (
 )
 
 
-def create_app():
+def create_app(db_uri=None):
     app = Flask(__name__, instance_relative_config=True)
     CORS(app)
 
     app.config.from_pyfile(app.root_path + "/app.conf")
     app.config["OPENAPI_VERSION"] = "3.0.2"
     app.config["OPENAPI_URL_PREFIX"] = "/api"
+    if db_uri:
+        app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
 
     verbosity = {
         "DEBUG": logging.DEBUG,

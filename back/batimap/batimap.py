@@ -191,8 +191,7 @@ class Batimap(object):
 
                 city = self.db.get_city_for_insee(insee)
                 if not city:
-                    city = City()
-                    city.insee = insee
+                    city = City(insee=insee)
                     self.db.session.add(city)
                 city.department = dept
                 city.name = name

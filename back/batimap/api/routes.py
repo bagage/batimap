@@ -14,7 +14,7 @@ from batimap.tasks.common import (
 )
 from batimap.tasks.utils import find_task_id, list_tasks
 from celery.result import AsyncResult
-from flask import Response, request, url_for
+from flask import Response, request, url_for, jsonify
 from flask_restful import inputs
 from flask_smorest import Blueprint, abort
 from geojson import Feature, FeatureCollection
@@ -24,8 +24,10 @@ bp = Blueprint("app_routes", __name__)
 
 
 @bp.route("/status", methods=["GET"])
-def api_status() -> dict:
-    return json.dumps(db.get_imports_count_per_year())
+def api_status() -> str:
+    return jsonify(
+        [{"date": x[0], "count": x[1]} for x in db.get_imports_count_per_year()]
+    )
 
 
 @bp.route("/status/<department>", methods=["GET"])
