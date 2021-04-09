@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { AppConfigService } from './app-config.service';
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { plainToClass } from 'class-transformer';
-import { ClassType } from 'class-transformer/ClassTransformer';
+import { ClassConstructor, plainToClass } from 'class-transformer';
 import { LatLngBounds } from 'leaflet';
 import { Observable, of, pipe, timer } from 'rxjs';
 import { debounceTime, map, switchMap, takeWhile, tap } from 'rxjs/operators';
@@ -129,7 +128,7 @@ export class BatimapService {
         return this.http.get<TaskDTO[]>(this.URL_CITY_TASKS(insee));
     }
 
-    waitTask<T>(taskId: string, resultType?: ClassType<T>): Observable<TaskResult<T>> {
+    waitTask<T>(taskId: string, resultType?: ClassConstructor<T>): Observable<TaskResult<T>> {
         return timer(0, 3000).pipe(
             switchMap(() => this.http.get<TaskResult<T>>(this.URL_TASK(taskId))),
             takeWhile(r => r.state === TaskState.PENDING || r.state === TaskState.PROGRESS, true),
@@ -195,7 +194,7 @@ export class BatimapService {
         return `${this.configService.getConfig().backServerUrl}cities/${insee}/tasks`;
     }
 
-    private longRunningAPI<T>(url: string, resultType: ClassType<T>): Observable<TaskResult<T>> {
+    private longRunningAPI<T>(url: string, resultType: ClassConstructor<T>): Observable<TaskResult<T>> {
         return this.http.get<Task>(url).pipe(switchMap(task => this.waitTask<T>(task.task_id, resultType)));
     }
 }
