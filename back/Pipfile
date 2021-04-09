@@ -14,7 +14,7 @@ pytest-cov = "*"
 
 [packages]
 beautifulsoup4 = "==4.9.3"
-celery = {extras = ["redis"], version = "==5.0.2"}
+celery = {extras = ["redis"], version = "==5.0.5"}
 click = "==7.1.2"
 geojson = "==2.5.0"
 gevent = "==20.9.0"
