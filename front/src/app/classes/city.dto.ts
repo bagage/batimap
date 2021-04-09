@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 
 export class StatsDetailsDTO {
-    @Type() dates!: Map<string, number>;
+    @Type() dates!: any;
     simplified!: number[];
 }
 

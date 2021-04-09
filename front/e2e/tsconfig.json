@@ -6,5 +6,6 @@
         "module": "commonjs",
         "target": "es2018",
         "types": ["jasmine", "node"]
-    }
+    },
+    "include": ["src/typings/*.d.ts"]
 }
