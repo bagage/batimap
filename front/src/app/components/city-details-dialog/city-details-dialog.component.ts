@@ -52,7 +52,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     ngOnInit(): void {
-        if (LocalStorage.bool('first-time-howto', true)) {
+        if (LocalStorage.asBool('first-time-howto', true)) {
             this.matDialog.open(HowtoDialogComponent);
         }
 
@@ -73,7 +73,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
     }
 
     @HostListener('document:keydown.i') toggleIgnoreCity(): void {
-        // tslint:disable
+        /* eslint-disable */
         var ignoredCities = this.batimapService.ignoredInsees();
         const cityIndex = ignoredCities.indexOf(this.city.insee);
         if (cityIndex !== -1) {

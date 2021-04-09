@@ -24,7 +24,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     }
 
     constructor(private readonly snackbar: MatSnackBar) {}
-    // tslint:disable
+    /* eslint-disable */
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         const shouldBypass = request.headers.has(HttpErrorInterceptor.BYPASS_HEADER);
         let forwardedRequest = request.clone({ headers: request.headers.delete(HttpErrorInterceptor.BYPASS_HEADER) });

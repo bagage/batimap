@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 @Component({
     template: '',
 })
-//tslint:disable
+/* eslint-disable */
 export class Unsubscriber implements OnDestroy {
     private readonly subscriptions: Subscription[] = [];
 

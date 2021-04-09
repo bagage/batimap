@@ -1,4 +1,4 @@
-declare module L {
+declare namespace L {
     interface Map {
         restoreView(): void;
     }

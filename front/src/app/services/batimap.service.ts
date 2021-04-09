@@ -30,7 +30,7 @@ export interface TaskResult<T> {
 }
 
 export interface Task {
-    // tslint:disable-next-line:variable-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle, id-blacklist, id-match
     task_id: string;
 }
 

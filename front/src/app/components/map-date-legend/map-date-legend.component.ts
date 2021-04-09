@@ -35,7 +35,7 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     set countSlider(countSlider: MatSlider) {
         if (countSlider) {
             setTimeout(() => {
-                countSlider.value = LocalStorage.number('min-buildings-ratio', 0);
+                countSlider.value = LocalStorage.asNumber('min-buildings-ratio', 0);
                 this.redrawMapOnChange(countSlider);
             });
         }

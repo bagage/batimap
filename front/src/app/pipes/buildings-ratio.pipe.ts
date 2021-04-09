@@ -15,7 +15,7 @@ export class BuildingsRatioPipe implements PipeTransform {
                 return undefined;
             }
 
-            // tslint:disable-next-line:binary-expression-operand-order
+            // eslint-disable-next-line yoda
             ratio = +(100 * (1 - input.od_buildings / input.osm_buildings)).toFixed(2);
         } else {
             ratio = input;

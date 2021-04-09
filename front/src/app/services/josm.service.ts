@@ -15,7 +15,7 @@ export class JosmService {
 
     private readonly overpassAPI = 'https://overpass-api.de/api/interpreter?data=';
 
-    private static GenerateOverpassQuery(name: string): string {
+    private static generateOverpassQuery(name: string): string {
         return `[out:xml][timeout:600];
     {{geocodeArea:"${name}, France"}}->.searchArea;
     (
@@ -69,7 +69,7 @@ export class JosmService {
                         // use overpass query to download when city is too big for JOSM
                         if (error && error.status === 502) {
                             const encodedUrl =
-                                this.overpassAPI + encodeURIComponent(JosmService.GenerateOverpassQuery(city.name));
+                                this.overpassAPI + encodeURIComponent(JosmService.generateOverpassQuery(city.name));
 
                             return this.josmUrlImport$(encodedUrl, false, false, 'true', this.getOsmLayer(city));
                         } else {

@@ -40,7 +40,7 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
     tooltip = '';
 
     @Input() osmID!: number;
-    //tslint:disable:variable-name
+    /* eslint-disable @typescript-eslint/naming-convention, no-underscore-dangle, id-blacklist, id-match */
     private _city!: CityDTO;
     @Input()
     set city(value: CityDTO) {

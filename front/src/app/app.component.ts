@@ -22,7 +22,7 @@ export class AppComponent {
         const version = environment.version;
         titleService.setTitle(`État du bâti dans OSM (${version})`);
 
-        if (LocalStorage.bool('first-time-help', true)) {
+        if (LocalStorage.asBool('first-time-help', true)) {
             this.openDialog(AboutDialogComponent);
         } else if (JosmScriptUpdateDialogComponent.shouldDisplayDialog()) {
             this.openDialog(JosmScriptUpdateDialogComponent);

@@ -8,10 +8,10 @@ export class LocalStorage {
         return value;
     }
 
-    static number(key: string, defaultValue: number): number {
+    static asNumber(key: string, defaultValue: number): number {
         return +LocalStorage.get(key, defaultValue.toString());
     }
-    static bool(key: string, defaultValue: boolean): boolean {
+    static asBool(key: string, defaultValue: boolean): boolean {
         return LocalStorage.get(key, defaultValue ? 'true' : 'false') === 'true';
     }
 }

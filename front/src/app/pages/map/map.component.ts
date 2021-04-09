@@ -63,7 +63,7 @@ export class MapComponent implements AfterViewInit {
     onMapReady(map: L.Map): void {
         this.map = map;
         this.legend.map = map;
-        this.displayTasks = LocalStorage.bool('displayTasks', false);
+        this.displayTasks = LocalStorage.asBool('displayTasks', false);
         const hash = L.hash(map);
         hash.formatHash = (m: any) => {
             const center = m.getCenter();
@@ -83,13 +83,13 @@ export class MapComponent implements AfterViewInit {
     }
 
     stylingFunction(properties: any, zoom: number, type: string): any {
-        const minRatio = LocalStorage.number('min-buildings-ratio', 0);
+        const minRatio = LocalStorage.asNumber('min-buildings-ratio', 0);
         const isIgnored = this.batimapService.ignoredInsees().indexOf(properties.insee) !== -1;
         const date = isIgnored ? 'ignored' : this.legendService.city2date.get(properties.insee) || properties.date;
         const color = this.legendService.date2color(date);
         const ratio = this.buildingsRatioPipe.transform(properties);
         const ratioValid = minRatio === 0 || (ratio !== undefined && Math.abs(+ratio) >= minRatio);
-        // tslint:disable
+        /* eslint-disable */
         const visible =
             properties.insee.length <= 3 /* dept are always visible */ ||
             (this.legendService.isActive(date) && ratioValid);
