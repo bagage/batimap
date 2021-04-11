@@ -16,6 +16,9 @@ RUN curl -L -H 'Accept:application/octet-stream' \
 
 ADD config.toml /app/config.toml
 
+RUN adduser --disabled-password --no-create-home --gecos '' batimap
+USER batimap
+
 COPY wait-for-it.sh /
 
 ENV CONFIG=/app/config.toml

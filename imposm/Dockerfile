@@ -34,4 +34,7 @@ ENV REGIONS=""
 
 WORKDIR /data
 
+RUN adduser --disabled-password --no-create-home --gecos '' batimap
+USER batimap
+
 ENTRYPOINT ["bash", "-c", "/entrypoint.sh $REGIONS"]

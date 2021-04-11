@@ -4,8 +4,9 @@ services:
     image: registry.gitlab.com/bagage/batimap/postgis
     env_file:
       - ./.env
+    user: postgres
     volumes:
-      - ./data/postgis:/var/lib/postgresql/data
+      - ./data/postgis:/var/lib/postgresql
 
   imposm:
     image: registry.gitlab.com/bagage/batimap/imposm
