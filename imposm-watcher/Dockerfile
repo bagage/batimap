@@ -18,4 +18,7 @@ COPY --from=builder /usr/local /usr/local
 COPY . /code
 WORKDIR /code
 
+RUN adduser --disabled-password --no-create-home --gecos '' batimap
+USER batimap
+
 ENTRYPOINT [ "python3", "/code/app.py" ]

@@ -15,8 +15,11 @@ RUN curl -L -H 'Accept:application/octet-stream' \
     chmod +x /usr/bin/tegola
 
 RUN mkdir /app
-COPY config.toml /app/config.toml
 
+RUN adduser --disabled-password --no-create-home --gecos '' batimap
+USER batimap
+
+COPY config.toml /app/config.toml
 COPY entrypoint.sh /
 
 CMD /entrypoint.sh
