@@ -6,8 +6,8 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-requests = "==2.25.0"
-watchdog = "==0.10.6"
+requests = "*"
+watchdog = "*"
 
 [requires]
 python_version = "3.9"
