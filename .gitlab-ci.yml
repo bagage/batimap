@@ -2,6 +2,26 @@ stages:
   - build
   - test
 
+test:front:buildprod:
+  image: registry.gitlab.com/bagage/batimap/ci-test-front
+  stage: test
+  cache:
+    untracked: true
+    paths:
+      - cache-ci/
+  before_script:
+    - yarn config set cache-folder cache-ci
+  script:
+    - cd front/
+    - yarn
+    - yarn build --prod
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - .gitlab-ci.yml
+      - front/**/*
+
 test:front:
   image: registry.gitlab.com/bagage/batimap/ci-test-front
   stage: test
