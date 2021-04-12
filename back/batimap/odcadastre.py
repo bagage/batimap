@@ -73,12 +73,13 @@ class ODCadastre(object):
 
         if counts:
             items = [
-                self.db.session.merge(Cadastre(insee, buildings))
+                self.db.session.merge(Cadastre(insee, dept, buildings))
                 for (insee, buildings) in counts.items()
             ]
             # save a department Cadastre model too just to keep the date
-            cadastre_dept = self.db.session.merge(Cadastre(dept, sum(counts.values())))
-            cadastre_dept.department = dept
+            cadastre_dept = self.db.session.merge(
+                Cadastre(dept, dept, sum(counts.values()))
+            )
             items.append(cadastre_dept)
 
             self.db.session.add_all(items)
@@ -91,7 +92,9 @@ class ODCadastre(object):
 
         try:
             counts = self.query_city_od(insee)
-            cadastre = self.db.session.merge(Cadastre(insee, sum(counts.values())))
+            cadastre = self.db.session.merge(
+                Cadastre(insee, insee[:-3], sum(counts.values()))
+            )
             self.db.session.add(cadastre)
         except Exception as e:
             current_app.logger.warning(f"could not fetch cadastre for {insee}: {e}")

@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from typing import List
-from dataclasses import dataclass
 
 from dateutil import parser
 from geoalchemy2 import Geometry
@@ -28,7 +27,6 @@ LOG = logging.getLogger(__name__)
 Base = declarative_base()
 
 
-@dataclass
 class Building(Base):
     __tablename__ = "osm_buildings"
 
@@ -42,7 +40,6 @@ class Building(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
-@dataclass
 class Boundary(Base):
     __tablename__ = "osm_admin"
 
@@ -55,7 +52,6 @@ class Boundary(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
-@dataclass
 class City(Base):
     __tablename__ = "city_stats"
 
@@ -73,6 +69,29 @@ class City(Base):
         "Cadastre", primaryjoin="foreign(City.insee) == Cadastre.insee", lazy=True
     )
 
+    def __init__(
+        self,
+        insee=None,
+        department=None,
+        name=None,
+        name_cadastre=None,
+        is_raster=None,
+        import_date=None,
+        date_cadastre=None,
+        import_details=None,
+        osm_buildings=None,
+    ):
+        super().__init__()
+        self.insee = insee
+        self.department = department
+        self.name = name
+        self.name_cadastre = name_cadastre
+        self.is_raster = is_raster
+        self.import_date = import_date
+        self.date_cadastre = date_cadastre
+        self.import_details = import_details
+        self.osm_buildings = osm_buildings
+
     def __repr__(self):
         return f"{self.name}({self.insee})"
 
@@ -87,16 +106,15 @@ class City(Base):
         return [None, "unfinished", "unknown", "never"]
 
 
-@dataclass
 class Cadastre(Base):
     __tablename__ = "cadastre_stats"
 
-    def __init__(self, insee, od_buildings):
+    def __init__(self, insee, department, od_buildings, last_fetch=None):
         super().__init__()
         self.insee = insee
-        self.department = insee[:-3]
+        self.department = department
         self.od_buildings = od_buildings
-        self.last_fetch = datetime.now()
+        self.last_fetch = last_fetch or datetime.now()
 
     insee = Column(String, primary_key=True)
     department = Column(String)

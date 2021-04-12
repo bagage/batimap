@@ -16,12 +16,13 @@ def test_city_has_buildings(app, insee, count, exact_match):
     with app.app_context():
         now = datetime.now()
 
-        city = City(insee=insee)
-        db.session.add(db.session.merge(city))
         db.session.query(Cadastre).delete()
+        db.session.add(db.session.merge(City(insee=insee)))
 
         cadastre = odcadastre.compute_count(insee)
+        city = db.get_city_for_insee(insee)
         assert cadastre is not None
+        assert cadastre == city.cadastre
         assert cadastre.insee == insee
         if exact_match:
             assert cadastre.od_buildings == count
