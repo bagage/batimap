@@ -157,10 +157,10 @@ def api_update_insee_list(insee) -> dict:
         # only create a new task if none already exists
         task_id = task_update_insee.delay(insee).id
 
-    return Response(
-        response=jsonify({"task_id": task_id}),
-        status=202,
-        headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
+    return (
+        jsonify({"task_id": task_id}),
+        202,
+        {"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
 
 
@@ -182,10 +182,10 @@ def api_josm_data(insee) -> dict:
             # only create a new task if none already exists
             task_id = task_josm_data.delay(insee).id
 
-    return Response(
-        response=jsonify({"task_id": task_id}),
-        status=202,
-        headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
+    return (
+        jsonify({"task_id": task_id}),
+        202,
+        {"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
 
 

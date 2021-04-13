@@ -22,13 +22,18 @@ def list_tasks():
     Returns list of all active and pending tasks
     """
     inspect = celery.control.inspect()
-
-    active_tasks = [
-        task for worker_tasks in inspect.active().values() for task in worker_tasks
-    ]
-    waiting_tasks = [
-        task for worker_tasks in inspect.reserved().values() for task in worker_tasks
-    ]
+    active = inspect.active()
+    reserved = inspect.reserved()
+    active_tasks = (
+        [task for worker_tasks in inspect.active().values() for task in worker_tasks]
+        if active
+        else []
+    )
+    waiting_tasks = (
+        [task for worker_tasks in inspect.reserved().values() for task in worker_tasks]
+        if reserved
+        else []
+    )
     return active_tasks + waiting_tasks
 
 

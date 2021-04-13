@@ -53,12 +53,15 @@ test:back:
   services:
     - name: registry.gitlab.com/bagage/batimap/postgis
       alias: postgis
+    - name: redis:5-alpine
+      alias: redis
   variables:
     POSTGRES_DB: testdb
     POSTGRES_USER: test
     POSTGRES_PASSWORD: "batimap"
     POSTGRES_HOST_AUTH_METHOD: trust
     POSTGRES_URI: postgresql://test:batimap@postgis:5432/testdb
+    REDIS_URI: redis://redis
   before_script:
     - cd back/
   script:

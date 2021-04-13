@@ -30,7 +30,7 @@ class BatimapEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(obj)
 
 
-def create_app(db_uri=None):
+def create_app(db_uri=None, redis_uri=None):
     app = Flask(__name__, instance_relative_config=True)
     CORS(app)
 
@@ -39,6 +39,9 @@ def create_app(db_uri=None):
     app.config["OPENAPI_URL_PREFIX"] = "/api"
     if db_uri:
         app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
+    if redis_uri:
+        app.config["CELERY_BROKER_URL"] = redis_uri
+        app.config["CELERY_BACK_URL"] = redis_uri
 
     app.json_encoder = BatimapEncoder
 

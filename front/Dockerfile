@@ -10,10 +10,8 @@ RUN chown -R node:node /usr/src/app
 
 VOLUME /usr/src/app/node_modules
 
-USER node
-
 WORKDIR /usr/src/app
 
-
-CMD yarn && ng serve --host 0.0.0.0
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+CMD yarn && yarn start --host 0.0.0.0
 
