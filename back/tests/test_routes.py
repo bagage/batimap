@@ -31,3 +31,12 @@ def test_bbox(db_mock_boundaries, db_mock_cities, client, bboxes, expected):
     if expected:
         result = [x["insee"] for x in resp.json]
         assert result == expected
+
+
+def test_josm(db_mock_boundaries, db_mock_cities, client):
+    resp = client.get("/cities/01004/josm")
+    assert resp.status_code == 202
+    assert list(resp.json.keys()) == ["task_id"]
+    expected_location = f"http://localhost/tasks/{resp.json['task_id']}"
+    assert resp.headers["Location"] == expected_location
+    # the task is failing but we're not testing it (yet?) so it's OK

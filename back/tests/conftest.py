@@ -8,12 +8,15 @@ from batimap.db import Base, Boundary, City
 
 @pytest.fixture
 def app():
-    test_db = os.environ.get(
+    test_db_uri = os.environ.get(
         "POSTGRES_URI", "postgresql://test:batimap@localhost:15432/testdb"
     )
+    test_redis_uri = os.environ.get("REDIS_URI", "redis://localhost:16379")
 
-    app = create_app(test_db)
-    app.config["TESTING"] = True
+    app = create_app(test_db_uri, test_redis_uri)
+    app.config.update(
+        TESTING=True, CELERY_BROKER_URL=test_redis_uri, CELERY_BACK_URL=test_redis_uri
+    )
 
     yield app
 
@@ -32,6 +35,14 @@ def runner(app, caplog):
     caplog.set_level(100000)
 
     return app.test_cli_runner()
+
+
+@pytest.fixture(scope="session")
+def celery_config():
+    return {
+        "broker_url": "memory://",
+        "result_backend": os.environ.get("REDIS_URI", "redis://localhost:16379"),
+    }
 
 
 @pytest.fixture

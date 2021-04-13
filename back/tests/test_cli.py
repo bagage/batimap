@@ -10,6 +10,7 @@ from batimap.extensions import db
     ((None, 4), (["01"], 3)),
 )
 def test_initdb(db_mock_boundaries, app, runner, input, expected_count):
+    Path("tiles").mkdir(exist_ok=True)
     file = Path("tiles/initdb_is_done")
     if file.exists():
         file.unlink()
