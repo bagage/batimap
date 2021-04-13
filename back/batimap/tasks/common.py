@@ -1,5 +1,6 @@
+from flask.json import jsonify
 from batimap.extensions import celery, batimap, db, odcadastre
-from batimap.citydto import CityDTO, CityEncoder
+from batimap.citydto import CityDTO
 from batimap.tasks.utils import task_progress
 from pathlib import Path
 from shutil import copyfile
@@ -129,4 +130,4 @@ def task_update_insee(self, insee):
         batimap.clear_tiles(insee)
     task_progress(self, 100)
 
-    return json.dumps(CityDTO(city), cls=CityEncoder)
+    return jsonify(CityDTO(city))
