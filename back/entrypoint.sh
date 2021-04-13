@@ -20,9 +20,11 @@ if [ $# = 0 ]; then
 
     # initialize database if no record can be found
     if [ $result != 0 ] || [ "$count" -lt 10 ]; then
+        echo "Batimap will start initializing db..."
         flask initdb
         echo "Batimap initialization done, starting now..."
     else
+        echo "Batimap db already setup, cleaning tiles..."
         # create ready file
         touch tiles/initdb_is_done
         # maintenance mode is terminated

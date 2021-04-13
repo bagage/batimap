@@ -167,7 +167,9 @@ class Db(object):
     @__isInitialized
     def get_osm_city_name_for_insee(self, insee) -> str:
         # there might be no result for this query, but this is OK
-        return self.__filter_city(self.session.query(Boundary.name), insee).first()
+        # there might also be multiple results but we're only interest in the first one
+        city = self.__filter_city(self.session.query(Boundary.name), insee).first()
+        return city[0] if city else None
 
     @__isInitialized
     def get_cities(self) -> List[City]:

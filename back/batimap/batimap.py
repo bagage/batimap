@@ -133,7 +133,7 @@ class Batimap(object):
         try:
             r = op.open(url)
         except Exception as e:
-            LOG.warn(f"Could not reach cadastre website: {e}, skipping for now")
+            LOG.warning(f"Could not reach cadastre website: {e}, skipping for now")
             return
 
         csrf_token = r.read().split(b"CSRF_TOKEN=")[1].split(b'"')[0].decode("utf-8")
@@ -243,7 +243,7 @@ class Batimap(object):
                     try:
                         name_index = cities_name_cadastre.index(name_cadastre)
                     except ValueError:
-                        LOG.warn(
+                        LOG.warning(
                             f"City {name_cadastre} could not be found?! Ignoring for now..."
                         )
                         continue

@@ -14,6 +14,7 @@ def initdb_command(insees):
     Fetch OSM and Cadastre data for given departments/cities INSEE.
     """
     task_initdb(insees or db.get_departments())
+    click.echo("done")
 
 
 @bp.cli.command("stats")
