@@ -18,9 +18,8 @@ RUN apt update && apt install -yy --no-install-recommends postgresql-client libx
 COPY --from=builder /usr/local /usr/local
 
 RUN adduser --disabled-password --no-create-home --gecos '' batimap
-USER batimap
 
-COPY wait-for-it.sh /
-COPY entrypoint.sh /
 COPY . /code
 WORKDIR /code
+
+ENTRYPOINT ["./entrypoint.sh"]

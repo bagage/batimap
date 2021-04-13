@@ -17,9 +17,8 @@ RUN curl -L -H 'Accept:application/octet-stream' \
 RUN mkdir /app
 
 RUN adduser --disabled-password --no-create-home --gecos '' batimap
-USER batimap
 
 COPY config.toml /app/config.toml
 COPY entrypoint.sh /
 
-CMD /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

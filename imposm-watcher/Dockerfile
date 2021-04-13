@@ -19,6 +19,6 @@ COPY . /code
 WORKDIR /code
 
 RUN adduser --disabled-password --no-create-home --gecos '' batimap
-USER batimap
 
-ENTRYPOINT [ "python3", "/code/app.py" ]
+ENTRYPOINT ["./entrypoint.sh"]
+CMD [ "python3", "/code/app.py" ]
