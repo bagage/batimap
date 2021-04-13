@@ -1,3 +1,4 @@
+import json
 import os
 import logging
 
@@ -6,6 +7,7 @@ from flask_cors import CORS
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
+from batimap.citydto import CityDTO
 
 from batimap.extensions import (
     api_smorest,
@@ -16,6 +18,16 @@ from batimap.extensions import (
     sqlalchemy,
     odcadastre,
 )
+from batimap.taskdto import TaskDTO
+
+
+class BatimapEncoder(json.JSONEncoder):
+    def default(self, obj):
+
+        if isinstance(obj, CityDTO) or isinstance(obj, TaskDTO):
+            return obj.__dict__
+        else:
+            return json.JSONEncoder.default(obj)
 
 
 def create_app(db_uri=None):
@@ -27,6 +39,8 @@ def create_app(db_uri=None):
     app.config["OPENAPI_URL_PREFIX"] = "/api"
     if db_uri:
         app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
+
+    app.json_encoder = BatimapEncoder
 
     verbosity = {
         "DEBUG": logging.DEBUG,

@@ -1,11 +1,17 @@
 #!/bin/bash
 
-POSTGRES_PORT=${POSTGRES_PORT:-5432}
+# allow the container to be started with `--user`
+if [ "$1" = 'tegola' -a "$(id -u)" = '0' ]; then
+	find . \! -user batimap -exec chown batimap '{}' +
+	exec su batimap -- "$0" "$@"
+fi
 
-if [ $# -gt 0 ]; then
-    regions="$@"
-else
-    regions=(
+# wait for other containers to be ready
+/wait-for-it.sh
+
+POSTGRES_PORT=${POSTGRES_PORT:-5432}
+if [ -z "$REGIONS" ]; then
+    REGIONS=(
         france-latest
         france/guadeloupe-latest
         france/guyane-latest
@@ -13,10 +19,10 @@ else
         france/mayotte-latest
         france/reunion-latest
     )
-    regions=${regions[@]}
+    REGIONS=${REGIONS[@]}
 fi
 
-echo "Preparing postgre database with regions: $regions..."
+echo "Imposm running with regions: $REGIONS..."
 
 if [ -z $POSTGRES_PASSWORD ] || [ -z $POSTGRES_USER ] || [ -z $POSTGRES_HOST ] || [ -z $POSTGRES_PORT ] || [ -z $POSTGRES_DB ]; then
     echo "Missing postgres environment variable for script, exitting!"
@@ -35,7 +41,7 @@ fi
 DO_IMPORT=true
 if [ "$FORCE_IMPORT" != "true" ]; then
     # wait for postgres to have started
-    while ! PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select 1"; do
+    while ! PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select 1" 1>/dev/null; do
         sleep 1
     done
     count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "select count(*) from osm_buildings where osm_id > 0"`
@@ -54,9 +60,9 @@ connection_param="postgis://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$PO
 if [ "$DO_IMPORT" = "true" ]; then
     SCRIPT_DIR=$(realpath $(dirname $0))
 
-    echo "downloading $regions"
+    echo "will import $REGIONS regions in db, please wait..."
 
-    for region in $regions; do
+    for region in $REGIONS; do
         echo "downloading $region.osm.pbf"
         file=$(basename $region).osm.pbf
         axel http://download.geofabrik.de/europe/$region.osm.pbf.md5
@@ -76,7 +82,7 @@ if [ "$DO_IMPORT" = "true" ]; then
         sleep 5
     done
 
-    for region in $regions; do
+    for region in $REGIONS; do
         region=$(basename $region)
         echo "Preparing $region…"
         # only keep administrative boundaries and buildings

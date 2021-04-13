@@ -1,6 +1,3 @@
-from json import JSONEncoder
-
-
 class TaskDTO:
     task_id = None
     name = None
@@ -12,8 +9,3 @@ class TaskDTO:
         self.name = task["name"].split(".")[-1]
         self.args = task["args"]
         self.running = task["time_start"] is not None
-
-
-class TaskEncoder(JSONEncoder):
-    def default(self, task):
-        return task.__dict__

@@ -1,5 +1,3 @@
-from json import JSONEncoder
-
 from .db import City
 
 
@@ -23,7 +21,5 @@ class CityDTO:
     def __geo_interface__(self):
         return self.__dict__
 
-
-class CityEncoder(JSONEncoder):
-    def default(self, city):
-        return city.__dict__
+    def __lt__(self, other):
+        return self.insee < other.insee

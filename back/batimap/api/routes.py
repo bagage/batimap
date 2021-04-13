@@ -2,10 +2,10 @@ import json
 import logging
 
 from batimap.bbox import Bbox
-from batimap.citydto import CityDTO, CityEncoder
+from batimap.citydto import CityDTO
 from batimap.extensions import batimap, db
 from batimap.point import Point
-from batimap.taskdto import TaskDTO, TaskEncoder
+from batimap.taskdto import TaskDTO
 from batimap.tasks.common import (
     task_initdb,
     task_josm_data,
@@ -32,7 +32,7 @@ def api_status() -> str:
 
 @bp.route("/status/<department>", methods=["GET"])
 def api_department_status(department) -> str:
-    return json.dumps(
+    return jsonify(
         [
             {x.insee: x.import_date}
             for x in batimap.stats(
@@ -48,13 +48,13 @@ def api_city_status(department, city) -> str:
         names_or_insees=[city],
         force=request.args.get("force", default=False, type=inputs.boolean),
     ):
-        return json.dumps({city.insee: city.import_date})
+        return jsonify({city.insee: city.import_date})
     return ""
 
 
 @bp.route("/status/by_date/<date>")
 def api_cities_for_date(date) -> str:
-    return json.dumps(db.get_cities_for_year(date))
+    return jsonify(db.get_cities_for_year(date))
 
 
 @bp.route("/insee/<insee>", methods=["GET"])
@@ -69,7 +69,7 @@ def api_insee(insee) -> dict:
             },
             geometry=json.loads(geo),
         )
-        return json.dumps(
+        return jsonify(
             FeatureCollection(feature)
         )  # fixme: no need for FeatureCollection here
     abort(404, message=f"no city {insee}")
@@ -78,10 +78,13 @@ def api_insee(insee) -> dict:
 @bp.route("/bbox/cities", methods=["POST"])
 def api_bbox_cities() -> dict:
     bboxes = (request.get_json() or {}).get("bboxes")
+    if not bboxes:
+        abort(400, message="missing required bboxes")
     cities = set()
     for bbox in bboxes:
-        cities = cities | set(db.get_cities_for_bbox(Bbox(*bbox)))
-    return json.dumps([CityDTO(x) for x in cities], cls=CityEncoder)
+        bbox_cities = set(db.get_cities_for_bbox(Bbox(*bbox)))
+        cities |= bbox_cities
+    return jsonify(sorted([CityDTO(x) for x in cities]))
 
 
 @bp.route("/legend/<lonNW>/<latNW>/<lonSE>/<latSE>", methods=["GET"])
@@ -91,7 +94,7 @@ def api_legend(lonNW, latNW, lonSE, latSE) -> dict:
     )
     total = sum([x[1] for x in result])
 
-    return json.dumps(
+    return jsonify(
         [
             {
                 "name": import_date,
@@ -111,7 +114,7 @@ def api_city_osm_id(insee) -> dict:
 
 @bp.route("/departments", methods=["GET"])
 def api_departments() -> dict:
-    return json.dumps(db.get_departments())
+    return jsonify(db.get_departments())
 
 
 @bp.route("/departments/<dept>", methods=["GET"])
@@ -119,7 +122,7 @@ def api_department(dept) -> dict:
     d = db.get_department(dept)
     s = dict(db.get_department_import_stats(dept))
     date = max(s, key=s.get)
-    return json.dumps({"name": d.name, "date": date, "insee": dept})
+    return jsonify({"name": d.name, "date": date, "insee": dept})
 
 
 @bp.route("/departments/<dept>/details", methods=["GET"])
@@ -128,18 +131,18 @@ def api_department_details(dept) -> dict:
     simplified = sorted(
         [ids for city in db.get_department_simplified_buildings(dept) for ids in city]
     )
-    return json.dumps({"simplified": simplified, "dates": stats})
+    return jsonify({"simplified": simplified, "dates": stats})
 
 
 @bp.route("/cities/<insee>", methods=["GET"])
 def api_city(insee) -> dict:
-    return json.dumps(CityDTO(db.get_city_for_insee(insee)), cls=CityEncoder)
+    return jsonify(CityDTO(db.get_city_for_insee(insee)))
 
 
 @bp.route("/cities/<insee>/tasks", methods=["GET"])
 def api_city_tasks(insee) -> dict:
     city_tasks = [TaskDTO(t) for t in list_tasks() if t["args"] == [insee]]
-    return json.dumps(city_tasks, cls=TaskEncoder)
+    return jsonify(city_tasks)
 
 
 @bp.route("/cities/<insee>/update", methods=["GET"])
@@ -155,7 +158,7 @@ def api_update_insee_list(insee) -> dict:
         task_id = task_update_insee.delay(insee).id
 
     return Response(
-        response=json.dumps({"task_id": task_id}),
+        response=jsonify({"task_id": task_id}),
         status=202,
         headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
@@ -180,7 +183,7 @@ def api_josm_data(insee) -> dict:
             task_id = task_josm_data.delay(insee).id
 
     return Response(
-        response=json.dumps({"task_id": task_id}),
+        response=jsonify({"task_id": task_id}),
         status=202,
         headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
@@ -195,9 +198,8 @@ def api_obsolete_city() -> dict:
         city = CityDTO(result.City)
         (osm_id,) = db.get_osm_id(city.insee)
         position = Point.from_pg(result.position)
-        return json.dumps(
-            {"position": [position.x, position.y], "city": city, "osmid": osm_id},
-            cls=CityEncoder,
+        return jsonify(
+            {"position": [position.x, position.y], "city": city, "osmid": osm_id}
         )
 
 
@@ -220,7 +222,7 @@ def api_initdb():
         task_id = task_initdb.delay(items).id
 
     return Response(
-        response=json.dumps({"task_id": task_id}),
+        response=jsonify({"task_id": task_id}),
         status=202,
         headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
@@ -237,9 +239,9 @@ def api_tasks_status(task_id):
         result = {"error": f"Task failed: {task.result}"}
     response = {"state": task.state, "result": result}
 
-    return json.dumps(response, cls=CityEncoder)
+    return jsonify(response)
 
 
 @bp.route("/tasks", methods=["GET"])
 def api_tasks():
-    return json.dumps([TaskDTO(t) for t in list_tasks()], cls=TaskEncoder)
+    return jsonify([TaskDTO(t) for t in list_tasks()])

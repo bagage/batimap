@@ -11,7 +11,6 @@ services:
     image: registry.gitlab.com/bagage/batimap/imposm
     env_file:
       - ./.env
-    entrypoint: bash /wait-for-it.sh -- /entrypoint.sh $$REGIONS
     depends_on:
       - postgis
     volumes:
@@ -26,7 +25,6 @@ services:
     image: registry.gitlab.com/bagage/batimap/tiles
     env_file:
       - ./.env
-    command: bash /wait-for-it.sh -- tegola --config $$CONFIG serve
     volumes:
       - ./data/tiles/cache:/data/cache
     depends_on:
@@ -36,7 +34,6 @@ services:
     image: registry.gitlab.com/bagage/batimap/tiles-cleaner
     env_file:
       - ./.env
-    command: bash /entrypoint.sh
     volumes:
       - ./data/tiles:/data
 
@@ -50,7 +47,7 @@ services:
     image: registry.gitlab.com/bagage/batimap/back
     env_file:
       - ./.env
-    command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info --queues celery
+    command: celery -A batimap.app_celery:app worker --loglevel=info --queues celery
     volumes:
       - ./back/app-docker.conf/:/code/batimap/app.conf:ro
       - ./data/tiles:/code/tiles
@@ -62,7 +59,7 @@ services:
     image: registry.gitlab.com/bagage/batimap/back
     env_file:
       - ./.env
-    command: bash /wait-for-it.sh -- celery -A batimap.app_celery:app worker --loglevel=info --queues celery_slow
+    command: celery -A batimap.app_celery:app worker --loglevel=info --queues celery_slow
     volumes:
       - ./back/app-docker.conf/:/code/batimap/app.conf:ro
       - ./data/tiles:/code/tiles
@@ -74,7 +71,6 @@ services:
     image: registry.gitlab.com/bagage/batimap/back
     env_file:
       - ./.env
-    command: bash /wait-for-it.sh -- sh /entrypoint.sh
     volumes:
       - ./back/app-docker.conf/:/code/batimap/app.conf:ro
       - ./data/tiles:/code/tiles

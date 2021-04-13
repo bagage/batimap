@@ -255,7 +255,8 @@ class Db(object):
 
     @__isInitialized
     def get_cities_for_bbox(self, bbox: Bbox):
-        # we should fetch all cities within the view but at least 110km radius around
+        # we should fetch all cities within the view but if the bbox is too
+        # small, at least take consider a 110km radius zone instead
         distance = min(bbox.max_distance(), 1.0)
         return (
             self.__filter_city(self.session.query(City))

@@ -15,5 +15,5 @@ USER node
 WORKDIR /usr/src/app
 
 
-CMD yarn && yarn start --host 0.0.0.0
+CMD yarn && ng serve --host 0.0.0.0
 
