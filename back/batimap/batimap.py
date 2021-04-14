@@ -371,12 +371,18 @@ class Batimap(object):
         """
         Compute the latest import date for given city via an overpass query
         """
-        if not city.is_raster:
-            try:
-                buildings = []
+        try:
+            buildings = []
+            simplified_buildings = []
+            # iterate on every building
+            overpass_buildings = self.overpass.get_city_buildings(city)
+            city.osm_buildings = len(overpass_buildings)
+            # we do not want to compute buildings import date for raster city,
+            # since for now we consider it cannot be imported
+            if city.is_raster:
                 simplified_buildings = []
-                # iterate on every building
-                overpass_buildings = self.overpass.get_city_buildings(city)
+                sources_date = ["raster"] * city.osm_buildings
+            else:
                 for element in overpass_buildings:
                     tags = element.get("tags")
                     if element.get("type") == "node":
@@ -403,14 +409,13 @@ class Batimap(object):
                     city.insee, buildings, has_simplified
                 )
                 city.import_date = import_date
-                city.import_details = {
-                    "simplified": simplified_buildings,
-                    "dates": sources_date,
-                }
-                city.osm_buildings = len(overpass_buildings)
-                self.db.session.commit()
-            except Exception as e:
-                LOG.error(f"Failed to count buildings for {city}: {e}")
+            city.import_details = {
+                "simplified": simplified_buildings,
+                "dates": sources_date,
+            }
+            self.db.session.commit()
+        except Exception as e:
+            LOG.error(f"Failed to count buildings for {city}: {e}")
         return city
 
     def __date_for_buildings(self, insee, dates, has_simplified_buildings):
@@ -458,19 +463,17 @@ class Batimap(object):
                 f"Calcul des statistiques du bâti pour l'INSEE {insee_in}: {result}"
             )
 
-            buildings = {}
+            buildings_per_insee = {}
             insee_name = {}
             for (insee, name, source, count, is_raster) in result:
-                if is_raster:
-                    insee_name[insee] = name
-                    buildings[insee] = ["raster"]
-                else:
-                    if not buildings.get(insee):
-                        buildings[insee] = []
-                    insee_name[insee] = name
-                    buildings[insee] += [source] * count
+                insee_name[insee] = name
+                if not buildings_per_insee.get(insee):
+                    buildings_per_insee[insee] = []
+                buildings_per_insee[insee] += [
+                    "raster" if is_raster else source
+                ] * count
 
-            # 2. fetch all simplified buildings in current department
+            # 2. fetch all simplified buildings in current insee
             LOG.debug(f"Récupération du bâti simplifié pour l'INSEE {insee_in}…")
             city_with_simplified_building = (
                 self.db.get_point_buildings_per_city_for_insee(
@@ -489,30 +492,32 @@ class Batimap(object):
 
             # 3. finally compute city import date and update database
             LOG.debug(f"Mise à jour des statistiques pour l'INSEE {insee_in}…")
-            for insee, buildings in buildings.items():
-                # compute city import date based on all its buildings date
-                (import_date, counts) = self.__date_for_buildings(
-                    insee, buildings, insee in simplified_cities
-                )
-                simplified = [
-                    x[1] for x in city_with_simplified_building if x[0] == insee
-                ]
-
+            for insee, buildings in buildings_per_insee.items():
                 city = self.db.get_city_for_insee(insee)
                 city.name = insee_name[insee]
-                # do not erase date if what we found here is a bad date (unknown)
-                if city.import_date != import_date and (
-                    city.import_date in City.bad_dates()
-                    or import_date not in City.bad_dates()
-                ):
-                    simplified_msg = (
-                        "" if len(simplified) == 0 else f", simplifiée: {simplified}"
+                if set(buildings) != set(["raster"]):
+                    # compute city import date based on all its buildings date
+                    (import_date, counts) = self.__date_for_buildings(
+                        insee, buildings, insee in simplified_cities
                     )
-                    LOG.info(
-                        f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> "
-                        f"{import_date} ({len(buildings)} bâtis{simplified_msg})"
-                    )
-                    city.import_date = import_date
+                    simplified = [
+                        x[1] for x in city_with_simplified_building if x[0] == insee
+                    ]
+                    # do not erase date if what we found here is a bad date (unknown)
+                    if city.import_date != import_date and (
+                        city.import_date in City.bad_dates()
+                        or import_date not in City.bad_dates()
+                    ):
+                        simplified_msg = (
+                            ""
+                            if len(simplified) == 0
+                            else f", simplifiée: {simplified}"
+                        )
+                        LOG.info(
+                            f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> "
+                            f"{import_date} ({len(buildings)} bâtis{simplified_msg})"
+                        )
+                        city.import_date = import_date
                 city.import_details = {"dates": counts, "simplified": simplified}
                 city.osm_buildings = len(buildings)
 

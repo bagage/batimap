@@ -383,7 +383,7 @@ class Db(object):
         """
         INSEE might represent either a department or a city.
 
-        Returns one tuple per building (insee, date, number_of_buildings)
+        Returns multiple tuples (insee, name, date, number_of_buildings, is_raster)
         """
         # only retrieve one geometry per INSEE from Boundary to avoid counting building multiple times
         GeoCities = (
