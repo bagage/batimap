@@ -9,18 +9,13 @@
         "eslint": "eslint . --fix",
         "lint": "ng lint --fix",
         "e2e": "ng e2e",
-        "prettier": "prettier --write '**/*'"
+        "prettier": "prettier --write '**/*'",
+        "prepare": "cd .. && husky install front/.husky"
     },
     "browserslist": [
         "> 1%",
         "last 2 versions"
     ],
-    "husky": {
-        "hooks": {
-            "pre-commit": "pretty-quick --bail --staged && black ..",
-            "pre-push": "yarn lint && flake8 .."
-        }
-    },
     "private": true,
     "dependencies": {
         "@angular/animations": "11.2.10",
@@ -72,7 +67,7 @@
         "eslint-plugin-import": "2.22.1",
         "eslint-plugin-jsdoc": "32.3.0",
         "eslint-plugin-prefer-arrow": "1.2.3",
-        "husky": "4.3.8",
+        "husky": "6.0.0",
         "jasmine-core": "3.7.1",
         "jasmine-spec-reporter": "6.0.0",
         "karma": "6.3.2",
