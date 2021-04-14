@@ -1,7 +1,7 @@
 <mat-card>
     <mat-card-title id="title">Statut des tâches </mat-card-title>
     <mat-card-content>
-        <ng-container *ngIf="metatasks$ | async as metatasks; else loading">
+        <ng-container *ngIf="metatasks$ | async as metatasks; else dataHandler">
             <ng-container *ngIf="metatasks.length > 0; else noTasks">
                 <ul>
                     <li *ngFor="let meta of metatasks" [title]="meta.task.task_id">
@@ -18,6 +18,9 @@
             </ng-container>
         </ng-container>
 
+        <ng-template #dataHandler>
+            <div *ngIf="error; else loading" class="mat-error">Le serveur est actuellement hors-ligne.</div>
+        </ng-template>
         <ng-template #loading>
             <app-loader></app-loader>
         </ng-template>
