@@ -16,7 +16,7 @@ div {
 }
 
 .hidden {
-    visibility: hidden;
+    display: none;
 }
 
 .legend {
