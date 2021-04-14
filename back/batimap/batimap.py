@@ -271,7 +271,8 @@ class Batimap(object):
         c = self.db.get_city_for_insee(insee)
         if not c:
             return None
-
+        if c.is_raster:
+            return None
         base_url = f"https://cadastre.openstreetmap.fr/data/{c.department.zfill(3)}/{c.name_cadastre}-houses-"
         bbox = self.db.get_insee_bbox(insee)
 

@@ -169,7 +169,9 @@ def api_josm_data(insee) -> dict:
     LOG.debug(f"Receive an josm request for {insee}")
 
     c = db.get_city_for_insee(insee)
-    if c.is_josm_ready():
+    if c.is_raster:
+        return "raster city, no josm data available", 400
+    elif c.is_josm_ready():
         task_id = task_josm_data_fast.delay(insee).id
     else:
         task_id = find_task_id("batimap.tasks.common.task_josm_data", [insee])

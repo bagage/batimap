@@ -39,6 +39,11 @@ class ODCadastre(object):
                     return Counter([city] * cadastre.od_buildings) if city else None
 
         r = requests.get(url)
+
+        if r.status_code != 200:
+            LOG.warn(f"cadastre fetch failed (status={r.status_code})")
+            return None
+
         data = gzip.decompress(r.content)
 
         # there is one feature per building, properties.commune containing its city INSEE
