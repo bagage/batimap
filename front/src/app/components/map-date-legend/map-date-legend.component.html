@@ -61,8 +61,10 @@
                     matTooltip="Filtrer les communes affichées en fonction de l'écart en pourcentage entre le nombre de bâtiments OSM et cadastre.Ex : pour une commune avec 100 bâtiments dans OSM, 130 bâtiments dans le cadastre, l'écart sera de 30%."
                 >
                     <mat-label
-                        >Filtrer par écart <span *ngIf="countSlider.value! > 0">>{{ countSlider.value }}</span
-                        >%</mat-label
+                        >Filtrer par écart
+                        <span *ngIf="countSlider.value! > 0"
+                            >>{{ formatPercentage(countSlider.value) }}</span
+                        ></mat-label
                     >
                     <mat-slider
                         #countSlider
@@ -71,7 +73,7 @@
                         thumbLabel="1"
                         tickInterval="10"
                         min="0"
-                        max="100"
+                        max="110"
                     ></mat-slider>
                 </div>
             </ng-container>

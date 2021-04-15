@@ -16,7 +16,7 @@ div {
 }
 
 .hidden {
-    visibility: hidden;
+    display: none;
 }
 
 .legend {
@@ -27,7 +27,8 @@ div {
     z-index: 1000; /* must appear above the map! */
 }
 
-app-map-date-legend {
+app-map-date-legend,
+app-tasks {
     background-color: white;
 
     display: flex;

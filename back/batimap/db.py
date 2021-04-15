@@ -383,7 +383,7 @@ class Db(object):
         """
         INSEE might represent either a department or a city.
 
-        Returns one tuple per building (insee, date, number_of_buildings)
+        Returns multiple tuples (insee, name, date, number_of_buildings, is_raster)
         """
         # only retrieve one geometry per INSEE from Boundary to avoid counting building multiple times
         GeoCities = (
@@ -409,9 +409,7 @@ class Db(object):
                 City.is_raster,
             )
             .filter(City.insee == GeoCities.c.insee)
-            # avoid counting buildings twice (https://github.com/omniscale/imposm3/issues/85)
-            .filter(Building.geometry.ST_GeometryType() != "ST_LineString")
-            .filter(GeoCities.c.geometry.ST_Contains(Building.geometry))
+            .filter(GeoCities.c.geometry.ST_Intersects(Building.geometry))
             .group_by(City.insee, City.name, "dated_source", City.is_raster)
             .all()
         )
@@ -437,7 +435,7 @@ class Db(object):
             .filter(Building.building.notin_(ignored_buildings))
             .filter(not_(Building.tags.has_any(ignored_tags)))
             .filter(Building.geometry.ST_GeometryType() == "ST_Point")
-            .filter(GeoCities.c.geometry.ST_Contains(Building.geometry))
+            .filter(GeoCities.c.geometry.ST_Intersects(Building.geometry))
             .order_by(GeoCities.c.insee)
             .all()
         )

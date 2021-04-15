@@ -14,7 +14,7 @@ from batimap.tasks.common import (
 )
 from batimap.tasks.utils import find_task_id, list_tasks
 from celery.result import AsyncResult
-from flask import Response, request, url_for, jsonify
+from flask import request, url_for, jsonify
 from flask_restful import inputs
 from flask_smorest import Blueprint, abort
 from geojson import Feature, FeatureCollection
@@ -158,7 +158,7 @@ def api_update_insee_list(insee) -> dict:
         task_id = task_update_insee.delay(insee).id
 
     return (
-        jsonify({"task_id": task_id}),
+        {"task_id": task_id},
         202,
         {"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
@@ -169,7 +169,9 @@ def api_josm_data(insee) -> dict:
     LOG.debug(f"Receive an josm request for {insee}")
 
     c = db.get_city_for_insee(insee)
-    if c.is_josm_ready():
+    if c.is_raster:
+        return "raster city, no josm data available", 400
+    elif c.is_josm_ready():
         task_id = task_josm_data_fast.delay(insee).id
     else:
         task_id = find_task_id("batimap.tasks.common.task_josm_data", [insee])
@@ -183,7 +185,7 @@ def api_josm_data(insee) -> dict:
             task_id = task_josm_data.delay(insee).id
 
     return (
-        jsonify({"task_id": task_id}),
+        {"task_id": task_id},
         202,
         {"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
@@ -208,7 +210,7 @@ def api_initdb():
     items = (request.get_json() or {}).get("cities")
 
     if not items:
-        return Response(status=400)
+        return "missing items param", 400
 
     LOG.debug(f"Receive an initdb request for {', '.join(items)}")
     task_id = find_task_id("batimap.tasks.common.task_initdb", [items])
@@ -221,10 +223,10 @@ def api_initdb():
         # only create a new task if none already exists
         task_id = task_initdb.delay(items).id
 
-    return Response(
-        response=jsonify({"task_id": task_id}),
-        status=202,
-        headers={"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
+    return (
+        {"task_id": task_id},
+        202,
+        {"Location": url_for("app_routes.api_tasks_status", task_id=task_id)},
     )
 
 

@@ -53,6 +53,7 @@ def db_mock_cities(app):
             City(insee="01005", department="01", import_date="2013"),
             City(insee="01006", department="01", import_date="2009"),
             City(insee="02022", department="02", import_date="2012"),
+            City(insee="02023", department="02", import_date="raster", is_raster=True),
         ]
         db.session.add_all(objects)
         db.session.commit()
@@ -93,6 +94,18 @@ def db_mock_boundaries(app):
             Boundary(
                 insee="02022",
                 name="02022-test",
+                admin_level=8,
+                geometry="srid=4326; POLYGON((3 3,4 3,4 4,3 4,3 3))",
+            ),
+            Boundary(
+                insee="02022",
+                name="02022-test-oldcity",
+                admin_level=9,
+                geometry="srid=4326; POLYGON((3.5 3.5,4 3.5,4 4,3.5 4,3.5 3.5))",
+            ),
+            Boundary(
+                insee="02023",
+                name="02023-test",
                 admin_level=8,
                 geometry="srid=4326; POLYGON((3 3,4 3,4 4,3 4,3 3))",
             ),

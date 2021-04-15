@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { combineLatest, Observable, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { TaskDTO } from '../../classes/task.dto';
 import { BatimapService } from '../../services/batimap.service';
 
@@ -11,9 +11,14 @@ import { BatimapService } from '../../services/batimap.service';
 })
 export class TasksComponent implements OnInit {
     metatasks$: Observable<any>;
+    error = false;
 
     constructor(batimapService: BatimapService) {
         this.metatasks$ = batimapService.tasks().pipe(
+            catchError(err => {
+                this.error = true;
+                throw err;
+            }),
             switchMap((tasks: TaskDTO[]) => {
                 const taskDetails$ = tasks.map(task =>
                     batimapService.waitTask<any>(task.task_id).pipe(map(status => ({ task, status })))

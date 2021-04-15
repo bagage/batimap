@@ -1,7 +1,6 @@
 {
     "areas": {
-        "area_tags": ["buildings", "landuse", "leisure", "natural", "aeroway"],
-        "linear_tags": ["highway", "barrier"]
+        "area_tags": ["buildings"]
     },
     "tags": {
         "load_all": true
@@ -46,9 +45,6 @@
             "type": "geometry",
             "type_mappings": {
                 "points": {
-                    "building": ["__any__"]
-                },
-                "linestrings": {
                     "building": ["__any__"]
                 },
                 "polygons": {

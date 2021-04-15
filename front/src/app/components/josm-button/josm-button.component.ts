@@ -45,8 +45,13 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
     @Input()
     set city(value: CityDTO) {
         const changed = value && this._city && this._city.insee !== value.insee;
+        const isRaster = value.date === 'raster';
         this._city = value;
-        if (value.josm_ready) {
+        if (isRaster) {
+            this.options.disabled = true;
+            this.tooltip = " Ville raster, pas d'import possible.";
+            this.options.text = 'JOSM';
+        } else if (value.josm_ready) {
             this.tooltip =
                 'Ouvre JOSM avec les calques préconfigurés pour la commune sélectionnée. ' +
                 "Si le bouton n'est pas actif, JOSM n'est probablement pas démarré. [Raccourci : J]";
@@ -64,8 +69,8 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
     }
 
     @Input()
-    set josmReady(value: boolean | null) {
-        this.options.disabled = this._city.josm_ready && !value;
+    set josmReady(ready: boolean | null) {
+        this.options.disabled = !(this._city.date !== 'raster' && this._city.josm_ready && ready);
     }
 
     constructor(

@@ -7,7 +7,7 @@ from batimap.extensions import db
 
 @pytest.mark.parametrize(
     ("input", "expected_count"),
-    ((None, 4), (["01"], 3)),
+    ((None, 5), (["01"], 3)),
 )
 def test_initdb(db_mock_boundaries, app, runner, input, expected_count):
     Path("tiles").mkdir(exist_ok=True)
@@ -26,4 +26,4 @@ def test_initdb(db_mock_boundaries, app, runner, input, expected_count):
 
 
 def test_initdb_city(db_mock_cities, db_mock_boundaries, app, runner):
-    test_initdb(db_mock_boundaries, app, runner, ["01004"], 4)
+    test_initdb(db_mock_boundaries, app, runner, ["01004"], 5)
