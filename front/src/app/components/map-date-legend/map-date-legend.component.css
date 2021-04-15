@@ -14,6 +14,9 @@ mat-slider {
     height: auto;
     width: 100%;
 }
+:host ::ng-deep mat-slider .mat-slider-thumb-label-text {
+    font-size: 9px;
+}
 
 /* based on buildings-ratio.pipe.ts colors */
 :host ::ng-deep .ratio-green .mat-slider-thumb,

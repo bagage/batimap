@@ -35,7 +35,8 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     set countSlider(countSlider: MatSlider) {
         if (countSlider) {
             setTimeout(() => {
-                countSlider.value = LocalStorage.asNumber('min-buildings-ratio', 0);
+                const value = LocalStorage.asNumber('min-buildings-ratio', 0);
+                countSlider.value = value > 100 ? 100 + value / 100 : value;
                 this.redrawMapOnChange(countSlider);
             });
         }
@@ -66,7 +67,8 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                 countSlider.change.pipe(
                     startWith({ value: countSlider.value }),
                     tap((event: any) => {
-                        localStorage.setItem('min-buildings-ratio', event.value.toFixed(0));
+                        const value = event.value.toFixed(0);
+                        localStorage.setItem('min-buildings-ratio', value > 100 ? (value - 100) * 100 : value);
                     })
                 ),
                 this.legendChanged$,
@@ -159,10 +161,16 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         );
     }
 
-    formatPercentage(value: number): string {
-        if (value > 99) {
-            return '>99%';
+    formatPercentage(value: number | null): string {
+        if (!value) {
+            return '';
+        } else if (value === 110) {
+            return '>1k%';
         } else {
+            if (value > 100) {
+                // pseudo log scale: 101 means 100%, 102 means 200%, 109 means 900%
+                value = (value - 100) * 100;
+            }
             return `${value}%`;
         }
     }
