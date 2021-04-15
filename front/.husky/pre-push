@@ -1,0 +1,4 @@
+#!/bin/sh
+
+(cd front && yarn lint)
+flake8 .
