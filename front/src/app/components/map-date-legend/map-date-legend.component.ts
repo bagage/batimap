@@ -149,9 +149,8 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
                 .obsoleteCity(Array.from(this.legendService.inactiveLegendItems), buildingsRatio)
                 .pipe(
                     catchError(error => {
-                        console.log(error);
                         if (error.status === 404) {
-                            this.snackbar.open('Aucune commune trouvée avec les filtres sélectionnées');
+                            this.snackbar.open('Aucune commune trouvée avec les filtres sélectionnés');
                             return of(undefined);
                         } else {
                             throw error;
