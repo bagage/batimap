@@ -31,7 +31,7 @@ Flask-Cors = "==3.0.10"
 Flask-RESTful = "==0.3.8"
 Flask-SQLAlchemy = "==2.5.1"
 GeoAlchemy2 = "==0.8.5"
-SQLAlchemy = "==1.4.7"
+SQLAlchemy = "==1.4.8"
 sentry-sdk = {extras = ["flask"], version = "*"}
 ijson = "*"
 
