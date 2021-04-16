@@ -1,6 +1,8 @@
+import { ReturnStatement } from '@angular/compiler';
 import { Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSlider } from '@angular/material/slider';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import * as L from 'leaflet';
 import { BehaviorSubject, combineLatest, Observable, of, zip } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, skip, startWith, switchMap, tap } from 'rxjs/operators';
@@ -46,7 +48,8 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
         private readonly zone: NgZone,
         private readonly batimapService: BatimapService,
         public legendService: LegendService,
-        private readonly matDialog: MatDialog
+        private readonly matDialog: MatDialog,
+        private readonly snackbar: MatSnackBar
     ) {
         super();
     }
@@ -140,13 +143,26 @@ export class MapDateLegendComponent extends Unsubscriber implements OnInit {
     }
 
     @HostListener('document:keydown.shift.c') feelingLucky(): void {
+        const buildingsRatio = LocalStorage.asNumber('min-buildings-ratio', 0);
         this.autoUnsubscribe(
-            this.legendItems$
+            this.batimapService
+                .obsoleteCity(Array.from(this.legendService.inactiveLegendItems), buildingsRatio)
                 .pipe(
-                    map(items => items.filter(it => !this.legendService.isActive(it)).map(it => it.name)),
-                    switchMap(ignored => this.batimapService.obsoleteCity(ignored))
+                    catchError(error => {
+                        console.log(error);
+                        if (error.status === 404) {
+                            this.snackbar.open('Aucune commune trouvée avec les filtres sélectionnées');
+                            return of(undefined);
+                        } else {
+                            throw error;
+                        }
+                    })
                 )
-                .subscribe((obsoleteCity: ObsoleteCityDTO) => {
+                .subscribe((obsoleteCity?: ObsoleteCityDTO) => {
+                    if (!obsoleteCity) {
+                        return;
+                    }
+
                     this.map.setView(obsoleteCity.position, 10, {
                         animate: false,
                     });

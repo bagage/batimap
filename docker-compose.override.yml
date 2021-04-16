@@ -6,7 +6,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgis/postgres-dev.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./postgis/postgres-dev.conf:/etc/postgresql/postgresql.conf
 
   imposm:
     build: imposm
