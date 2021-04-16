@@ -15,8 +15,9 @@ if [ $# = 0 ]; then
     count=$(PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c "SELECT count(*) FROM city_stats where date like '20%'")
     result=$?
 
-    # create a custom index to check building geometry, it boosts these filter by x5 factor
-    PGPASSWORD="$POSTGRES_PASSWORD" psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c 'CREATE INDEX IF NOT EXISTS building_geometrytype on osm_buildings (st_geometrytype(geometry))'
+    # create a custom index to check building geometry, it boosts these filters by x5 factor
+    PGPASSWORD="$POSTGRES_PASSWORD" psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c 'CREATE INDEX IF NOT EXISTS building_geometrytype ON osm_buildings (st_geometrytype(geometry))'
+    PGPASSWORD="$POSTGRES_PASSWORD" psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT -d $POSTGRES_DB -c 'CREATE INDEX IF NOT EXISTS admin_insee ON osm_admin USING gist (insee gist_trgm_ops)'
 
     # initialize database if no record can be found
     if [ $result != 0 ] || [ "$count" -lt 10 ]; then
