@@ -359,7 +359,8 @@ class Db(object):
             .filter(Boundary.insee == City.insee)
             .filter(Cadastre.insee == City.insee)
             .filter(
-                func.abs(1 - Cadastre.od_buildings / City.osm_buildings) >= minratio
+                func.abs(1 - Cadastre.od_buildings * 1.0 / City.osm_buildings)
+                >= minratio
             )
             .order_by(City.import_date.in_(ignored))
             .order_by(City.import_date != "never")
