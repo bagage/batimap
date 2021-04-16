@@ -45,12 +45,13 @@ export class JosmService {
             return EMPTY;
         }
         const imagery$ = this.josmUrlImageryBdortho$();
-        const buildings$ = this.josmUrlImport$(dto.buildingsUrl, true, false, 'never');
+        const buildings$ = this.josmUrlImport$(dto.buildingsUrl, true, false, 'never', false);
         const segmented$ = this.josmUrlImport$(
             dto.segmententationPredictionssUrl,
             true,
             false, // cannot be locked otherwise todo plugin wont work
-            'never'
+            'never',
+            false
         );
 
         // for OSM data first we create the layer, then we try to load data
@@ -71,7 +72,7 @@ export class JosmService {
                             const encodedUrl =
                                 this.overpassAPI + encodeURIComponent(JosmService.generateOverpassQuery(city.name));
 
-                            return this.josmUrlImport$(encodedUrl, false, false, 'true', this.getOsmLayer(city));
+                            return this.josmUrlImport$(encodedUrl, false, false, 'true', true, this.getOsmLayer(city));
                         } else {
                             throw error;
                         }
@@ -101,6 +102,7 @@ export class JosmService {
         checkExists: boolean,
         locked: boolean,
         uploadPolicy: string,
+        downloadPolicy: boolean,
         layerName?: string
     ): Observable<string> {
         // first ensure that the file exists, then load it into JOSM
@@ -116,8 +118,9 @@ export class JosmService {
                 }
 
                 const params: any = {
-                    new_layer: layerName === undefined ? 'true' : 'false',
+                    new_layer: 'true',
                     upload_policy: uploadPolicy,
+                    download_policy: downloadPolicy ? 'true' : 'never',
                     layer_locked: `${locked}`,
                 };
                 if (layerName) {
