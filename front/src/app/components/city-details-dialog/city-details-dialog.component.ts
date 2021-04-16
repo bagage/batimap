@@ -120,7 +120,7 @@ export class CityDetailsDialogComponent extends Unsubscriber implements OnInit {
         if (!d || d === 'never') {
             val = "Le bâti n'a jamais été importé.";
         } else if (d === 'raster') {
-            val = "Ville raster, pas d'import possible.";
+            val = "Commune raster, pas d'import possible.";
         } else if (d === 'unfinished') {
             val = 'Des bâtiments sont de géométrie simple, à vérifier.';
         } else if (Number.isInteger(+d)) {

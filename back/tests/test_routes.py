@@ -49,3 +49,47 @@ def test_josm(db_mock_boundaries, db_mock_cities, client, insee, expected_status
         expected_location = f"http://localhost/tasks/{resp.json['task_id']}"
         assert resp.headers["Location"] == expected_location
         # the task is failing but we're not testing it (yet?) so it's OK
+
+
+@pytest.mark.parametrize(
+    ("ignored", "expected_date"),
+    (
+        (None, "never"),
+        (["never"], "unfinished"),
+        (["never", "unfinished"], "unknown"),
+        (["never", "unfinished", "unknown"], "2009"),
+        (
+            ["never", "unfinished", "unknown"] + [str(x) for x in range(2009, 2021)],
+            "raster",
+        ),
+        (
+            ["never", "unfinished", "unknown", "raster"]
+            + [str(x) for x in range(2009, 2021)],
+            "never",
+        ),
+    ),
+)
+def test_obsolete(db_mock_all_date, client, ignored, expected_date):
+    query_string = {
+        "ignored": ",".join(ignored) if ignored else None,
+    }
+    resp = client.get(
+        "/cities/obsolete",
+        query_string=query_string,
+    )
+    assert resp.status_code == 200
+    city = resp.json["city"]
+    assert city["date"] == expected_date
+    assert city["josm_ready"]
+
+    # if filtered by ratio, we should get josm not ready cities instead
+    query_string["minratio"] = 2
+    resp = client.get(
+        "/cities/obsolete",
+        query_string=query_string,
+    )
+    assert resp.status_code == 200
+    city2 = resp.json["city"]
+    assert city2["date"] == expected_date
+    assert not city2["josm_ready"]
+    assert int(city2["insee"]) == int(city["insee"]) - 100

@@ -97,10 +97,11 @@ export class BatimapService {
         );
     }
 
-    obsoleteCity(ignored: string[]): Observable<ObsoleteCityDTO> {
+    obsoleteCity(ignored: string[], ratio: number): Observable<ObsoleteCityDTO> {
         return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
             params: {
                 ignored: ignored.join(','),
+                minratio: (ratio / 100).toFixed(2),
             },
         });
     }

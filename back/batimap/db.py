@@ -343,7 +343,7 @@ class Db(object):
         )
 
     @__isInitialized
-    def get_obsolete_city(self, ignored):
+    def get_obsolete_city(self, ignored, minratio):
         """
         Find the city that has the most urging need of import (never > unknown > old import > raster).
         Also privileges ready-to-work cities (cadastre data available) upon the others.
@@ -357,11 +357,15 @@ class Db(object):
                 Boundary.geometry.ST_Centroid().ST_AsText().label("position"),
             )
             .filter(Boundary.insee == City.insee)
+            .filter(Cadastre.insee == City.insee)
+            .filter(
+                func.abs(1 - Cadastre.od_buildings / City.osm_buildings) >= minratio
+            )
             .order_by(City.import_date.in_(ignored))
             .order_by(City.import_date != "never")
             .order_by(City.import_date != "unfinished")
             .order_by(City.import_date != "unknown")
-            .order_by(City.import_date != "raster")
+            .order_by(City.import_date == "raster")
             .order_by(City.import_date)
             .order_by(City.date_cadastre < str(past_month))
             .order_by(func.random())

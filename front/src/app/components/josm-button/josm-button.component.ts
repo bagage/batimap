@@ -49,7 +49,7 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
         this._city = value;
         if (isRaster) {
             this.options.disabled = true;
-            this.tooltip = " Ville raster, pas d'import possible.";
+            this.tooltip = "Commune raster, pas d'import possible.";
             this.options.text = 'JOSM';
         } else if (value.josm_ready) {
             this.tooltip =

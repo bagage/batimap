@@ -192,10 +192,11 @@ def api_josm_data(insee) -> dict:
 
 
 @bp.route("/cities/obsolete", methods=["GET"])
-# @bp.arguments(BBoxSchema, location='json')
 def api_obsolete_city() -> dict:
-    ignored = (request.args.get("ignored") or "").replace(" ", "").split(",")
-    result = db.get_obsolete_city(ignored)
+    ignored = request.args.get("ignored", "").replace(" ", "").split(",")
+    minratio = request.args.get("minratio", 0, float)
+
+    result = db.get_obsolete_city(ignored, minratio)
     if result:
         city = CityDTO(result.City)
         (osm_id,) = db.get_osm_id(city.insee)
@@ -203,6 +204,7 @@ def api_obsolete_city() -> dict:
         return jsonify(
             {"position": [position.x, position.y], "city": city, "osmid": osm_id}
         )
+    return "no obsolete city found", 404
 
 
 @bp.route("/initdb", methods=["POST"])

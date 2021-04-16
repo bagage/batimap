@@ -1,9 +1,10 @@
+import datetime
 import pytest
 import os
 
 from batimap.app import create_app
 from batimap.extensions import db
-from batimap.db import Base, Boundary, City
+from batimap.db import Base, Boundary, Cadastre, City
 
 
 @pytest.fixture
@@ -22,6 +23,7 @@ def app():
 
     with app.app_context():
         Base.metadata.drop_all(bind=db.sqlalchemy.engine)
+        # pass
 
 
 @pytest.fixture
@@ -56,6 +58,48 @@ def db_mock_cities(app):
             City(insee="02023", department="02", import_date="raster", is_raster=True),
         ]
         db.session.add_all(objects)
+        db.session.commit()
+
+
+@pytest.fixture
+def db_mock_all_date(app):
+    with app.app_context():
+        dates = list(range(2009, 2021)) + [
+            "raster",
+            "unfinished",
+            "unknown",
+            "never",
+        ]
+        for idx, date in enumerate(dates):
+            db.session.add_all(
+                [
+                    Cadastre(insee=f"080{idx:02}", department="08", od_buildings=100),
+                    Cadastre(insee=f"081{idx:02}", department="08", od_buildings=100),
+                    City(
+                        insee=f"080{idx:02}",
+                        department="08",
+                        import_date=date,
+                        osm_buildings=25,
+                    ),
+                    City(
+                        insee=f"081{idx:02}",
+                        department="08",
+                        date_cadastre=datetime.datetime.now(),
+                        import_date=date,
+                        osm_buildings=100,
+                    ),
+                    Boundary(
+                        insee=f"080{idx:02}",
+                        admin_level=8,
+                        geometry="srid=4326; POLYGON((0 0,0.1 0,0.1 0.1,0 0.1,0 0))",
+                    ),
+                    Boundary(
+                        insee=f"081{idx:02}",
+                        admin_level=8,
+                        geometry="srid=4326; POLYGON((0 0,0.2 0,0.2 0.2,0 0.2,0 0))",
+                    ),
+                ]
+            )
         db.session.commit()
 
 
