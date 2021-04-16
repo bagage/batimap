@@ -70,7 +70,10 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
 
     @Input()
     set josmReady(ready: boolean | null) {
-        this.options.disabled = !(this._city.date !== 'raster' && this._city.josm_ready && ready);
+        // button must be disabled:
+        // 1. completely for raster city
+        // 2. only if city data are available but JOSM is not available
+        this.options.disabled = this._city.date === 'raster' || (this._city.josm_ready && !ready);
     }
 
     constructor(

@@ -2,9 +2,11 @@ version: "3"
 services:
   postgis:
     build: postgis
-    command: ["postgres", "-c", "log_statement=all"]
+    # command: ["postgres", "-c", "log_statement=all"]
     ports:
       - "5432:5432"
+    volumes:
+      - ./postgis/postgres-dev.conf:/var/lib/postgresql/data/postgresql.conf
 
   imposm:
     build: imposm
@@ -57,3 +59,12 @@ services:
   redis:
     ports:
       - "6379:6379"
+
+  pghero:
+    image: ankane/pghero
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
+    depends_on:
+      - postgis
