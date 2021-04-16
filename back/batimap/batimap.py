@@ -48,6 +48,7 @@ class Batimap(object):
         "25501",
         "25573",
         "26030",
+        "26274",
         "2B221",
         "31127",
         "31129",
@@ -359,7 +360,7 @@ class Batimap(object):
 
         # we should never raise this statement. However it may happen when you
         # do the same request twice - the response is returning 200 OK while
-        # the city is stil lactually being processed
+        # the city is still actually being processed
         raise Exception(f"Invalid cadastre server response for {city}, please retry")
 
     def clear_tiles(self, insee):
