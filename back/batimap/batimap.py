@@ -404,6 +404,7 @@ class Batimap(object):
             # Almost all cities have at least church/school/townhall manually mapped
             if (
                 len(dates) < self.MIN_BUILDINGS_COUNT
+                and city.cadastre
                 and city.cadastre.od_buildings > self.MIN_BUILDINGS_COUNT
             ):
                 LOG.info(

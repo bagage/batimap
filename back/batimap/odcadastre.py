@@ -95,14 +95,15 @@ class ODCadastre(object):
         if not self.db.get_city_for_insee(insee):
             return None
 
+        cadastre = self.db.get_cadastre_for_insee(insee)
         try:
             counts = self.query_city_od(insee)
-            cadastre = self.db.session.merge(
-                Cadastre(insee, insee[:-3], sum(counts.values()))
-            )
-            self.db.session.add(cadastre)
+            if counts:
+                cadastre = self.db.session.merge(
+                    Cadastre(insee, insee[:-3], sum(counts.values()))
+                )
+                self.db.session.add(cadastre)
         except Exception as e:
             current_app.logger.warning(f"could not fetch cadastre for {insee}: {e}")
-            cadastre = self.db.get_cadastre_for_insee(insee)
 
         return cadastre
