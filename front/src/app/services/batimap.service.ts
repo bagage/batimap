@@ -99,6 +99,7 @@ export class BatimapService {
 
     obsoleteCity(ignored: string[], ratio: number): Observable<ObsoleteCityDTO> {
         return this.http.get<ObsoleteCityDTO>(this.URL_CITY_OBSOLETE(), {
+            headers: HttpErrorInterceptor.ByPassInterceptor().headers,
             params: {
                 ignored: ignored.join(','),
                 minratio: (ratio / 100).toFixed(2),

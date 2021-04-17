@@ -41,46 +41,6 @@ class Batimap(object):
         "transformer_tower",
         "wayside_shrine",
     ]
-    NO_BUILDING_CITIES = [
-        "08300",
-        "09260",
-        "11082",
-        "25501",
-        "25573",
-        "26030",
-        "26274",
-        "2B221",
-        "31127",
-        "31129",
-        "31559",
-        "39324",
-        "51470",
-        "52004",
-        "52157",
-        "52219",
-        "54310",
-        "55033",
-        "55039",
-        "55050",
-        "55103",
-        "55139",
-        "55157",
-        "55168",
-        "55189",
-        "55239",
-        "55270",
-        "55307",
-        "55325",
-        "55394",
-        "65068",
-        "65118",
-        "65134",
-        "65140",
-        "65180",
-        "65368",
-        "66086",
-        "80270",
-    ]
     cadastre_src2date_regex = re.compile(r".*(cadastre)?.*(20\d{2}).*(?(1)|cadastre).*")
 
     def init_app(self, db, overpass):
@@ -408,7 +368,7 @@ class Batimap(object):
                     buildings.append(element.get("timestamp")[:4])
                 has_simplified = len(simplified_buildings) > 0
                 (import_date, sources_date) = self.__date_for_buildings(
-                    city.insee, buildings, has_simplified
+                    city, buildings, has_simplified
                 )
                 city.import_date = import_date
             city.import_details = {
@@ -420,7 +380,7 @@ class Batimap(object):
             LOG.error(f"Failed to count buildings for {city}: {e}")
         return city
 
-    def __date_for_buildings(self, insee, dates, has_simplified_buildings):
+    def __date_for_buildings(self, city, dates, has_simplified_buildings):
         """
         Computes the city import date, given a list of buildings date
         """
@@ -444,15 +404,15 @@ class Batimap(object):
             # Almost all cities have at least church/school/townhall manually mapped
             if (
                 len(dates) < self.MIN_BUILDINGS_COUNT
-                and insee not in self.NO_BUILDING_CITIES
+                and city.cadastre.od_buildings > self.MIN_BUILDINGS_COUNT
             ):
                 LOG.info(
-                    f"City {insee}: too few buildings found ({len(dates)}), assuming it was never imported!"
+                    f"City {city}: too few buildings found ({len(dates)}), assuming it was never imported!"
                 )
                 date = "never"
             elif has_simplified_buildings:
                 date = "unfinished"
-        LOG.debug(f"City {insee} stats: date={date}, details={counter}")
+        LOG.debug(f"City {city} stats: date={date}, details={counter}")
         return (date, counter)
 
     def import_city_stats_from_osmplanet(self, insees):
@@ -500,7 +460,7 @@ class Batimap(object):
                 if set(buildings) != set(["raster"]):
                     # compute city import date based on all its buildings date
                     (import_date, counts) = self.__date_for_buildings(
-                        insee, buildings, insee in simplified_cities
+                        city, buildings, insee in simplified_cities
                     )
                     simplified = [
                         x[1] for x in city_with_simplified_building if x[0] == insee
