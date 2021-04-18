@@ -405,7 +405,8 @@ class Batimap(object):
             if (
                 len(dates) < self.MIN_BUILDINGS_COUNT
                 and city.cadastre
-                and city.cadastre.od_buildings > self.MIN_BUILDINGS_COUNT
+                and city.cadastre.od_buildings
+                > max(self.MIN_BUILDINGS_COUNT, 1.5 * len(dates))
             ):
                 LOG.info(
                     f"City {city}: too few buildings found ({len(dates)}), assuming it was never imported!"
