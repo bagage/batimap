@@ -32,7 +32,7 @@ def get_city_stats(items, fast, all):
         for city in batimap.stats(
             names_or_insees=items, force=not fast, refresh_cadastre_state=not fast
         ):
-            click.echo(f"{city}: date={city.import_date} bati={city.buildings}")
+            click.echo(f"{city}: date={city.import_date} bati={city.osm_buildings}")
     else:
         if all:
             click.echo("Will stats ALL available cities")
@@ -44,7 +44,7 @@ def get_city_stats(items, fast, all):
             for city in batimap.stats(
                 department=department, force=not fast, refresh_cadastre_state=not fast
             ):
-                click.echo(f"{city}: date={city.import_date} bati={city.buildings}")
+                click.echo(f"{city}: date={city.import_date} bati={city.osm_buildings}")
 
 
 @bp.cli.command("cadastre")
