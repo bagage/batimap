@@ -33,7 +33,7 @@
         "@bagage/leaflet.vectorgrid": "2.0.0",
         "apexcharts": "3.26.0",
         "class-transformer": "0.4.0",
-        "core-js": "3.10.1",
+        "core-js": "3.12.1",
         "leaflet": "1.7.1",
         "leaflet-geocoder-ban": "1.0.7",
         "leaflet-hash": "0.2.1",
