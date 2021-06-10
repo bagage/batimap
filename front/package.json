@@ -39,7 +39,7 @@
         "leaflet-hash": "0.2.1",
         "leaflet-search": "2.9.9",
         "mat-progress-buttons": "9.2.1",
-        "ng-apexcharts": "1.5.10",
+        "ng-apexcharts": "1.5.12",
         "protractor": "7.0.0",
         "reflect-metadata": "0.1.13",
         "rxjs": "6.6.7",
