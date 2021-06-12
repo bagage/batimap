@@ -119,6 +119,9 @@ class Handler(FileSystemEventHandler):
 
     @staticmethod
     def parse_entries(file_path):
+        if not Path(file_path).exists():
+            return None
+
         LOG.info(f"New entries in {file_path}")
         lines = []
         try:
