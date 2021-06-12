@@ -11,7 +11,6 @@ services:
       - POSTGRES_DB=testdb
       - POSTGRES_HOST=postgis
       - POSTGRES_PORT=5432
-
   redis:
     image: redis:5-alpine
     ports:

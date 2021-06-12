@@ -110,11 +110,13 @@ def db_mock_boundaries(app):
             Boundary(
                 insee="01",
                 name="01-test",
+                geometry="srid=4326; POLYGON((0 0,1 0,1 1,0 1,0 0))",
                 admin_level=6,
             ),
             Boundary(
                 insee="02",
                 name="02-test",
+                geometry="srid=4326; POLYGON((0 0,1 0,1 1,0 1,0 0))",
                 admin_level=6,
             ),
             Boundary(

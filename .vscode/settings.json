@@ -35,5 +35,9 @@
     "prettier.documentSelectors": ["front/**"],
     "htmlhint.options": {
         "attr-lowercase": false
-    }
+    },
+    "python.testing.pytestArgs": ["back"],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true
 }

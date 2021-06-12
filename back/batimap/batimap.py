@@ -482,7 +482,7 @@ class Batimap(object):
                             f"{import_date} ({len(buildings)} bâtis{simplified_msg})"
                         )
                         city.import_date = import_date
-                city.import_details = {"dates": counts, "simplified": simplified}
+                    city.import_details = {"dates": counts, "simplified": simplified}
                 city.osm_buildings = len(buildings)
 
             self.db.session.commit()
