@@ -11,7 +11,7 @@ from batimap.extensions import db
 )
 def test_initdb(db_mock_boundaries, app, runner, input, expected_count):
     Path("tiles").mkdir(exist_ok=True)
-    file = Path("tiles/initdb_is_done")
+    file = Path("tiles/flush_all_tiles")
     if file.exists():
         file.unlink()
 

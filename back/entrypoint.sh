@@ -27,7 +27,7 @@ if [ $# = 0 ]; then
     else
         echo "Batimap db already setup, cleaning tiles..."
         # create ready file
-        touch tiles/initdb_is_done
+        touch tiles/flush_all_tiles
         # maintenance mode is terminated
         rm -f html/maintenance.html
     fi
