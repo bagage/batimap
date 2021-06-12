@@ -65,10 +65,14 @@ if [ "$DO_IMPORT" = "true" ]; then
     for region in $REGIONS; do
         echo "downloading $region.osm.pbf"
         file=$(basename $region).osm.pbf
-        axel http://download.geofabrik.de/europe/$region.osm.pbf.md5
-        (test -f $file && md5sum -c $file.md5 &>/dev/null) || (rm -f $file && axel http://download.geofabrik.de/europe/$region.osm.pbf)
-        echo "checking $region.osm.pbf file integrity"
-        md5sum -c $file.md5 || exit 1
+        if "$REGIONS_URL"; then
+            axel $REGIONS_URL/$region.osm.pbf
+        else
+            axel http://download.geofabrik.de/europe/$region.osm.pbf.md5
+            (test -f $file && md5sum -c $file.md5 &>/dev/null) || (rm -f $file && axel http://download.geofabrik.de/europe/$region.osm.pbf)
+            echo "checking $region.osm.pbf file integrity"
+            md5sum -c $file.md5 || exit 1
+        fi
     done
 
     echo "Waiting for postgis to be available..."

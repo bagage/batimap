@@ -97,11 +97,10 @@ export class JosmButtonComponent extends Unsubscriber implements OnInit {
             this.batimapService.cityTasks(this._city.insee).subscribe(tasks => {
                 if (tasks.length) {
                     this.onClick();
-                }
-                else {
-                  this.options.active = false;
-                  this.options.text = this.options.text.replace(/ \(.*\)/, '');
-                  this.changeDetector.detectChanges();
+                } else {
+                    this.options.active = false;
+                    this.options.text = this.options.text.replace(/ \(.*\)/, '');
+                    this.changeDetector.detectChanges();
                 }
             })
         );

@@ -3,7 +3,6 @@ from batimap.extensions import celery, batimap, db, odcadastre
 from batimap.citydto import CityDTO
 from batimap.tasks.utils import task_progress
 from pathlib import Path
-from shutil import copyfile
 
 import json
 import logging
@@ -21,12 +20,7 @@ def task_initdb(self, items):
     """
     Fetch OSM and Cadastre data for given departments/cities.
     """
-    migration_base = Path("html/.maintenance.html")
-    migration_file = Path("html/maintenance.html")
     initdb_is_done_file = Path("tiles/initdb_is_done")
-
-    if migration_base.exists() and not migration_file.exists():
-        copyfile(migration_base, migration_file)
 
     items_are_cities = len([1 for x in items if len(x) > 3]) > 0
     if items_are_cities:
@@ -71,8 +65,6 @@ def task_initdb(self, items):
     db.session.commit()
 
     initdb_is_done_file.touch()
-    if migration_file.exists():
-        migration_file.unlink()
 
     task_progress(self, 100)
 
