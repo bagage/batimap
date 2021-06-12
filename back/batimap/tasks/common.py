@@ -37,7 +37,7 @@ def task_initdb(self, items):
     # otherwise we flush all France tiles and regenerate all of them
     flush_all_tiles = len(departments) >= 5 or len(items) >= 100
 
-    if not flush_all_tiles and flush_all_tiles_path.exists():
+    if flush_all_tiles and flush_all_tiles_path.exists():
         flush_all_tiles_path.unlink()
 
     # fill table with cities from cadastre website
@@ -69,9 +69,9 @@ def task_initdb(self, items):
     db.session.commit()
 
     if flush_all_tiles:
-        batimap.clear_tiles(items)
-    else:
         flush_all_tiles_path.touch()
+    else:
+        batimap.clear_tiles(items)
 
     task_progress(self, 100)
 

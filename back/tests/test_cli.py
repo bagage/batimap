@@ -20,7 +20,7 @@ def test_initdb(db_mock_boundaries, app, runner, input, expected_count):
     assert result.exception is None
     assert result.exit_code == 0
     assert "done\n" == result.output
-    assert file.exists()
+    assert not file.exists()
     with app.app_context():
         assert len(db.get_cities()) == expected_count
 
