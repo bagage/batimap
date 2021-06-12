@@ -71,7 +71,8 @@ def task_initdb(self, items):
     if flush_all_tiles:
         flush_all_tiles_path.touch()
     else:
-        batimap.clear_tiles(items)
+        for insee in items:
+            batimap.clear_tiles(insee)
 
     task_progress(self, 100)
 
