@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # allow the container to be started with `--user`
-if [ "$(id -u)" = '0' ]; then
-	find /app \! -user batimap -exec chown batimap '{}' +
-	exec su batimap -- "$0" "$@"
-fi
+# if [ "$(id -u)" = '0' ]; then
+# 	find /app \! -user batimap -exec chown batimap '{}' +
+# 	exec su batimap -- "$0" "$@"
+# fi
 
 INIT_FILE="/data/initdb_is_done"
 CACHE_DIR="/data/cache"
