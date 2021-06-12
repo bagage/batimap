@@ -72,6 +72,7 @@ def cadastre_command(cities, all):
                 f"couldn't compute count for {insee}, it is a valid INSEE and/or imported in DB?"
             )
     if all:
+        click.echo("flushing all tiles")
         Path("tiles/flush_all_tiles").touch()
     else:
         for insee in clear:
