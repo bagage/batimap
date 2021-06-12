@@ -3,7 +3,6 @@ from batimap.extensions import celery, batimap, db, odcadastre
 from batimap.citydto import CityDTO
 from batimap.tasks.utils import task_progress
 from pathlib import Path
-from shutil import copyfile
 
 import json
 import logging

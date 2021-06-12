@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 
-RUN apt update && apt install --no-install-recommends -y axel wget postgresql-client && apt clean
+RUN apt update && apt install --no-install-recommends -y axel wget postgresql-client ca-certificates && apt clean
 
 ARG IMPOSM3_VERSION=0.11.1
 ARG IMPOSM3_TARFILE="imposm-${IMPOSM3_VERSION}-linux-x86-64.tar.gz"
