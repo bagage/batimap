@@ -20,7 +20,7 @@ def task_initdb(self, items):
     """
     Fetch OSM and Cadastre data for given departments/cities.
     """
-    initdb_is_done_file = Path("tiles/initdb_is_done")
+    flush_all_tiles_path = Path("tiles/flush_all_tiles")
 
     items_are_cities = len([1 for x in items if len(x) > 3]) > 0
     if items_are_cities:
@@ -33,8 +33,12 @@ def task_initdb(self, items):
         departments = items
         LOG.debug(f"Will run initdb on departments {departments}")
 
-    if initdb_is_done_file.exists():
-        initdb_is_done_file.unlink()
+    # if few items must be processed we'll clear only these specific tiles,
+    # otherwise we flush all France tiles and regenerate all of them
+    flush_all_tiles = len(departments) >= 5 or len(items) >= 100
+
+    if not flush_all_tiles and flush_all_tiles_path.exists():
+        flush_all_tiles_path.unlink()
 
     # fill table with cities from cadastre website
     p = 20
@@ -64,7 +68,10 @@ def task_initdb(self, items):
     LOG.debug(f"Finalizing initdb on departments {departments}")
     db.session.commit()
 
-    initdb_is_done_file.touch()
+    if flush_all_tiles:
+        batimap.clear_tiles(items)
+    else:
+        flush_all_tiles_path.touch()
 
     task_progress(self, 100)
 

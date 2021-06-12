@@ -173,7 +173,7 @@ class Batimap(object):
             dept = d.zfill(3)
             r = requests.get(f"{url}/data/{dept}/")
             bs = BeautifulSoup(r.content, "lxml")
-            refresh_tiles = []
+            refresh_city_tiles = []
 
             cities = self.db.get_cities_for_department(d)
             no_cadastre_cities = [c for c in cities]  # copy
@@ -215,7 +215,7 @@ class Batimap(object):
                         LOG.info(
                             f"Cadastre changed changed for {c} from {c.date_cadastre} to {date_cadastre}"
                         )
-                        refresh_tiles.append(c.insee)
+                        refresh_city_tiles.append(c.insee)
                         c.date_cadastre = date_cadastre
 
             for c in no_cadastre_cities:
@@ -224,7 +224,7 @@ class Batimap(object):
 
             self.db.session.commit()
 
-            for insee in refresh_tiles:
+            for insee in refresh_city_tiles:
                 self.clear_tiles(insee)
             yield idx + 1
 

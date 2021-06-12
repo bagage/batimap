@@ -6,7 +6,7 @@
 # 	exec su batimap -- "$0" "$@"
 # fi
 
-INIT_FILE="/data/initdb_is_done"
+INIT_FILE="/data/flush_all_tiles"
 CACHE_DIR="/data/cache"
 UPDATE_FILE=/data/outdated.txt
 WORK_FILE=/data/inprogress.txt

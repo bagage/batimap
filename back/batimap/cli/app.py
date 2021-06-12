@@ -72,8 +72,7 @@ def cadastre_command(cities, all):
                 f"couldn't compute count for {insee}, it is a valid INSEE and/or imported in DB?"
             )
     if all:
-        initdb_is_done_file = Path("tiles/initdb_is_done")
-        initdb_is_done_file.touch()
+        Path("tiles/flush_all_tiles").touch()
     else:
         for insee in clear:
             batimap.clear_tiles(insee)
