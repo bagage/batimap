@@ -28,9 +28,11 @@ export class MapComponent implements AfterViewInit {
 
     options = {
         layers: [
-            L.tileLayer('https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+            L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
                 maxZoom: 18,
-                attribution: '© Contributeurs OpenStreetMap',
+                attribution:
+                    'Données © <a href="https://openstreetmap.org" target="_blank">Contributeurs OpenStreetMap</a> | ' +
+                    'Fond de carte © <a href="https://carto.com" target="_blank">CARTO</a>',
             }),
         ],
         zoom: 5,
