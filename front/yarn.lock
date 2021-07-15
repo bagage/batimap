@@ -6250,10 +6250,10 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-mat-progress-buttons@9.2.1:
-  version "9.2.1"
-  resolved "https://registry.yarnpkg.com/mat-progress-buttons/-/mat-progress-buttons-9.2.1.tgz#9200c200087f460679361d5876b2366bf5f4a574"
-  integrity sha512-q/L2zof/SOrDLxa28iaQlN2PBJ2Z7NoLuWtDZ66VD35L+/QWyILSn+V76WTBhZOh9G8BK0BYTiqZZapMJawI5w==
+mat-progress-buttons@9.2.2:
+  version "9.2.2"
+  resolved "https://registry.yarnpkg.com/mat-progress-buttons/-/mat-progress-buttons-9.2.2.tgz#7bbe011e679900c1ec78079ce8ae7e63cc2bbdb7"
+  integrity sha512-q96l9uYeMwlGXkYZzkBtvaPUuSQHgEIfkgcPKjCiFeq5QonSjm4TW/6Y7ahj06z6kx7vYgwY9DFAdCHvvlCdog==
   dependencies:
     tslib "^2.0.0"
 
