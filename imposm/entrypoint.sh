@@ -65,7 +65,7 @@ if [ "$DO_IMPORT" = "true" ]; then
     for region in $REGIONS; do
         echo "downloading $region.osm.pbf"
         file=$(basename $region).osm.pbf
-        if ! -z "$REGIONS_URL"; then
+        if ! test -z "$REGIONS_URL"; then
             axel $REGIONS_URL/$region.osm.pbf
         else
             axel http://download.geofabrik.de/europe/$region.osm.pbf.md5
