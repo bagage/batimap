@@ -84,7 +84,7 @@ test:back:
 .build_docker_image: &build_docker_image
   image: docker:stable
   services:
-    - docker:20.10.7-dind
+    - docker:20.10.8-dind
   stage: build
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
