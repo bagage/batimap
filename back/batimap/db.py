@@ -278,6 +278,7 @@ class Db(object):
             self.session.query(Boundary.insee)
             .filter(Boundary.admin_level.in_([5, 6]))
             .filter(Boundary.insee != "")
+            .filter(func.length(Boundary.insee) <= 3)
             .order_by(Boundary.insee)
             .all()
         )
@@ -288,6 +289,7 @@ class Db(object):
             self.session.query(Boundary)
             .filter(Boundary.admin_level.in_([5, 6]))
             .filter(Boundary.insee == insee)
+            .filter(func.length(Boundary.insee) <= 3)
             .first()
         )
 
@@ -318,6 +320,7 @@ class Db(object):
             .filter(Boundary.admin_level.in_([5, 6]))
             .filter((Boundary.insee != "") is not False)
             .filter(Boundary.geometry.intersects(func.ST_MakeEnvelope(*bbox.coords)))
+            .filter(func.length(Boundary.insee) <= 3)
             .order_by(Boundary.insee)
             .all()
         )
