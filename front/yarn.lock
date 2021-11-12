@@ -6069,10 +6069,10 @@ leaflet-hash@0.2.1:
   resolved "https://registry.yarnpkg.com/leaflet-hash/-/leaflet-hash-0.2.1.tgz#c36c718347c5243033b57cb4baea26119d82c701"
   integrity sha1-w2xxg0fFJDAztXy0uuomEZ2CxwE=
 
-leaflet-search@2.9.11:
-  version "2.9.11"
-  resolved "https://registry.yarnpkg.com/leaflet-search/-/leaflet-search-2.9.11.tgz#9ceff372efdabbdfb71f1f3ac7c1f8e7d2fdc267"
-  integrity sha512-Tsp2rbd4SyBTaSJ2hGk/hdSzTLWlaehVDx0nQta4Ih9MjajxAWoizGB9RTMSFNnXYvqSRwWL8udLZXc83j5ivA==
+leaflet-search@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/leaflet-search/-/leaflet-search-3.0.2.tgz#a70099c6d738f2403f0fb45e64de75ca5e762cfc"
+  integrity sha512-DtI8LTthhjRzxfNQTgYNuvrk+5hLTISFdemSVrtvnyPA31/a8NGE3GInS19eLGZIgHAYtbUFOHO1/OLbxhi6Yw==
   dependencies:
     leaflet "*"
 
