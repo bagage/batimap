@@ -8,7 +8,7 @@
     "packageRules": [
         {
             "groupName": "angular",
-            "packagePatterns": ["angular"],
+            "packagePatterns": ["angular", "rxjs"],
             "postUpgradeTasks": {
                 "commands": [
                     "npm ci --ignore-scripts",
