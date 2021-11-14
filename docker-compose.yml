@@ -38,7 +38,7 @@ services:
       - ./data/tiles:/data
 
   redis:
-    image: redis:5-alpine
+    image: redis:6-alpine
     command: redis-server --appendonly yes
     volumes:
       - ./data/redis:/data
