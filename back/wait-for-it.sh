@@ -27,6 +27,7 @@ wait_for()
     start_ts=$(date +%s)
     while :
     do
+        # we expect 2 indexes on osm_buildings from imposm: gist(geometry) and btree(osm_id, id)
         count=`PGPASSWORD=$POSTGRES_PASSWORD psql -qtA -U $POSTGRES_USER -h $POSTGRES_HOST -p $POSTGRES_PORT \
         -d $POSTGRES_DB -c "select COUNT(*) from pg_indexes where schemaname = 'public' AND tablename = 'osm_buildings'" 2>/dev/null`
         result=$?
