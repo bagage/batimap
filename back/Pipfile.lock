@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5882149e72db00f141433bb7f7b82a114af4c5b875c1bb8a96a9e8e9303ee17c"
+            "sha256": "96fc8ad676fde25c7d32c03b8f5b336bc8cacd8775a9d676c67ae31ad9420d69"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -62,9 +62,7 @@
             "version": "==1.4"
         },
         "celery": {
-            "extras": [
-                "redis"
-            ],
+            "extras": ["redis"],
             "hashes": [
                 "sha256:5e8d364e058554e83bbb116e8377d90c79be254785f357cb2cec026e79febe13",
                 "sha256:f4efebe6f8629b0da2b8e529424de376494f5b7a743c321c8a2ddc2b1414921c"
@@ -100,7 +98,7 @@
                 "sha256:a0713dc7a1de3f06bc0df5a9567ad19ead2d3d5689b434768a6145bff77c0667",
                 "sha256:f184f0d851d96b6d29297354ed981b7dd71df7ff500d82fa6d11f0856bee8035"
             ],
-            "markers": "python_version < '4' and python_full_version >= '3.6.2'",
+            "markers": "python_full_version >= '3.6.2' and python_full_version < '4.0.0'",
             "version": "==0.3.0"
         },
         "click-plugins": {
@@ -576,9 +574,7 @@
             "version": "==2.25.1"
         },
         "sentry-sdk": {
-            "extras": [
-                "flask"
-            ],
+            "extras": ["flask"],
             "hashes": [
                 "sha256:b9844751e40710e84a457c5bc29b21c383ccb2b63d76eeaad72f7f1c808c8828",
                 "sha256:c091cc7115ff25fe3a0e410dbecd7a996f81a3f6137d2272daef32d6c3cfa6dc"
@@ -670,7 +666,7 @@
                 "sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece",
                 "sha256:c4fdf4019605b6e5423637e01bc9fe4daef873709a7973e195ceba0a62bbc844"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_full_version < '4.0.0'",
             "version": "==1.26.7"
         },
         "vine": {
@@ -795,9 +791,7 @@
             "version": "==7.1.2"
         },
         "coverage": {
-            "extras": [
-                "toml"
-            ],
+            "extras": ["toml"],
             "hashes": [
                 "sha256:046647b96969fda1ae0605f61288635209dd69dcd27ba3ec0bf5148bc157f954",
                 "sha256:06d009e8a29483cbc0520665bc46035ffe9ae0e7484a49f9782c2a716e37d0a0",
@@ -1055,7 +1049,7 @@
                 "sha256:d8226d10bc02a29bcc81df19a26e56a9647f8b0a6d4a83924139f4a8b01f17b7",
                 "sha256:f1d25edafde516b146ecd0613dabcc61409817af4766fbbcfb8d1ad4ec441a34"
             ],
-            "markers": "python_version >= '3.10'",
+            "index": "pypi",
             "version": "==3.10.0.2"
         }
     }
