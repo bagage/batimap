@@ -37,7 +37,7 @@
         "leaflet": "1.7.1",
         "leaflet-geocoder-ban": "1.0.7",
         "leaflet-hash": "0.2.1",
-        "leaflet-search": "2.9.11",
+        "leaflet-search": "3.0.2",
         "mat-progress-buttons": "9.2.2",
         "ng-apexcharts": "1.5.12",
         "protractor": "7.0.0",
