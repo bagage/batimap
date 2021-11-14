@@ -18,6 +18,10 @@
             }
         },
         {
+            "groupName": "flask",
+            "packagePatterns": ["flask", "celery", "click"]
+        },
+        {
             "packageNames": ["typescript"],
             "allowedVersions": "<4.1.0"
         }
