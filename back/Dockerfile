@@ -5,7 +5,7 @@ FROM base as builder
 RUN mkdir /src
 WORKDIR /src
 
-RUN apt update && apt install -yy --no-install-recommends gcc postgresql-client libpq-dev libxml2 libxml2-dev libxslt-dev libgeos-dev && apt clean
+RUN apt update && apt install -yy --no-install-recommends file gcc postgresql-client libpq-dev libxml2 libxml2-dev libxslt-dev libgeos-dev && apt clean
 
 COPY Pipfile* /src/
 
