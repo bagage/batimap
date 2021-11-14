@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "141029ca0248b87cc8c1d164a29a0e9f3bdc0bf42eee85e838023eb57ce31927"
+            "sha256": "5882149e72db00f141433bb7f7b82a114af4c5b875c1bb8a96a9e8e9303ee17c"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.10"
+            "python_version": "3.9"
         },
         "sources": [
             {
@@ -62,7 +62,9 @@
             "version": "==1.4"
         },
         "celery": {
-            "extras": ["redis"],
+            "extras": [
+                "redis"
+            ],
             "hashes": [
                 "sha256:5e8d364e058554e83bbb116e8377d90c79be254785f357cb2cec026e79febe13",
                 "sha256:f4efebe6f8629b0da2b8e529424de376494f5b7a743c321c8a2ddc2b1414921c"
@@ -258,7 +260,7 @@
                 "sha256:fa877ca7f6b48054f847b61d6fa7bed5cebb663ebc55e018fda12db09dcc664c",
                 "sha256:fdcec0b8399108577ec290f55551d926d9a1fa6cad45882093a7a07ac5ec147b"
             ],
-            "markers": "platform_python_implementation == 'CPython'",
+            "markers": "python_version >= '3' and platform_python_implementation == 'CPython'",
             "version": "==1.1.2"
         },
         "gunicorn": {
@@ -574,7 +576,9 @@
             "version": "==2.25.1"
         },
         "sentry-sdk": {
-            "extras": ["flask"],
+            "extras": [
+                "flask"
+            ],
             "hashes": [
                 "sha256:b9844751e40710e84a457c5bc29b21c383ccb2b63d76eeaad72f7f1c808c8828",
                 "sha256:c091cc7115ff25fe3a0e410dbecd7a996f81a3f6137d2272daef32d6c3cfa6dc"
@@ -791,7 +795,9 @@
             "version": "==7.1.2"
         },
         "coverage": {
-            "extras": ["toml"],
+            "extras": [
+                "toml"
+            ],
             "hashes": [
                 "sha256:046647b96969fda1ae0605f61288635209dd69dcd27ba3ec0bf5148bc157f954",
                 "sha256:06d009e8a29483cbc0520665bc46035ffe9ae0e7484a49f9782c2a716e37d0a0",
