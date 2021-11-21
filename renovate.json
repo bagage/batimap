@@ -7,7 +7,7 @@
 
     "packageRules": [
         {
-            "groupName": "angular",
+            "groupName": "angular group",
             "packagePatterns": ["angular", "rxjs"],
             "postUpgradeTasks": {
                 "commands": [
@@ -18,8 +18,12 @@
             }
         },
         {
-            "groupName": "flask",
-            "packagePatterns": ["flask", "celery", "click"]
+            "groupName": "flask group",
+            "packagePatterns": ["^flask", "^celery", "^click"]
+        },
+        {
+            "groupName": "node",
+            "packagePatterns": ["^node"]
         },
         {
             "packageNames": ["typescript"],
