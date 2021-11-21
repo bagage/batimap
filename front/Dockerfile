@@ -1,17 +1,11 @@
 FROM node:16-alpine
-
 RUN apk --update add git yarn
-
 ADD . /usr/src/app
-
-RUN mkdir /usr/src/app/node_modules
-
-RUN chown -R node:node /usr/src/app
-
-VOLUME /usr/src/app/node_modules
-
 WORKDIR /usr/src/app
+RUN yarn
+RUN yarn build --prod
 
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
-CMD yarn && yarn start --host 0.0.0.0
-
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
+COPY --from=0 /usr/src/app/dist/batimap .
+COPY prod/nginx.conf /etc/nginx/conf.d/default.conf

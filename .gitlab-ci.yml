@@ -215,4 +215,4 @@ build:front:
       - front/**/*
   variables:
     CONTAINER: front
-    DOCKERFILE: Dockerfile.prod
+    DOCKERFILE: Dockerfile
