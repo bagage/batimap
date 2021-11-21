@@ -91,14 +91,18 @@ test:back:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
   script:
     - docker build -t registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG -f ${BASE_DIR:-$CONTAINER}/$DOCKERFILE ${BASE_DIR:-$CONTAINER}
-    - docker tag registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/batimap/$CONTAINER:latest
-    - docker push registry.gitlab.com/bagage/batimap/$CONTAINER:latest
-    - docker push registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG
+    - |
+      if test $CI_COMMIT_REF_NAME = master; then
+        docker tag registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG registry.gitlab.com/bagage/batimap/$CONTAINER:latest
+        docker push registry.gitlab.com/bagage/batimap/$CONTAINER:latest
+        docker push registry.gitlab.com/bagage/batimap/$CONTAINER:$CI_COMMIT_REF_SLUG
+      fi
 
 build:ci_test_front:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
@@ -112,6 +116,7 @@ build:ci_test_back:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
@@ -125,6 +130,7 @@ build:tiles-cleaner:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
@@ -137,6 +143,7 @@ build:postgis:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
@@ -149,6 +156,7 @@ build:imposm:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
@@ -161,6 +169,7 @@ build:imposm-watcher:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
@@ -173,6 +182,7 @@ build:back:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
@@ -185,6 +195,7 @@ build:tiles:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
@@ -197,6 +208,7 @@ build:front:
   <<: *build_docker_image
   only:
     refs:
+      - merge_requests
       - master
     changes:
       - .gitlab-ci.yml
