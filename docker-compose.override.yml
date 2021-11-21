@@ -49,7 +49,9 @@ services:
       - ./back/app-docker.conf/:/code/app.conf:ro
 
   front:
-    build: front
+    build:
+      context: front
+      dockerfile: Dockerfile.dev
     ports:
       - "4200:4200"
     volumes:
