@@ -19,11 +19,15 @@
         },
         {
             "groupName": "flask group",
-            "packagePatterns": ["^flask", "^celery", "^click"]
+            "packagePatterns": ["flask", "celery", "click"]
+        },
+        {
+            "groupName": "eslint group",
+            "packagePatterns": ["eslint"]
         },
         {
             "groupName": "node",
-            "packagePatterns": ["^node"]
+            "packagePatterns": ["node"]
         },
         {
             "packageNames": ["typescript"],
