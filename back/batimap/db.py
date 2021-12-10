@@ -346,7 +346,7 @@ class Db(object):
         )
 
     @__isInitialized
-    def get_obsolete_city(self, ignored, minratio):
+    def get_obsolete_city(self, ignored, ignored_cities, minratio):
         """
         Find the city that has the most urging need of import (never > unknown > old import > raster).
         Also privileges ready-to-work cities (cadastre data available) upon the others.
@@ -365,6 +365,7 @@ class Db(object):
                 func.abs(1 - Cadastre.od_buildings * 1.0 / City.osm_buildings)
                 >= minratio
             )
+            .filter(City.insee.notin_(ignored_cities))
             .order_by(City.import_date.in_(ignored))
             .order_by(City.import_date != "never")
             .order_by(City.import_date != "unfinished")

@@ -194,9 +194,10 @@ def api_josm_data(insee) -> dict:
 @bp.route("/cities/obsolete", methods=["GET"])
 def api_obsolete_city() -> dict:
     ignored = request.args.get("ignored", "").replace(" ", "").split(",")
+    ignored_cities = request.args.get("ignored_cities", "").replace(" ", "").split(",")
     minratio = request.args.get("minratio", 0, float)
 
-    result = db.get_obsolete_city(ignored, minratio)
+    result = db.get_obsolete_city(ignored, ignored_cities, minratio)
     if result:
         city = CityDTO(result.City)
         (osm_id,) = db.get_osm_id(city.insee)
