@@ -102,6 +102,7 @@ export class BatimapService {
             headers: HttpErrorInterceptor.ByPassInterceptor().headers,
             params: {
                 ignored: ignored.join(','),
+                ignored_cities: this.ignoredInsees().join(','),
                 minratio: (ratio / 100).toFixed(2),
             },
         });

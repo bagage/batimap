@@ -93,3 +93,15 @@ def test_obsolete(db_mock_all_date, client, ignored, expected_date):
     assert city2["date"] == expected_date
     assert not city2["josm_ready"]
     assert int(city2["insee"]) == int(city["insee"]) - 100
+
+
+def test_obsolete_ignore_city(db_mock_all_date, client):
+    query_string = {"ignored": "never", "ignored_cities": "08013,08113"}
+    resp = client.get(
+        "/cities/obsolete",
+        query_string=query_string,
+    )
+    assert resp.status_code == 200
+    city = resp.json["city"]
+    assert city["date"] == "unknown"
+    assert city["insee"] == "08114"
