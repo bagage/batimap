@@ -362,7 +362,9 @@ class Db(object):
             .filter(Boundary.insee == City.insee)
             .filter(Cadastre.insee == City.insee)
             .filter(
-                func.abs(1 - Cadastre.od_buildings * 1.0 / City.osm_buildings)
+                func.abs(
+                    1 - Cadastre.od_buildings * 1.0 / func.greatest(1, City.osm_buildings)
+                )
                 >= minratio
             )
             .filter(City.insee.notin_(ignored_cities))
