@@ -25,12 +25,12 @@ def list_tasks():
     active = inspect.active()
     reserved = inspect.reserved()
     active_tasks = (
-        [task for worker_tasks in inspect.active().values() for task in worker_tasks]
+        [task for worker_tasks in active.values() for task in worker_tasks]
         if active
         else []
     )
     waiting_tasks = (
-        [task for worker_tasks in inspect.reserved().values() for task in worker_tasks]
+        [task for worker_tasks in reserved.values() for task in worker_tasks]
         if reserved
         else []
     )
