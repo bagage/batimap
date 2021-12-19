@@ -69,7 +69,7 @@ test:back:
     - pipenv install -d
     - pipenv run flake8
     - pipenv run black --check
-    - pipenv run pytest --log-cli-level INFO --junit-xml=tests-report.xml --cov batimap
+    - pipenv run pytest --color=yes --log-cli-level INFO --junit-xml=tests-report.xml --cov batimap
     - pipenv run coverage xml
   artifacts:
     reports:
