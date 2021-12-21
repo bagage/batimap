@@ -100,7 +100,7 @@ function startConflation(referenceDataSet, subjectDataSet) {
     );
     if (conflationClassLoader == null) {
         josm.alert(
-            "Le plugin Conflation ne semble pas installé : " + e.message
+            "Le plugin Conflation ne semble pas installé"
         );
         return;
     }
