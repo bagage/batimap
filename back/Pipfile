@@ -4,7 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-black = "*"
+black = "==21.10b0"
 flake8 = "*"
 flake8-pathlib = "*"
 flake8-use-fstring = "*"
@@ -35,6 +35,7 @@ GeoAlchemy2 = "==0.8.5"
 SQLAlchemy = "==1.4.22"
 sentry-sdk = {extras = ["flask"], version = "*"}
 ijson = "*"
+markupsafe = "==2.0.1" # breaks jinja2
 
 [requires]
 python_version = "3.9"
