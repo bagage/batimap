@@ -41,7 +41,7 @@ class ODCadastre(object):
         r = requests.get(url)
 
         if r.status_code != 200:
-            LOG.warn(f"cadastre fetch failed (status={r.status_code})")
+            LOG.warn(f"cadastre fetch failed (url={url}, status={r.status_code})")
             return None
 
         data = gzip.decompress(r.content)
