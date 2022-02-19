@@ -41,7 +41,7 @@ class ODCadastre(object):
         r = requests.get(url)
 
         if r.status_code != 200:
-            LOG.warn(f"cadastre fetch failed (status={r.status_code})")
+            LOG.warn(f"cadastre fetch failed (url={url}, status={r.status_code})")
             return None
 
         data = gzip.decompress(r.content)
@@ -57,7 +57,7 @@ class ODCadastre(object):
         return self.query_od(dept)
 
     def query_city_od(self, insee) -> Counter:
-        dept = insee[:-3]
+        dept = insee[:3] if insee.startswith("97") else insee[:2]
         return self.query_od(dept, insee)
 
     def compute_count(self, insee) -> Cadastre:
