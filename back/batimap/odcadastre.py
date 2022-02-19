@@ -57,7 +57,7 @@ class ODCadastre(object):
         return self.query_od(dept)
 
     def query_city_od(self, insee) -> Counter:
-        dept = insee[:-3]
+        dept = insee[:3] if insee.startswith("97") else insee[:2]
         return self.query_od(dept, insee)
 
     def compute_count(self, insee) -> Cadastre:
