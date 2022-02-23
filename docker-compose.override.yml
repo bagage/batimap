@@ -70,3 +70,16 @@ services:
       - DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
     depends_on:
       - postgis
+
+  flower:
+    build: back
+    env_file:
+      - ./.env
+    ports:
+      - "5566:5566"
+    command: celery -A batimap.app_celery:app flower --port=5566
+    volumes:
+      - ./back/app-docker.conf/:/code/batimap/app.conf:ro
+      - ./back/:/code
+    depends_on:
+      - postgis

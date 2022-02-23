@@ -34,8 +34,9 @@ Flask-SQLAlchemy = "==2.5.1"
 GeoAlchemy2 = "==0.8.5"
 SQLAlchemy = "==1.4.22"
 sentry-sdk = {extras = ["flask"], version = "*"}
-ijson = "*"
+ijson = "==3.1.4"
 markupsafe = "==2.0.1" # breaks jinja2
+flower = "==1.0.0"
 
 [requires]
 python_version = "3.9"
