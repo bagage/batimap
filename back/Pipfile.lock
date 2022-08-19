@@ -64,9 +64,7 @@
             "version": "==1.4"
         },
         "celery": {
-            "extras": [
-                "redis"
-            ],
+            "extras": ["redis"],
             "hashes": [
                 "sha256:5e8d364e058554e83bbb116e8377d90c79be254785f357cb2cec026e79febe13",
                 "sha256:f4efebe6f8629b0da2b8e529424de376494f5b7a743c321c8a2ddc2b1414921c"
@@ -707,9 +705,7 @@
             "version": "==2.26.0"
         },
         "sentry-sdk": {
-            "extras": [
-                "flask"
-            ],
+            "extras": ["flask"],
             "hashes": [
                 "sha256:1ab34e3851a34aeb3d1af1a0f77cec73978c4e9698e5210d050e4932953cb241",
                 "sha256:ac2a50128409d57655279817aedcb7800cace1f76b266f3dd62055d5afd6e098"
@@ -978,9 +974,7 @@
             "version": "==7.1.2"
         },
         "coverage": {
-            "extras": [
-                "toml"
-            ],
+            "extras": ["toml"],
             "hashes": [
                 "sha256:03e2a7826086b91ef345ff18742ee9fc47a6839ccd517061ef8fa1976e652ce9",
                 "sha256:07e6db90cd9686c767dcc593dff16c8c09f9814f5e9c51034066cad3373b914d",

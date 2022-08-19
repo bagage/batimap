@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import gzip
-import logging
 from collections import Counter
 from datetime import datetime
+
 import ijson
 import requests
 from batimap.db import Cadastre
 from flask import current_app
-
-LOG = logging.getLogger(__name__)
 
 
 class ODCadastre(object):
@@ -41,7 +39,9 @@ class ODCadastre(object):
         r = requests.get(url)
 
         if r.status_code != 200:
-            LOG.warn(f"cadastre fetch failed (url={url}, status={r.status_code})")
+            current_app.logger.warn(
+                f"cadastre fetch failed (url={url}, status={r.status_code})"
+            )
             return None
 
         data = gzip.decompress(r.content)

@@ -1,3 +1,25 @@
-from batimap.api import routes
+from . import (
+    bbox,
+    cities,
+    departments,
+    initdb,
+    insee,
+    insees,
+    legend,
+    routes,
+    status,
+    tasks,
+)
 
-__all__ = ["routes"]
+__all__ = [
+    "bbox",
+    "cities",
+    "departments",
+    "initdb",
+    "insee",
+    "insees",
+    "legend",
+    "routes",
+    "status",
+    "tasks",
+]

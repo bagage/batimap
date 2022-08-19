@@ -1,12 +1,11 @@
-from celery import Celery
-
-from batimap.batimap import Batimap
 from batimap.db import Db
-from batimap.overpass import Overpass
 from batimap.odcadastre import ODCadastre
-
+from batimap.overpass import Overpass
+from celery import Celery
 from flask_smorest import Api
 from flask_sqlalchemy import SQLAlchemy
+
+from batimap.batimap import Batimap
 
 sqlalchemy = SQLAlchemy()
 db = Db()

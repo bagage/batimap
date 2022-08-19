@@ -1,8 +1,8 @@
-import pytest
-
 from datetime import datetime
-from batimap.extensions import odcadastre, db
-from batimap.db import City, Cadastre, Boundary
+
+import pytest
+from batimap.db import Boundary, Cadastre, City
+from batimap.extensions import db, odcadastre
 
 
 @pytest.mark.parametrize(

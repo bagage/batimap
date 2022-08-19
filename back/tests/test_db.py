@@ -1,5 +1,5 @@
+from batimap.db import Cadastre, City
 from batimap.extensions import db
-from batimap.db import City, Cadastre
 
 
 def test_cadastre_city_relationship(app):

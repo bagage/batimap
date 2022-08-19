@@ -1,10 +1,10 @@
 import datetime
-import pytest
 import os
 
+import pytest
 from batimap.app import create_app
-from batimap.extensions import db
 from batimap.db import Base, Boundary, Cadastre, City
+from batimap.extensions import db
 
 
 @pytest.fixture

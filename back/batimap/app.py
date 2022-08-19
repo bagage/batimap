@@ -1,24 +1,22 @@
 import json
-import os
 import logging
-
-from flask import Flask
-from flask_cors import CORS
+import os
 
 import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
 from batimap.citydto import CityDTO
-
 from batimap.extensions import (
     api_smorest,
-    celery,
     batimap,
-    overpass,
+    celery,
     db,
-    sqlalchemy,
     odcadastre,
+    overpass,
+    sqlalchemy,
 )
 from batimap.taskdto import TaskDTO
+from flask import Flask
+from flask_cors import CORS
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 
 class BatimapEncoder(json.JSONEncoder):
@@ -69,12 +67,11 @@ def create_app(db_uri=None, redis_uri=None):
     odcadastre.init_app(db)
     api_smorest.init_app(app)
 
-    from . import cli
-    from . import api
+    from . import api, cli
 
     app.register_blueprint(cli.app.bp)
 
-    api_smorest.register_blueprint(api.routes.bp)
+    api_smorest.register_blueprint(api.status.bp)
 
     init_celery(app)
 
