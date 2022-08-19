@@ -1,4 +1,3 @@
-fail_fast: true
 repos:
   - repo: local
     hooks:
@@ -32,6 +31,7 @@ repos:
         stages: [commit]
         name: black
         entry: black
+        require_serial: true
         language: system
         types: [python]
         files: .
@@ -44,12 +44,3 @@ repos:
         language: system
         types: [python]
         files: (app|tests)
-  # - repo: local
-  #   hooks:
-  #     - id: pytest
-  #       stages: [push]
-  #       name: pytest
-  #       entry: pytest
-  #       language: system
-  #       files: test*.py
-  #       always_run: true
