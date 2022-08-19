@@ -9,7 +9,7 @@ from .routes import bp
 
 @bp.route("/bbox/cities", methods=["POST"])
 def api_bbox_cities() -> dict:
-    bboxes = (request.get_json() or {}).get("bboxes")
+    bboxes = (request.get_json() or {}).get("bboxes", [])
     if not bboxes:
         abort(400, message="missing required bboxes")
     cities = set()

@@ -45,6 +45,8 @@ def test_josm(db_mock_boundaries, db_mock_cities, client, insee, expected_status
     resp = client.get(f"/cities/{insee}/josm")
     assert resp.status_code == expected_status
     if expected_status == 202:
+        print("lol", resp)
+        print(resp.json)
         assert list(resp.json.keys()) == ["task_id"]
         expected_location = f"http://localhost/tasks/{resp.json['task_id']}"
         assert resp.headers["Location"] == expected_location

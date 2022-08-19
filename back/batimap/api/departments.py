@@ -13,7 +13,7 @@ def api_departments() -> dict:
 def api_department(dept) -> dict:
     d = db.get_department(dept)
     s = dict(db.get_department_import_stats(dept))
-    date = max(s, key=s.get)
+    date = max(s, key=s.get)  # type: ignore
     return jsonify({"name": d.name, "date": date, "insee": dept})
 
 

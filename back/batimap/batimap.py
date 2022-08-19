@@ -127,17 +127,17 @@ class Batimap(object):
                 parse_only=cities,
             )
             current_app.logger.debug(f"Query result: {fr.prettify()}")
-            for e in fr.find_all("tbody"):
-                y = e.find(title="Ajouter au panier")
+            for next_city in fr.find_all("tbody"):
+                y = next_city.find(title="Ajouter au panier")
                 if not y:
                     continue
-                current_app.logger.debug(f"Parsing next city: {e}")
+                current_app.logger.debug(f"Parsing next city: {next_city}")
 
                 # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
                 (_, code_commune, _, format_type, _, _, _) = y.get("onclick").split("'")
 
                 # e.strong.string structure: "COBONNE (26400) "
-                commune_cp = e.strong.string
+                commune_cp = next_city.strong.string
                 nom_commune = commune_cp[:-9]
 
                 dept = d.zfill(2)

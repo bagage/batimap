@@ -44,3 +44,17 @@ repos:
         language: system
         types: [python]
         files: (app|tests)
+  - repo: local
+    hooks:
+      - id: mypy
+        stages: [commit]
+        name: mypy
+        entry: mypy
+        require_serial: true
+        language: system
+        types: [python]
+        files: .
+        args:
+          - --config=back/mypy.ini
+
+

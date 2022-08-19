@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List
+from typing import Any, List
 
 from dateutil import parser
 from flask import current_app
@@ -57,9 +57,9 @@ class City(Base):
     name = Column(String)
     name_cadastre = Column(String)
     is_raster = Column(Boolean)
-    import_date = Column(String, name="date")
+    import_date = Column(String, name="date")  # type: ignore
     date_cadastre = Column(TIMESTAMP)
-    import_details = Column(JSON, name="details")
+    import_details = Column(JSON, name="details")  # type: ignore
     osm_buildings = Column(Integer)
 
     cadastre = relationship(
@@ -133,7 +133,7 @@ class Db(object):
         self.session = sqlalchemy.session
         self.is_initialized = True
 
-    def __isInitialized(func):
+    def __isInitialized(func: Any):
         def inner(self, *args, **kwargs):
             if not self.is_initialized:
                 current_app.logger.warning("Db is not initialized yet!")
@@ -235,7 +235,7 @@ class Db(object):
             )
             .filter(Boundary.insee == City.insee)
             .filter(
-                Boundary.geometry.ST_DWithin(
+                Boundary.geometry.ST_DWithin(  # type: ignore
                     self.__build_srid(bbox), bbox.max_distance()
                 )
             )
@@ -316,7 +316,7 @@ class Db(object):
             self.session.query(Boundary.insee.distinct())
             .filter(Boundary.admin_level.in_([5, 6]))
             .filter((Boundary.insee != "") is not False)
-            .filter(Boundary.geometry.intersects(func.ST_MakeEnvelope(*bbox.coords)))
+            .filter(Boundary.geometry.intersects(func.ST_MakeEnvelope(*bbox.coords)))  # type: ignore
             .filter(func.length(Boundary.insee) <= 3)
             .order_by(Boundary.insee)
             .all()

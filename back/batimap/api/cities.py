@@ -21,7 +21,7 @@ def api_city_tasks(insee) -> dict:
 
 
 @bp.route("/cities/<insee>/update", methods=["GET"])
-def api_update_insee_list(insee) -> dict:
+def api_update_insee_list(insee):
     current_app.logger.debug(f"Receive an update request for {insee}")
 
     task_id = find_task_id("batimap.tasks.common.task_update_insee", [insee])
@@ -42,7 +42,7 @@ def api_update_insee_list(insee) -> dict:
 
 
 @bp.route("/cities/<insee>/josm", methods=["GET"])
-def api_josm_data(insee) -> dict:
+def api_josm_data(insee):
     current_app.logger.debug(f"Receive an josm request for {insee}")
 
     c = db.get_city_for_insee(insee)
@@ -69,7 +69,7 @@ def api_josm_data(insee) -> dict:
 
 
 @bp.route("/cities/obsolete", methods=["GET"])
-def api_obsolete_city() -> dict:
+def api_obsolete_city():
     ignored = request.args.get("ignored", "").replace(" ", "").split(",")
     ignored_cities = request.args.get("ignored_cities", "").replace(" ", "").split(",")
     minratio = request.args.get("minratio", 0, float)
