@@ -73,11 +73,11 @@ test:back:
     reports:
       coverage_report:
         coverage_format: cobertura
-        path: coverage.xml
-      junit: junit.xml
+        path: back/coverage.xml
+      junit: back/junit.xml
     paths:
-      - coverage.xml
-      - junit.xml
+      - back/coverage.xml
+      - back/junit.xml
   coverage: '/TOTAL.+?(\d+%)/'
   only:
     refs:
