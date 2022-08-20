@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # This program is watching for Imposm database updates (eg OSM data changes)
 # When update occurs, this script will refresh stats on data's cities
-import requests
 import configparser
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-from math import pi, degrees, atan, sinh
-import time
 import logging
 import os
 import threading
+import time
+from math import atan, degrees, pi, sinh
 from pathlib import Path
+
+import requests
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 config = configparser.ConfigParser()
 config.read("app.conf")

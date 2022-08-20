@@ -67,14 +67,18 @@ test:back:
   script:
     - sed -i 's/psycopg2 =/psycopg2-binary =/' Pipfile
     - pipenv install -d
-    - pipenv run flake8
-    - pipenv run black --check
-    - pipenv run pytest --color=yes --log-cli-level INFO --junit-xml=tests-report.xml --cov batimap
-    - pipenv run coverage xml
+    - pipenv run pre-commit  run --all-files --show-diff-on-failure
+    - pipenv run pytest --color=yes --junitxml=junit.xml --cov=batimap -v -rf --cov-report xml:coverage.xml --cov-report term:skip-covered --no-cov-on-fail && pipenv run coverage xml
   artifacts:
     reports:
-      junit: back/tests-report.xml
-      cobertura: back/coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: back/coverage.xml
+      junit: back/junit.xml
+    paths:
+      - back/coverage.xml
+      - back/junit.xml
+  coverage: '/TOTAL.+?(\d+%)/'
   only:
     refs:
       - merge_requests

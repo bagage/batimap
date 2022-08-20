@@ -1,9 +1,7 @@
-import logging
 import time
 
 import overpass
-
-LOG = logging.getLogger(__name__)
+from flask import current_app
 
 
 class Overpass(object):
@@ -26,7 +24,7 @@ class Overpass(object):
         for retry in range(9, 0, -1):
             try:
                 api = self.__apis[self.__request % apis]
-                LOG.warning(
+                current_app.logger.warning(
                     f"Executing Overpass on server {api.endpoint} with request:\n{request}"
                 )
                 self.__request += 1
@@ -35,7 +33,7 @@ class Overpass(object):
                 overpass.errors.MultipleRequestsError,
                 overpass.errors.ServerLoadError,
             ) as e:
-                LOG.warning(
+                current_app.logger.warning(
                     f"{type(e).__name__} occurred. Will retry again {retry} times in a few seconds"
                 )
                 if retry == 0:
@@ -47,7 +45,7 @@ class Overpass(object):
                 if retry == 0:
                     raise e
                 else:
-                    LOG.warning(
+                    current_app.logger.warning(
                         f"Unhandled exception occurred: {e}, trying next endpoint"
                     )
         return None

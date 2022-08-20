@@ -9,7 +9,7 @@ RUN apk --update add build-base
 
 COPY Pipfile* /src/
 
-RUN pip install pipenv && pipenv lock -r > requirements.txt && pip install -r requirements.txt
+RUN pip install pipenv==2021.5.29 && pipenv lock -r > requirements.txt && pip install -r requirements.txt
 
 FROM base
 

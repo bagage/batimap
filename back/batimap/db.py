@@ -1,28 +1,25 @@
 from datetime import datetime, timedelta
-from typing import List
+from typing import Any, List
 
 from dateutil import parser
+from flask import current_app
 from geoalchemy2 import Geometry
 from sqlalchemy import (
-    Column,
-    Boolean,
-    TIMESTAMP,
-    String,
-    JSON,
-    Integer,
     BigInteger,
+    Boolean,
+    Column,
     func,
+    Integer,
+    JSON,
     not_,
+    String,
+    TIMESTAMP,
 )
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import HSTORE
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 from .bbox import Bbox
-
-import logging
-
-LOG = logging.getLogger(__name__)
 
 Base = declarative_base()
 
@@ -60,9 +57,9 @@ class City(Base):
     name = Column(String)
     name_cadastre = Column(String)
     is_raster = Column(Boolean)
-    import_date = Column(String, name="date")
+    import_date = Column(String, name="date")  # type: ignore
     date_cadastre = Column(TIMESTAMP)
-    import_details = Column(JSON, name="details")
+    import_details = Column(JSON, name="details")  # type: ignore
     osm_buildings = Column(Integer)
 
     cadastre = relationship(
@@ -136,10 +133,10 @@ class Db(object):
         self.session = sqlalchemy.session
         self.is_initialized = True
 
-    def __isInitialized(func):
+    def __isInitialized(func: Any):
         def inner(self, *args, **kwargs):
             if not self.is_initialized:
-                LOG.warning("Db is not initialized yet!")
+                current_app.logger.warning("Db is not initialized yet!")
                 return
             return func(self, *args, **kwargs)
 
@@ -238,7 +235,7 @@ class Db(object):
             )
             .filter(Boundary.insee == City.insee)
             .filter(
-                Boundary.geometry.ST_DWithin(
+                Boundary.geometry.ST_DWithin(  # type: ignore
                     self.__build_srid(bbox), bbox.max_distance()
                 )
             )
@@ -319,7 +316,7 @@ class Db(object):
             self.session.query(Boundary.insee.distinct())
             .filter(Boundary.admin_level.in_([5, 6]))
             .filter((Boundary.insee != "") is not False)
-            .filter(Boundary.geometry.intersects(func.ST_MakeEnvelope(*bbox.coords)))
+            .filter(Boundary.geometry.intersects(func.ST_MakeEnvelope(*bbox.coords)))  # type: ignore
             .filter(func.length(Boundary.insee) <= 3)
             .order_by(Boundary.insee)
             .all()
@@ -363,7 +360,8 @@ class Db(object):
             .filter(Cadastre.insee == City.insee)
             .filter(
                 func.abs(
-                    1 - Cadastre.od_buildings * 1.0 / func.greatest(1, City.osm_buildings)
+                    1
+                    - Cadastre.od_buildings * 1.0 / func.greatest(1, City.osm_buildings)
                 )
                 >= minratio
             )

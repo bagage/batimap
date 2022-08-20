@@ -1,9 +1,7 @@
 import json
-import logging
+
 from batimap.extensions import celery
-
-
-LOG = logging.getLogger(__name__)
+from flask import current_app
 
 
 def task_progress(task, current):
@@ -14,7 +12,9 @@ def task_progress(task, current):
             state="PROGRESS", meta=json.dumps({"current": current, "total": 100})
         )
     else:
-        LOG.warning(f"Task id not set, cannot update its progress to {current}%")
+        current_app.logger.warning(
+            f"Task id not set, cannot update its progress to {current}%"
+        )
 
 
 def list_tasks():
@@ -43,7 +43,9 @@ def find_task_id(task_name, args):
     """
     for task in list_tasks():
         if task["name"] == task_name and task["args"] == args:
-            LOG.info(f"found a task with same context (name={task_name}, args={args})!")
+            current_app.logger.info(
+                f"found a task with same context (name={task_name}, args={args})!"
+            )
             return task["id"]
 
     return None

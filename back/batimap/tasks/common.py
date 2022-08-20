@@ -1,14 +1,11 @@
-from batimap.app import BatimapEncoder
-from batimap.extensions import celery, batimap, db, odcadastre
-from batimap.citydto import CityDTO
-from batimap.tasks.utils import task_progress
+import json
 from pathlib import Path
 
-import json
-import logging
-
-
-LOG = logging.getLogger(__name__)
+from batimap.app import BatimapEncoder
+from batimap.citydto import CityDTO
+from batimap.extensions import batimap, celery, db, odcadastre
+from batimap.tasks.utils import task_progress
+from flask import current_app
 
 
 class JosmNotReadyException(Exception):
@@ -28,10 +25,12 @@ def task_initdb(self, items):
             set([db.get_city_for_insee(insee).department for insee in items])
         )
         departments = sorted([d for d in departments if d is not None])
-        LOG.debug(f"Will run initdb on departments {departments} from cities {items}")
+        current_app.logger.debug(
+            f"Will run initdb on departments {departments} from cities {items}"
+        )
     else:
         departments = items
-        LOG.debug(f"Will run initdb on departments {departments}")
+        current_app.logger.debug(f"Will run initdb on departments {departments}")
 
     # if few items must be processed we'll clear only these specific tiles,
     # otherwise we flush all France tiles and regenerate all of them
@@ -43,20 +42,24 @@ def task_initdb(self, items):
     # fill table with cities from cadastre website
     p = 20
 
-    LOG.debug(f"Will compute cadastre stats on departments {departments}")
+    current_app.logger.debug(
+        f"Will compute cadastre stats on departments {departments}"
+    )
     for (idx, d) in enumerate(departments):
         odcadastre.compute_count(d)
         task_progress(self, 0 * p + (idx + 1) / len(departments) * p)
-    LOG.debug(f"Will update raster state on departments {departments}")
+    current_app.logger.debug(f"Will update raster state on departments {departments}")
     for d in batimap.update_departments_raster_state(departments):
         task_progress(self, 1 * p + d / len(departments) * p)
-    LOG.debug(f"Will update OSM state on departments {departments}")
+    current_app.logger.debug(f"Will update OSM state on departments {departments}")
     for d in batimap.fetch_departments_osm_state(departments):
         task_progress(self, 2 * p + d / len(departments) * p)
-    LOG.debug(f"Will import cities stats on departments {departments}")
+    current_app.logger.debug(f"Will import cities stats on departments {departments}")
     for d in batimap.import_city_stats_from_osmplanet(items):
         task_progress(self, 3 * p + d / len(items) * p)
-    LOG.debug(f"Will compute unknown cities stats on departments {departments}")
+    current_app.logger.debug(
+        f"Will compute unknown cities stats on departments {departments}"
+    )
     unknowns = (
         [c for c in items if db.get_city_for_insee(c).import_date == "unknown"]
         if items_are_cities
@@ -65,7 +68,7 @@ def task_initdb(self, items):
     for (d, total) in batimap.compute_date_for_undated_cities(unknowns):
         task_progress(self, 4 * p + d / total * p)
 
-    LOG.debug(f"Finalizing initdb on departments {departments}")
+    current_app.logger.debug(f"Finalizing initdb on departments {departments}")
     db.session.commit()
 
     if flush_all_tiles:
@@ -102,7 +105,7 @@ def task_josm_data_internal(task, insee):
     c = db.get_city_for_insee(insee)
     must_generate_data = not c.is_josm_ready()
     if must_generate_data:
-        LOG.debug(f"Fetching cadastre data for {c}")
+        current_app.logger.debug(f"Fetching cadastre data for {c}")
         # first, generate cadastre data for that city
         for d in batimap.fetch_cadastre_data(c):
             task_progress(task, 1 + d / 100 * 79)

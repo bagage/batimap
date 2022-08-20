@@ -3,7 +3,6 @@
 
 import datetime
 import http.cookiejar
-import logging
 import re
 import urllib.request
 import zlib
@@ -14,8 +13,7 @@ from pathlib import Path
 import requests
 from batimap.db import City
 from bs4 import BeautifulSoup, SoupStrainer
-
-LOG = logging.getLogger(__name__)
+from flask import current_app
 
 
 class Batimap(object):
@@ -79,7 +77,7 @@ class Batimap(object):
         # buildings.
         # For now, only ask for cities with a majority of unknown buildings, but we could whenever there is one
         if len(unknown_insees):
-            LOG.info(
+            current_app.logger.info(
                 f"Using overpass for {len(unknown_insees)} unknown cities: {unknown_insees}"
             )
             for idx, _ in enumerate(
@@ -94,22 +92,26 @@ class Batimap(object):
         try:
             r = op.open(url)
         except Exception as e:
-            LOG.warning(f"Could not reach cadastre website: {e}, skipping for now")
+            current_app.logger.warning(
+                f"Could not reach cadastre website: {e}, skipping for now"
+            )
             return
 
         csrf_token = r.read().split(b"CSRF_TOKEN=")[1].split(b'"')[0].decode("utf-8")
         op.addheaders = [("Accept-Encoding", "gzip")]
 
-        LOG.info(
+        current_app.logger.info(
             f"Récupération des infos cadastrales pour les départements {departments}"
         )
         for idx, d in enumerate(departments):
-            LOG.info(f"Récupération des infos cadastrales pour le département {d}")
+            current_app.logger.info(
+                f"Récupération des infos cadastrales pour le département {d}"
+            )
             if (
                 len(self.db.get_cities_for_department(d)) > 0
                 and self.db.get_raster_cities_count(d) == 0
             ):
-                LOG.info(
+                current_app.logger.info(
                     f"Le département {d} ne contient que des communes vectorisées, rien à vérifier"
                 )
                 continue
@@ -124,18 +126,18 @@ class Batimap(object):
                 "lxml",
                 parse_only=cities,
             )
-            LOG.debug(f"Query result: {fr.prettify()}")
-            for e in fr.find_all("tbody"):
-                y = e.find(title="Ajouter au panier")
+            current_app.logger.debug(f"Query result: {fr.prettify()}")
+            for next_city in fr.find_all("tbody"):
+                y = next_city.find(title="Ajouter au panier")
                 if not y:
                     continue
-                LOG.debug(f"Parsing next city: {e}")
+                current_app.logger.debug(f"Parsing next city: {next_city}")
 
                 # y.get('onclick') structure: "ajoutArticle('CL098','VECT','COMU');"
                 (_, code_commune, _, format_type, _, _, _) = y.get("onclick").split("'")
 
                 # e.strong.string structure: "COBONNE (26400) "
-                commune_cp = e.strong.string
+                commune_cp = next_city.strong.string
                 nom_commune = commune_cp[:-9]
 
                 dept = d.zfill(2)
@@ -145,7 +147,7 @@ class Batimap(object):
 
                 name = self.db.get_osm_city_name_for_insee(insee)
                 if not name:
-                    LOG.error(
+                    current_app.logger.error(
                         f"Cannot find city with insee {insee}, did you import OSM data for this department?"
                     )
                     continue
@@ -161,14 +163,18 @@ class Batimap(object):
                     "raster" if is_raster else city.import_date or "never"
                 )
                 city.is_raster = is_raster
-            LOG.debug("Inserting cities in database…")
+            current_app.logger.debug("Inserting cities in database…")
             self.db.session.commit()
             yield idx + 1
 
     def fetch_departments_osm_state(self, departments):
-        LOG.info(f"Récupération du statut OSM pour les départements {departments}")
+        current_app.logger.info(
+            f"Récupération du statut OSM pour les départements {departments}"
+        )
         for idx, d in enumerate(departments):
-            LOG.info(f"Récupération du statut OSM pour le département {d}")
+            current_app.logger.info(
+                f"Récupération du statut OSM pour le département {d}"
+            )
             url = "https://cadastre.openstreetmap.fr"
             dept = d.zfill(3)
             r = requests.get(f"{url}/data/{dept}/")
@@ -204,7 +210,7 @@ class Batimap(object):
                     try:
                         name_index = cities_name_cadastre.index(name_cadastre)
                     except ValueError:
-                        LOG.warning(
+                        current_app.logger.warning(
                             f"City {name_cadastre} could not be found?! Ignoring for now..."
                         )
                         continue
@@ -212,7 +218,7 @@ class Batimap(object):
                     c = cities[name_index]
                     no_cadastre_cities.remove(c)
                     if c.date_cadastre != date_cadastre:
-                        LOG.info(
+                        current_app.logger.info(
                             f"Cadastre changed changed for {c} from {c.date_cadastre} to {date_cadastre}"
                         )
                         refresh_city_tiles.append(c.insee)
@@ -253,7 +259,9 @@ class Batimap(object):
 
     def fetch_cadastre_data(self, city):
         if not city or not city.name_cadastre:
-            LOG.warning(f"Missing city or city.name_cadastre for {city}, aborting")
+            current_app.logger.warning(
+                f"Missing city or city.name_cadastre for {city}, aborting"
+            )
             return
 
         # force refresh if cadastre data is too old
@@ -269,7 +277,7 @@ class Batimap(object):
             for e in bs.find_all("tr"):
                 if archive in [x.text for x in e.select("td:nth-of-type(2) a")]:
                     date = e.select("td:nth-of-type(3)")[0].text.strip()
-                    LOG.info(
+                    current_app.logger.info(
                         f"{city.name_cadastre} was already generated at {date}, no need to regenerate it!"
                     )
                     return
@@ -281,7 +289,9 @@ class Batimap(object):
             "ville": city.name_cadastre,
         }
 
-        LOG.debug(f"Querying cadastre for {city} ({city.name_cadastre}) - {data}")
+        current_app.logger.debug(
+            f"Querying cadastre for {city} ({city.name_cadastre}) - {data}"
+        )
         # otherwise we invoke Cadastre generation
         with closing(requests.post(url, data=data, stream=True)) as r:
             (total_y, total) = (0, 0)
@@ -300,7 +310,7 @@ class Batimap(object):
                         if total > 0
                         else f"{current}"
                     )
-                    LOG.info(msg)
+                    current_app.logger.info(msg)
                     yield current * 100 / total
 
                 if "Termin" in line:
@@ -310,11 +320,11 @@ class Batimap(object):
                         if total > 0
                         else f"{current}"
                     )
-                    LOG.info(msg)
+                    current_app.logger.info(msg)
                     yield 100
                     return
                 elif "ERROR:" in line or "ERREUR:" in line:
-                    LOG.error(line)
+                    current_app.logger.error(line)
                     # may happen when cadastre.gouv.fr is in maintenance mode
                     raise Exception(line)
 
@@ -325,7 +335,9 @@ class Batimap(object):
 
     def clear_tiles(self, insee):
         bbox = self.db.get_insee_bbox(insee)
-        LOG.info(f"Tiles for city {insee} must be regenerated in bbox {str(bbox)}")
+        current_app.logger.info(
+            f"Tiles for city {insee} must be regenerated in bbox {str(bbox)}"
+        )
         with Path("tiles/outdated.txt").open("a") as fd:
             fd.write(f"{bbox}\n")
 
@@ -359,7 +371,7 @@ class Batimap(object):
                         ):
                             continue
 
-                        LOG.info(
+                        current_app.logger.info(
                             f"{city} contient des bâtiments avec une géométrie simplifiée {element}, "
                             "import probablement jamais réalisé"
                         )
@@ -377,7 +389,7 @@ class Batimap(object):
             }
             self.db.session.commit()
         except Exception as e:
-            LOG.error(f"Failed to count buildings for {city}: {e}")
+            current_app.logger.error(f"Failed to count buildings for {city}: {e}")
         return city
 
     def __date_for_buildings(self, city, dates, has_simplified_buildings):
@@ -408,22 +420,26 @@ class Batimap(object):
                 and city.cadastre.od_buildings
                 > max(self.MIN_BUILDINGS_COUNT, 1.5 * len(dates))
             ):
-                LOG.info(
+                current_app.logger.info(
                     f"City {city}: too few buildings found ({len(dates)}), assuming it was never imported!"
                 )
                 date = "never"
             elif has_simplified_buildings:
                 date = "unfinished"
-        LOG.debug(f"City {city} stats: date={date}, details={counter}")
+        current_app.logger.debug(f"City {city} stats: date={date}, details={counter}")
         return (date, counter)
 
     def import_city_stats_from_osmplanet(self, insees):
-        LOG.info(f"Calcul des statistiques du bâti pour les INSEEs {insees}…")
+        current_app.logger.info(
+            f"Calcul des statistiques du bâti pour les INSEEs {insees}…"
+        )
         for idx, insee_in in enumerate(insees):
             # 1. fetch global stats for current department of all buildings
-            LOG.debug(f"Calcul des statistiques du bâti pour l'INSEE {insee_in}…")
+            current_app.logger.debug(
+                f"Calcul des statistiques du bâti pour l'INSEE {insee_in}…"
+            )
             result = self.db.get_building_dates_per_city_for_insee(insee_in)
-            LOG.debug(
+            current_app.logger.debug(
                 f"Calcul des statistiques du bâti pour l'INSEE {insee_in}: {result}"
             )
 
@@ -438,7 +454,9 @@ class Batimap(object):
                 ] * count
 
             # 2. fetch all simplified buildings in current insee
-            LOG.debug(f"Récupération du bâti simplifié pour l'INSEE {insee_in}…")
+            current_app.logger.debug(
+                f"Récupération du bâti simplifié pour l'INSEE {insee_in}…"
+            )
             city_with_simplified_building = (
                 self.db.get_point_buildings_per_city_for_insee(
                     insee_in,
@@ -449,13 +467,15 @@ class Batimap(object):
 
             simplified_cities = list(set([x[0] for x in city_with_simplified_building]))
             if len(simplified_cities) > 0:
-                LOG.info(
+                current_app.logger.info(
                     f"Les villes {simplified_cities} contiennent des bâtiments avec une géométrie simplifiée, "
                     "import à vérifier"
                 )
 
             # 3. finally compute city import date and update database
-            LOG.debug(f"Mise à jour des statistiques pour l'INSEE {insee_in}…")
+            current_app.logger.debug(
+                f"Mise à jour des statistiques pour l'INSEE {insee_in}…"
+            )
             for insee, buildings in buildings_per_insee.items():
                 city = self.db.get_city_for_insee(insee)
                 city.name = insee_name[insee]
@@ -477,7 +497,7 @@ class Batimap(object):
                             if len(simplified) == 0
                             else f", simplifiée: {simplified}"
                         )
-                        LOG.info(
+                        current_app.logger.info(
                             f"Mise à jour pour l'INSEE {insee}: {city.import_date} -> "
                             f"{import_date} ({len(buildings)} bâtis{simplified_msg})"
                         )

@@ -2,22 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import gzip
-import logging
 from collections import Counter
 from datetime import datetime
+from typing import Optional
+
 import ijson
 import requests
 from batimap.db import Cadastre
 from flask import current_app
-
-LOG = logging.getLogger(__name__)
 
 
 class ODCadastre(object):
     def init_app(self, db):
         self.db = db
 
-    def query_od(self, dept, city=None) -> Counter:
+    def query_od(self, dept, city=None) -> Optional[Counter]:
         url = "https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/"
         if city:
             url += f"communes/{dept}/{city}/cadastre-{city}-batiments.json.gz"
@@ -41,7 +40,9 @@ class ODCadastre(object):
         r = requests.get(url)
 
         if r.status_code != 200:
-            LOG.warn(f"cadastre fetch failed (url={url}, status={r.status_code})")
+            current_app.logger.warn(
+                f"cadastre fetch failed (url={url}, status={r.status_code})"
+            )
             return None
 
         data = gzip.decompress(r.content)
@@ -53,14 +54,14 @@ class ODCadastre(object):
 
         return buildings_per_insee
 
-    def query_department_od(self, dept) -> Counter:
+    def query_department_od(self, dept) -> Optional[Counter]:
         return self.query_od(dept)
 
-    def query_city_od(self, insee) -> Counter:
+    def query_city_od(self, insee) -> Optional[Counter]:
         dept = insee[:3] if insee.startswith("97") else insee[:2]
         return self.query_od(dept, insee)
 
-    def compute_count(self, insee) -> Cadastre:
+    def compute_count(self, insee) -> Optional[Cadastre]:
         if len(insee) <= 3:
             result = self.department_count(insee)
         else:
@@ -69,7 +70,7 @@ class ODCadastre(object):
         self.db.session.commit()
         return result
 
-    def department_count(self, dept) -> Cadastre:
+    def department_count(self, dept) -> Optional[Cadastre]:
         if not self.db.get_department(dept):
             return None
 
@@ -91,7 +92,7 @@ class ODCadastre(object):
 
         return cadastre_dept
 
-    def city_count(self, insee) -> Cadastre:
+    def city_count(self, insee) -> Optional[Cadastre]:
         if not self.db.get_city_for_insee(insee):
             return None
 
