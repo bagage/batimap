@@ -3,7 +3,7 @@ import json
 from batimap.taskdto import TaskDTO
 from batimap.tasks.utils import list_tasks
 from celery.result import AsyncResult
-from flask import jsonify
+from flask import current_app, jsonify
 
 from .routes import bp
 

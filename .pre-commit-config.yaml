@@ -43,7 +43,6 @@ repos:
         entry: flake8
         language: system
         types: [python]
-        files: (app|tests)
   - repo: local
     hooks:
       - id: mypy

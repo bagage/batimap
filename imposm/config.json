@@ -3,7 +3,9 @@
     "diffdir": "/data/diff",
     "expiretiles_dir": "/data/updated-tiles",
     "expiretiles_zoom": 13,
-    "replication_interval": "24h",
-    "replication_url": "http://download.geofabrik.de/europe/france-updates/",
+    // "replication_interval": "24h",
+    // "replication_url": "http://download.geofabrik.de/europe/france-updates/",
+    "replication_interval": "1m",
+    "replication_url": "https://download.openstreetmap.fr/replication/merge/france_metro_dom_com_nc/minute/",
     "srid": 4326
 }

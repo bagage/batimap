@@ -24,7 +24,7 @@ from .bbox import Bbox
 Base = declarative_base()
 
 
-class Building(Base):
+class Building(Base):  # type: ignore
     __tablename__ = "osm_buildings"
 
     id = Column(Integer, primary_key=True)
@@ -37,7 +37,7 @@ class Building(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
-class Boundary(Base):
+class Boundary(Base):  # type: ignore
     __tablename__ = "osm_admin"
 
     id = Column(Integer, primary_key=True)
@@ -49,7 +49,7 @@ class Boundary(Base):
     geometry = Column(Geometry(geometry_type="POLYGON", management=True))
 
 
-class City(Base):
+class City(Base):  # type: ignore
     __tablename__ = "city_stats"
 
     insee = Column(String, primary_key=True)
@@ -103,7 +103,7 @@ class City(Base):
         return [None, "unfinished", "unknown", "never"]
 
 
-class Cadastre(Base):
+class Cadastre(Base):  # type: ignore
     __tablename__ = "cadastre_stats"
 
     def __init__(self, insee, department, od_buildings, last_fetch=None):
