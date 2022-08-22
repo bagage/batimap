@@ -1,14 +1,14 @@
 import json
 
 from batimap.extensions import db
-from flask import jsonify, Response
+from flask import jsonify
 from geojson import Feature, FeatureCollection
 
 from .routes import bp
 
 
 @bp.route("/insee/<insee>", methods=["GET"])
-def api_insee(insee) -> Response:
+def api_insee(insee):
     city = db.get_city_for_insee(insee)
     if city:
         geo = db.get_city_geometry(insee)[0]
